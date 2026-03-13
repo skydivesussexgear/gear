@@ -872,7 +872,7 @@ async function loadGearFromSheet() {
   const serialScreen = document.getElementById('screen-serial');
   const loadingEl = document.getElementById('gear-loading-msg');
   try {
-    const res = await fetch(SCRIPT_URL + '?action=getGear');
+    const res = await fetch(SCRIPT_URL + '?action=getGear', { redirect: 'follow' });
     const data = await res.json();
     if (data.gear && data.gear.length > 0) {
       GEAR_DATA = data.gear;
