@@ -411,7 +411,9 @@ body {
 }
 .svc-check svg { display: none; }
 .svc-item.checked .svc-check svg { display: block; }
-.svc-label { flex: 1; font-size: 13px; font-weight: 500; line-height: 1.3; }
+.svc-label { flex: 1; font-size: 13px; font-weight: 500; line-height: 1.3; display: flex; flex-direction: column; gap: 2px; }
+.svc-note { font-size: 11px; font-weight: 400; font-style: italic; color: var(--text-muted); line-height: 1.4; }
+.svc-item.checked .svc-note { color: var(--sky); opacity: 0.8; }
 .svc-price {
   font-family: 'Roboto Mono', monospace;
   font-size: 12px;
@@ -895,51 +897,51 @@ async function loadGearFromSheet() {
 
 const SERVICE_GROUPS = [
   { label: 'Reserve', items: [
-    { name: 'Reserve Inspection & Repack (Sport)', price: '$115' },
-    { name: 'Reserve Inspection & Repack (Tandem)', price: '$150' },
+    { name: 'Reserve Inspection & Repack (Sport)',  price: '$115',  note: 'Full inspection, repack & certification. Includes main pack.' },
+    { name: 'Reserve Inspection & Repack (Tandem)', price: '$150',  note: 'Full inspection, repack & certification for tandem systems.' },
   ]},
   { label: 'Inspection', items: [
-    { name: 'Inspect Main or Reserve', price: '$25' },
-    { name: 'Inspect Harness / Container', price: '$20' },
-    { name: "Inspect & Pack Pilot's Emergency Rig", price: '$120' },
+    { name: 'Inspect Main or Reserve',              price: '$25',   note: 'Visual and functional inspection of a single canopy.' },
+    { name: 'Inspect Harness / Container',          price: '$20',   note: 'Hardware, webbing, and container integrity check.' },
+    { name: "Inspect & Pack Pilot's Emergency Rig", price: '$120',  note: 'Full inspection and repack of a pilot emergency parachute.' },
   ]},
   { label: 'Packing', items: [
-    { name: 'Pack Main Sport', price: '$15' },
-    { name: 'Pack Main Tandem', price: '$20' },
+    { name: 'Pack Main Sport',  price: '$15',  note: 'Included at no extra charge with a Sport Reserve Repack.' },
+    { name: 'Pack Main Tandem', price: '$20',  note: 'Pro-pack or flat-pack — specify in notes if you have a preference.' },
   ]},
   { label: 'AAD', items: [
-    { name: 'AAD Batteries / Service', price: 'Varies' },
-    { name: 'Install AAD', price: '$10' },
+    { name: 'AAD Batteries / Service', price: 'Varies', note: 'Battery replacement or manufacturer-required maintenance. Price depends on unit.' },
+    { name: 'Install AAD',             price: '$10',    note: 'Installation of a customer-supplied AAD into the container.' },
   ]},
   { label: 'Lines', items: [
-    { name: 'Reserve Safety Stow Replacement', price: '$12' },
-    { name: 'Replace Lower Steering Lines', price: '$40' },
-    { name: 'Replace Steering Lines Toggles to Cascades', price: '$65' },
-    { name: 'Full Line Set', price: 'Varies' },
-    { name: 'Re-line Sport', price: '$130' },
-    { name: 'Re-line Tandem', price: '$175' },
-    { name: 'Slinks', price: '$35' },
+    { name: 'Reserve Safety Stow Replacement',          price: '$12',   note: 'Replace worn or damaged reserve closing loop / safety stow.' },
+    { name: 'Replace Lower Steering Lines',             price: '$40',   note: 'Lower brake lines from guide ring to toggle. Lines included.' },
+    { name: 'Replace Steering Lines Toggles to Cascades', price: '$65', note: 'Full steering line replacement from toggle to cascade junction.' },
+    { name: 'Full Line Set',   price: 'Varies', note: 'Complete reline — price depends on canopy size and line type. Lines not included.' },
+    { name: 'Re-line Sport',   price: '$130',   note: 'Labour only — lines not included. Supply your own or request a quote.' },
+    { name: 'Re-line Tandem',  price: '$175',   note: 'Labour only — lines not included. Supply your own or request a quote.' },
+    { name: 'Slinks',          price: '$35',    note: 'Soft links for main or reserve. Recommended whenever a new line set is installed.' },
   ]},
   { label: 'Assembly', items: [
-    { name: 'Assembly, Inspection & Pack Reserve (Sport)', price: '$140' },
-    { name: 'Assembly, Inspection & Repack Reserve (Tandem)', price: '$175' },
-    { name: 'Assembly, Inspection & Pack Main', price: '$75' },
-    { name: 'Disassemble Main or Reserve', price: '$10' },
+    { name: 'Assembly, Inspection & Pack Reserve (Sport)',   price: '$140', note: 'Full gear assembly from components, plus inspection and reserve repack.' },
+    { name: 'Assembly, Inspection & Repack Reserve (Tandem)',price: '$175', note: 'Full tandem gear assembly from components, plus inspection and reserve repack.' },
+    { name: 'Assembly, Inspection & Pack Main',              price: '$75',  note: 'Assemble canopy onto risers, inspect, and pack.' },
+    { name: 'Disassemble Main or Reserve',                   price: '$10',  note: 'Remove canopy, risers, or reserve from the container.' },
   ]},
-  { label: 'Additional', items: [
-    { name: 'Install Slider Bumpers', price: '$25' },
-    { name: 'Fabric Tensile Test', price: '$20' },
-    { name: 'Kill Line Replacement', price: '$25' },
-    { name: 'BOC Replacement', price: '$100' },
-    { name: 'Tack Slinks / Links', price: '$5' },
-    { name: 'Wash Rig', price: '$65' },
+  { label: 'Additional Services', items: [
+    { name: 'Install Slider Bumpers', price: '$25',    note: 'Replace grommets or install bumpers to reduce wear on slider.' },
+    { name: 'Fabric Tensile Test',    price: '$20',    note: 'Porosity and strength test for reserve or main canopy fabric.' },
+    { name: 'Kill Line Replacement',  price: '$25',    note: 'Replace the kill line on a collapsible pilot chute.' },
+    { name: 'BOC Replacement',        price: '$100',   note: 'Replace a worn or damaged bottom-of-container pilot chute pocket.' },
+    { name: 'Tack Slinks / Links',    price: '$5',     note: 'Tack soft links or connector links to prevent accidental loosening.' },
+    { name: 'Wash Rig',               price: '$65',    note: 'Does NOT include disassemble / reassemble, reserve repack, or AAD reinstall.' },
   ]},
   { label: 'Repair', items: [
-    { name: 'Sewing', price: '$85/hr' },
-    { name: 'Canopy Patch', price: 'Varies' },
+    { name: 'Sewing',        price: '$85/hr', note: 'Velcro replacement, strap repairs, closing loop replacement, and general sewing.' },
+    { name: 'Canopy Patch',  price: 'Varies', note: 'Price depends on size and location of damage. Describe in notes below.' },
   ]},
   { label: 'Maintenance', items: [
-    { name: 'Monthly Maintenance', price: '—' },
+    { name: 'Monthly Maintenance', price: '—', note: 'Scheduled monthly maintenance plan. Contact us to set up an agreement.' },
   ]},
 ];
 
@@ -1084,7 +1086,7 @@ function buildServices() {
             <path d="M1 4L3.5 6.5L9 1" stroke="#080c12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <span class="svc-label">${svc.name}</span>
+        <span class="svc-label">${svc.name}${svc.note ? `<span class="svc-note">${svc.note}</span>` : ''}</span>
         <span class="svc-price">${svc.price}</span>`;
       label.addEventListener('click', function(e) {
         e.preventDefault();
