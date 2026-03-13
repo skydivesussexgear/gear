@@ -1244,45 +1244,46 @@ function fldTA(label, id, val) {
 }
 
 function buildEditForm(g, idx) {
+  const sn = String(g.rig_sn || '').replace('.0', '');
   return `
     <div class="edit-section-title">Container</div>
     <div class="edit-grid">
-      \${fld('Rig Number / Name', 'e\${idx}-rig_num', g.rig_num)}
-      \${fld('Container Make / Model', 'e\${idx}-rig_make', g.rig_make)}
-      \${fld('Container S/N', 'e\${idx}-rig_sn', String(g.rig_sn||'').replace('.0',''))}
-      \${fld('DOM', 'e\${idx}-rig_dom', g.rig_dom)}
-      <div class="a-field"><label>Type</label><select id="e\${idx}-type"><option value="student" \${g.type==='student'?'selected':''}>Student</option><option value="tandem" \${g.type==='tandem'?'selected':''}>Tandem</option></select></div>
+      ${fld('Rig Number / Name', 'e' + idx + '-rig_num', g.rig_num)}
+      ${fld('Container Make / Model', 'e' + idx + '-rig_make', g.rig_make)}
+      ${fld('Container S/N', 'e' + idx + '-rig_sn', sn)}
+      ${fld('DOM', 'e' + idx + '-rig_dom', g.rig_dom)}
+      <div class="a-field"><label>Type</label><select id="e${idx}-type"><option value="student" ${g.type === 'student' ? 'selected' : ''}>Student</option><option value="tandem" ${g.type === 'tandem' ? 'selected' : ''}>Tandem</option></select></div>
     </div>
     <div class="edit-section-title">Main Canopy</div>
     <div class="edit-grid">
-      \${fld('Make', 'e\${idx}-main_make', g.main_make)}
-      \${fld('Size (sqft)', 'e\${idx}-main_size', String(g.main_size||'').replace('.0',''))}
-      \${fld('S/N', 'e\${idx}-main_sn', g.main_sn)}
-      \${fld('Colour', 'e\${idx}-main_color', g.main_color)}
+      ${fld('Make', 'e' + idx + '-main_make', g.main_make)}
+      ${fld('Size (sqft)', 'e' + idx + '-main_size', String(g.main_size || '').replace('.0', ''))}
+      ${fld('S/N', 'e' + idx + '-main_sn', g.main_sn)}
+      ${fld('Colour', 'e' + idx + '-main_color', g.main_color)}
     </div>
     <div class="edit-section-title">Reserve</div>
     <div class="edit-grid">
-      \${fld('Make', 'e\${idx}-res_make', g.res_make)}
-      \${fld('Size (sqft)', 'e\${idx}-res_size', String(g.res_size||'').replace('.0',''))}
-      \${fld('S/N', 'e\${idx}-res_sn', g.res_sn)}
-      \${fld('Last Pack Date', 'e\${idx}-res_pack_date', g.res_pack_date, 'YYYY-MM-DD')}
-      \${fld('Repack Due', 'e\${idx}-res_repack_due', g.res_repack_due, 'YYYY-MM-DD')}
+      ${fld('Make', 'e' + idx + '-res_make', g.res_make)}
+      ${fld('Size (sqft)', 'e' + idx + '-res_size', String(g.res_size || '').replace('.0', ''))}
+      ${fld('S/N', 'e' + idx + '-res_sn', g.res_sn)}
+      ${fld('Last Pack Date', 'e' + idx + '-res_pack_date', g.res_pack_date, 'YYYY-MM-DD')}
+      ${fld('Repack Due', 'e' + idx + '-res_repack_due', g.res_repack_due, 'YYYY-MM-DD')}
     </div>
     <div class="edit-section-title">AAD</div>
     <div class="edit-grid">
-      \${fld('Make', 'e\${idx}-aad_make', g.aad_make)}
-      \${fld('S/N', 'e\${idx}-aad_sn', String(g.aad_sn||'').replace('.0',''))}
-      \${fld('DOM', 'e\${idx}-aad_dom', g.aad_dom)}
+      ${fld('Make', 'e' + idx + '-aad_make', g.aad_make)}
+      ${fld('S/N', 'e' + idx + '-aad_sn', String(g.aad_sn || '').replace('.0', ''))}
+      ${fld('DOM', 'e' + idx + '-aad_dom', g.aad_dom)}
     </div>
     <div class="edit-section-title">Notes & Flags</div>
     <div class="edit-grid">
-      \${fldTA('Notes', 'e\${idx}-notes', g.notes)}
-      \${fldTA('Service Requests / Needed Parts', 'e\${idx}-svc_req', g.svc_req || g.needed_parts)}
+      ${fldTA('Notes', 'e' + idx + '-notes', g.notes)}
+      ${fldTA('Service Requests / Needed Parts', 'e' + idx + '-svc_req', g.svc_req || g.needed_parts)}
     </div>
     <div class="edit-actions">
-      <button class="btn-save-rig" onclick="saveRig(\${idx})">&#10003; Save Changes</button>
-      <span class="save-toast" id="toast-\${idx}">&#10003; Saved!</span>
-      <button class="btn-delete-rig" onclick="deleteRig(\${idx})">&#10005; Delete Rig</button>
+      <button class="btn-save-rig" onclick="saveRig(${idx})">&#10003; Save Changes</button>
+      <span class="save-toast" id="toast-${idx}">&#10003; Saved!</span>
+      <button class="btn-delete-rig" onclick="deleteRig(${idx})">&#10005; Delete Rig</button>
     </div>`;
 }
 
@@ -1293,7 +1294,7 @@ function getVal(id) {
 
 async function saveRig(idx) {
   const g = GEAR_DATA[idx];
-  const fields = ['rig_num','rig_make','rig_sn','rig_dom','type','main_make','main_size','main_sn','main_color','res_make','res_size','res_sn','res_pack_date','res_repack_due','aad_make','aad_sn','aad_dom','notes','svc_req'];
+  const fields = ['type','rig_num','rig_make','rig_sn','rig_dom','main_make','main_size','main_sn','main_color','res_make','res_size','res_sn','res_pack_date','res_repack_due','aad_make','aad_sn','aad_dom','notes','svc_req'];
   fields.forEach(f => { g[f] = getVal('e' + idx + '-' + f); });
   const t = document.getElementById('toast-' + idx);
   t.textContent = 'Saving…'; t.style.display = 'inline-block';
