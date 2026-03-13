@@ -957,18 +957,32 @@ async function lookupSerial() {
   errEl.style.display = 'none';
   if (!val) { showErr(errEl, 'Please enter a serial number.'); return; }
   if (GEAR_DATA.length === 0) {
-    showErr(errEl, 'Loading gear data, please wait…');
+    showErr(errEl, 'Loading gear data, please wait...');
     await loadGearFromSheet();
+    if (GEAR_DATA.length === 0) {
+      showErr(errEl, 'Could not load gear data. Please try again in a moment.');
+      return;
+    }
     errEl.style.display = 'none';
   }
+  const firstSN = GEAR_DATA.length > 0 ? String(GEAR_DATA[0].rig_sn) : 'none';
+  showErr(errEl, 'Searching ' + GEAR_DATA.length + ' rigs. First SN in data: ' + firstSN + ' | You typed: ' + val);
+  errEl.style.color = '#4af';
   const gear = GEAR_DATA.find(g => String(g.rig_sn).replace('.0','').trim() === val.trim());
-  if (!gear) { showErr(errEl, `No gear found with serial "${val}". Check and try again.`); return; }
-  currentGear = gear;
-  selectedServices.clear();
-  renderGear(gear);
-  buildServices();
-  showScreen('screen-form');
-  window.scrollTo(0, 0);
+  errEl.style.color = '';
+  if (!gear) { showErr(errEl, 'No match. First SN: "' + firstSN + '" vs typed: "' + val + '"'); return; }
+  try {
+    currentGear = gear;
+    selectedServices.clear();
+    renderGear(gear);
+  } catch(e) { showErr(errEl, 'renderGear error: ' + e.message); return; }
+  try {
+    buildServices();
+  } catch(e) { showErr(errEl, 'buildServices error: ' + e.message); return; }
+  try {
+    showScreen('screen-form');
+    window.scrollTo(0, 0);
+  } catch(e) { showErr(errEl, 'showScreen error: ' + e.message); return; }
 }
 
 function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
@@ -1035,8 +1049,8 @@ function renderGear(g) {
   specs.innerHTML = '';
   const blocks = [
     { title: 'Container', rows: [['Make', g.rig_make], ['S/N', sn], ['DOM', g.rig_dom]] },
-    { title: 'Main Canopy', rows: [['Make', g.main_make], ['Size', g.main_size ? g.main_size.replace('.0','') + ' sqft' : '—'], ['Color', g.main_color || '—']] },
-    { title: 'Reserve', rows: [['Make', g.res_make], ['Size', g.res_size ? g.res_size.replace('.0','') + ' sqft' : '—'], ['Last Pack', g.res_pack_date || '—'], ['Due', g.res_repack_due || '—']] },
+    { title: 'Main Canopy', rows: [['Make', g.main_make], ['Size', g.main_size ? String(g.main_size).replace('.0','') + ' sqft' : '—'], ['Color', g.main_color || '—']] },
+    { title: 'Reserve', rows: [['Make', g.res_make], ['Size', g.res_size ? String(g.res_size).replace('.0','') + ' sqft' : '—'], ['Last Pack', g.res_pack_date || '—'], ['Due', g.res_repack_due || '—']] },
     { title: 'AAD', rows: [['Make', g.aad_make], ['S/N', g.aad_sn ? String(g.aad_sn).replace('.0','') : '—'], ['DOM', g.aad_dom || '—'], g.jumps ? ['Jumps', g.jumps] : null].filter(Boolean) },
   ];
   blocks.forEach(b => {
