@@ -262,15 +262,6 @@ function renderQueue(){
     const submittedDate = order.submitted_at ? new Date(order.submitted_at).toLocaleString() : 'Unknown';
     const svcs = (order.services||'').split(' | ').filter(Boolean);
 
-    const svcCheckboxes = SERVICES.map((svc) => {
-      const checked = svcs.includes(svc);
-      return '<label class="svc-item' + (checked?' checked':'') + '" onclick="toggleSvc(this)">' +
-        '<input type="checkbox" value="' + svc + '"' + (checked?' checked':'') + '>' +
-        '<div class="svc-check"></div>' +
-        '<span class="svc-label">' + svc + '</span>' +
-        '</label>';
-    }).join('');
-
     card.innerHTML = `
       <div class="order-card-header" onclick="toggleOrder(${idx})">
         <div>
@@ -290,7 +281,7 @@ function renderQueue(){
         </div>
         <div class="info-block" style="margin-bottom:16px;">
           <div class="info-title" style="margin-bottom:12px;">Edit Services — Check/Uncheck as Needed</div>
-          <div class="svc-edit-grid" id="svc-grid-${idx}">\${svcCheckboxes}</div>
+          <div class="svc-edit-grid" id="svc-grid-${idx}"></div>
         </div>
         <div class="complete-section">
           <div class="complete-title">✓ Mark as Completed</div>
@@ -313,6 +304,17 @@ function renderQueue(){
       </div>
     `;
     listEl.appendChild(card);
+
+    // Inject service checkboxes after card is in DOM
+    const svcGrid = document.getElementById('svc-grid-'+idx);
+    SERVICES.forEach(svc => {
+      const checked = svcs.includes(svc);
+      const label = document.createElement('label');
+      label.className = 'svc-item' + (checked ? ' checked' : '');
+      label.innerHTML = '<input type="checkbox" value="' + svc + '"' + (checked ? ' checked' : '') + '><div class="svc-check"></div><span class="svc-label">' + svc + '</span>';
+      label.addEventListener('click', function(e) { toggleSvc(this); });
+      svcGrid.appendChild(label);
+    });
   });
 }
 
