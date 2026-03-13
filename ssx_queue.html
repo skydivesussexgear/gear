@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSX — Rigger Queue</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0e1117;--surface:#161b25;--surface2:#1e2535;--border:rgba(255,255,255,0.08);--blue:#3b82f6;--blue-dim:rgba(59,130,246,0.15);--green:#22c55e;--green-dim:rgba(34,197,94,0.12);--red:#ef4444;--red-dim:rgba(239,68,68,0.12);--yellow:#f59e0b;--yellow-dim:rgba(245,158,11,0.12);--text:#f1f5f9;--text-dim:#94a3b8;--text-muted:#475569;--accent:#60a5fa;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+  .header{background:linear-gradient(135deg,#0a0f1e,#0e1628,#0a1520);border-bottom:1px solid var(--border);}
+  .header-inner{max-width:900px;margin:0 auto;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .header-left{display:flex;align-items:center;gap:14px;}
+  .header-logo{width:44px;height:44px;background:linear-gradient(135deg,var(--blue),#1d4ed8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+  .header-text h1{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;line-height:1;}
+  .header-text p{font-size:11px;color:var(--text-dim);margin-top:2px;}
+  .logout-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:7px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:border-color 0.2s;}
+  .logout-btn:hover{border-color:var(--red);color:var(--red);}
+  .main{max-width:900px;margin:0 auto;padding:24px 16px 60px;}
+  .screen{display:none;}.screen.active{display:block;}
+
+  /* LOGIN */
+  .login-wrap{max-width:360px;margin:80px auto;text-align:center;}
+  .login-wrap h2{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:8px;}
+  .login-wrap p{color:var(--text-dim);font-size:14px;margin-bottom:28px;}
+  .login-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;}
+  .field{margin-bottom:14px;text-align:left;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:6px;}
+  .field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 14px;transition:border-color 0.2s;}
+  .field input:focus{outline:none;border-color:var(--blue);}
+  .btn{border:none;border-radius:8px;padding:12px 22px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:opacity 0.2s;}
+  .btn:hover{opacity:0.85;}
+  .btn-primary{background:var(--blue);color:#fff;width:100%;padding:13px;}
+  .btn-green{background:var(--green);color:#0e1117;}
+  .btn-sm{padding:7px 14px;font-size:12px;}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-dim);}
+  .btn-danger{background:var(--red-dim);border:1px solid rgba(239,68,68,0.3);color:var(--red);}
+  .error-msg{background:var(--red-dim);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;}
+
+  /* QUEUE */
+  .queue-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  .queue-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;}
+  .queue-count{background:var(--yellow-dim);border:1px solid rgba(245,158,11,0.3);color:var(--yellow);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;}
+  .queue-empty{text-align:center;padding:60px 20px;color:var(--text-muted);}
+  .queue-empty .icon{font-size:48px;margin-bottom:14px;}
+  .queue-empty p{font-size:14px;}
+
+  /* ORDER CARD */
+  .order-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden;}
+  .order-card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;cursor:pointer;}
+  .order-card-header:hover{background:var(--surface2);}
+  .order-wo{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--accent);}
+  .order-rig{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;}
+  .order-meta{font-size:12px;color:var(--text-dim);margin-top:2px;}
+  .order-time{font-size:11px;color:var(--text-muted);text-align:right;}
+  .order-expand{color:var(--text-muted);font-size:18px;transition:transform 0.2s;}
+  .order-card.expanded .order-expand{transform:rotate(180deg);}
+
+  .order-body{display:none;padding:20px;}
+  .order-card.expanded .order-body{display:block;}
+
+  .order-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  @media(max-width:500px){.order-grid{grid-template-columns:1fr;}}
+  .info-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 14px;}
+  .info-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+  .info-content{font-size:13px;color:var(--text);line-height:1.6;}
+
+  .complete-section{background:var(--green-dim);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:16px;margin-top:16px;}
+  .complete-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin-bottom:12px;}
+  .complete-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+  .complete-field{flex:1;min-width:180px;}
+  .complete-field label{display:block;font-size:11px;font-weight:600;color:var(--text-dim);margin-bottom:5px;}
+  .complete-field input,.complete-field textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 12px;}
+  .complete-field input:focus,.complete-field textarea:focus{outline:none;border-color:var(--green);}
+  .complete-field textarea{resize:vertical;min-height:60px;}
+  .complete-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+
+  /* SETTINGS */
+  .settings-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px;}
+  .settings-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+  .pw-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+  .pw-field{flex:1;min-width:160px;}
+  .pw-field label{display:block;font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:6px;}
+  .pw-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 14px;}
+  .pw-field input:focus{outline:none;border-color:var(--blue);}
+  .success-toast{background:var(--green-dim);border:1px solid rgba(34,197,94,0.3);color:var(--green);border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px;display:none;}
+
+  .tab-bar{display:flex;gap:4px;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;}
+  .tab{flex:1;padding:9px;text-align:center;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-dim);transition:all 0.2s;}
+  .tab.active{background:var(--blue);color:#fff;}
+  .tab:hover:not(.active){background:var(--surface2);}
+
+  .refresh-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .refresh-btn:hover{border-color:var(--blue);color:var(--accent);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="header-logo">🪂</div>
+      <div class="header-text"><h1>SSX Rigger Queue</h1><p>MANAGEMENT PORTAL</p></div>
+    </div>
+    <button class="logout-btn" onclick="logout()" id="logout-btn" style="display:none">Logout</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- LOGIN SCREEN -->
+  <div class="screen active" id="screen-login">
+    <div class="login-wrap">
+      <h2>Rigger Access</h2>
+      <p>Enter your password to view the service queue</p>
+      <div class="login-card">
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="pw-input" placeholder="Enter password" autocomplete="current-password">
+        </div>
+        <div class="error-msg" id="login-error">Incorrect password. Please try again.</div>
+        <button class="btn btn-primary" onclick="login()">Access Queue ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN QUEUE SCREEN -->
+  <div class="screen" id="screen-queue">
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab('queue')">📋 Pending Queue</div>
+      <div class="tab" onclick="switchTab('settings')">⚙ Settings</div>
+    </div>
+
+    <!-- QUEUE TAB -->
+    <div id="tab-queue">
+      <div class="queue-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="queue-title">Pending Orders</div>
+          <div class="queue-count" id="queue-count">0 pending</div>
+        </div>
+        <button class="refresh-btn" onclick="loadQueue()">↻ Refresh</button>
+      </div>
+      <div id="queue-list"></div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="tab-settings" style="display:none">
+      <div class="settings-card">
+        <div class="settings-title">Change Password</div>
+        <div class="pw-row">
+          <div class="pw-field">
+            <label>Current Password</label>
+            <input type="password" id="pw-current" placeholder="Current password">
+          </div>
+          <div class="pw-field">
+            <label>New Password</label>
+            <input type="password" id="pw-new" placeholder="New password">
+          </div>
+          <div class="pw-field">
+            <label>Confirm New Password</label>
+            <input type="password" id="pw-confirm" placeholder="Confirm new password">
+          </div>
+        </div>
+        <div class="error-msg" id="pw-error" style="margin-top:12px;"></div>
+        <div class="success-toast" id="pw-success">✓ Password updated successfully!</div>
+        <button class="btn btn-primary" style="margin-top:14px;width:auto;padding:11px 24px;" onclick="changePassword()">Update Password</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9N4RMwj8o70PpsABELQoftUbiKW1FV9AXQmp7QyVbEU8iUb2RQChB1aGNBqzzVFiY/exec';
+let pendingOrders = [];
+let currentPassword = localStorage.getItem('ssxQueuePw') || '1234';
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function login(){
+  const pw = document.getElementById('pw-input').value;
+  const errEl = document.getElementById('login-error');
+  if(pw === currentPassword){
+    errEl.style.display='none';
+    showScreen('screen-queue');
+    document.getElementById('logout-btn').style.display='block';
+    loadQueue();
+  } else {
+    errEl.style.display='block';
+  }
+}
+document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+
+function logout(){
+  document.getElementById('logout-btn').style.display='none';
+  document.getElementById('pw-input').value='';
+  showScreen('screen-login');
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab')[tab==='queue'?0:1].classList.add('active');
+  document.getElementById('tab-queue').style.display = tab==='queue'?'block':'none';
+  document.getElementById('tab-settings').style.display = tab==='settings'?'block':'none';
+}
+
+// ── LOAD QUEUE FROM GOOGLE SHEETS ─────────────────────────
+async function loadQueue(){
+  const listEl = document.getElementById('queue-list');
+  listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Loading...</div>';
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=getPending');
+    const data = await res.json();
+    pendingOrders = data.orders || [];
+    renderQueue();
+  } catch(e) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--red);">Failed to load queue. Check your connection.</div>';
+  }
+}
+
+function renderQueue(){
+  const listEl = document.getElementById('queue-list');
+  const countEl = document.getElementById('queue-count');
+  countEl.textContent = pendingOrders.length + ' pending';
+
+  if(pendingOrders.length === 0){
+    listEl.innerHTML = `<div class="queue-empty"><div class="icon">✅</div><p>No pending service requests. All clear!</p></div>`;
+    return;
+  }
+
+  listEl.innerHTML = '';
+  pendingOrders.forEach((order, idx) => {
+    const card = document.createElement('div');
+    card.className = 'order-card';
+    card.id = 'order-'+idx;
+
+    const submittedDate = order.submitted_at ? new Date(order.submitted_at).toLocaleString() : 'Unknown';
+    const svcs = (order.services||'').split(' | ').filter(Boolean);
+
+    card.innerHTML = `
+      <div class="order-card-header" onclick="toggleOrder(${idx})">
+        <div>
+          <div class="order-wo">${order.work_order||'N/A'}</div>
+          <div class="order-rig">${order.gear_type==='tandem'?'RIG #':''} ${order.rig_num||''} — ${order.rig_make||''}</div>
+          <div class="order-meta">S/N: ${order.rig_sn||''} · ${order.gear_type==='tandem'?'Tandem':'Student'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="order-time">${submittedDate}</div>
+          <div class="order-expand">▾</div>
+        </div>
+      </div>
+      <div class="order-body">
+        <div class="order-grid">
+          <div class="info-block">
+            <div class="info-title">Services Requested</div>
+            <div class="info-content">${svcs.length>0 ? svcs.map(s=>'• '+s).join('<br>') : '<span style="color:var(--text-muted)">None selected</span>'}</div>
+          </div>
+          <div class="info-block">
+            <div class="info-title">Additional Notes</div>
+            <div class="info-content">${order.extra_notes || '<span style="color:var(--text-muted)">No notes</span>'}</div>
+          </div>
+        </div>
+
+        <div class="complete-section">
+          <div class="complete-title">✓ Mark as Completed</div>
+          <div class="complete-row">
+            <div class="complete-field">
+              <label>Rigger Name *</label>
+              <input type="text" id="rigger-${idx}" placeholder="Your name">
+            </div>
+            <div class="complete-field">
+              <label>Completion Notes (optional)</label>
+              <textarea id="comp-notes-${idx}" placeholder="Any final notes or changes to service..."></textarea>
+            </div>
+          </div>
+          <div class="error-msg" id="comp-error-${idx}" style="margin-top:8px;"></div>
+          <div class="complete-actions">
+            <button class="btn btn-green btn-sm" onclick="markComplete(${idx})">✓ Mark Complete & Log to Sheet</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteOrder(${idx})">✕ Delete Request</button>
+          </div>
+        </div>
+      </div>
+    `;
+    listEl.appendChild(card);
+  });
+}
+
+function toggleOrder(idx){
+  document.getElementById('order-'+idx).classList.toggle('expanded');
+}
+
+async function markComplete(idx){
+  const order = pendingOrders[idx];
+  const rigger = document.getElementById('rigger-'+idx).value.trim();
+  const compNotes = document.getElementById('comp-notes-'+idx).value.trim();
+  const errEl = document.getElementById('comp-error-'+idx);
+  errEl.style.display='none';
+
+  if(!rigger){ errEl.textContent='Please enter the rigger name.'; errEl.style.display='block'; return; }
+
+  const payload = {
+    action: 'completeOrder',
+    work_order: order.work_order,
+    rigger: rigger,
+    completion_notes: compNotes,
+    row: order._row
+  };
+
+  try {
+    await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(payload)});
+    pendingOrders.splice(idx,1);
+    renderQueue();
+  } catch(e) {
+    errEl.textContent='Error completing order. Please try again.'; errEl.style.display='block';
+  }
+}
+
+async function deleteOrder(idx){
+  if(!confirm('Delete this service request? This cannot be undone.')) return;
+  const order = pendingOrders[idx];
+  const payload = { action:'deleteOrder', work_order:order.work_order, row:order._row };
+  try {
+    await fetch(SCRIPT_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(payload)});
+    pendingOrders.splice(idx,1);
+    renderQueue();
+  } catch(e) { alert('Error deleting order.'); }
+}
+
+// ── PASSWORD CHANGE ───────────────────────────────────────
+function changePassword(){
+  const cur = document.getElementById('pw-current').value;
+  const nw = document.getElementById('pw-new').value;
+  const conf = document.getElementById('pw-confirm').value;
+  const errEl = document.getElementById('pw-error');
+  const successEl = document.getElementById('pw-success');
+  errEl.style.display='none'; successEl.style.display='none';
+
+  if(cur !== currentPassword){ errEl.textContent='Current password is incorrect.'; errEl.style.display='block'; return; }
+  if(nw.length < 4){ errEl.textContent='New password must be at least 4 characters.'; errEl.style.display='block'; return; }
+  if(nw !== conf){ errEl.textContent='New passwords do not match.'; errEl.style.display='block'; return; }
+
+  currentPassword = nw;
+  localStorage.setItem('ssxQueuePw', nw);
+  document.getElementById('pw-current').value='';
+  document.getElementById('pw-new').value='';
+  document.getElementById('pw-confirm').value='';
+  successEl.style.display='block';
+  setTimeout(()=>successEl.style.display='none', 3000);
+}
+</script>
+</body>
+</html>
