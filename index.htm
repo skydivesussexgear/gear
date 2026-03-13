@@ -830,6 +830,7 @@ body {
   opacity: 0;
   transition: opacity 0.2s;
   border-radius: 18px;
+  pointer-events: none;
 }
 .landing-card.fun-jumper::before { background: radial-gradient(ellipse at top left, rgba(56,189,248,0.08), transparent 60%); }
 .landing-card.dz-gear::before   { background: radial-gradient(ellipse at top left, rgba(74,222,128,0.08), transparent 60%); }
@@ -1034,7 +1035,7 @@ body {
     </div>
     <div class="header-nav">
       <button class="btn-home" onclick="showScreen('screen-landing')">✚ Request Service</button>
-      <a href="ssx_queue.html" class="queue-link">📋 Rigger Queue</a>
+      <a href="file:///C:/Users/elite/Downloads/ssx_queue.html" class="queue-link">📋 Rigger Queue</a>
       <button class="admin-btn" onclick="openAdmin()">🔒 Admin</button>
     </div>
   </div>
@@ -1049,14 +1050,14 @@ body {
     </div>
     <div class="landing-cards">
 
-      <div class="landing-card fun-jumper" onclick="showScreen('screen-funjumper')">
+      <div class="landing-card fun-jumper">
         <div class="lc-title">Fun Jumper<br>Rigging Request</div>
-        <button class="lc-btn">Get Started ▶</button>
+        <button class="lc-btn" onclick="showScreen('screen-funjumper')">Get Started ▶</button>
       </div>
 
-      <div class="landing-card dz-gear" onclick="showScreen('screen-serial')">
+      <div class="landing-card dz-gear">
         <div class="lc-title">DZ Owned<br>Gear Request</div>
-        <button class="lc-btn">Look Up Rig ▶</button>
+        <button class="lc-btn" onclick="showScreen('screen-serial')">Look Up Rig ▶</button>
       </div>
 
     </div>
@@ -1276,8 +1277,8 @@ body {
         <div class="fj-field">
           <label class="fj-label">Is there known damage?</label>
           <div class="damage-toggle">
-            <div class="damage-opt selected-no" id="dmg-no"  onclick="setDamage('no')">NO</div>
-            <div class="damage-opt"             id="dmg-yes" onclick="setDamage('yes')">YES</div>
+            <div class="damage-opt selected-no" id="dmg-no" onclick="setDamage('no')">NO</div>
+            <div class="damage-opt" id="dmg-yes" onclick="setDamage('yes')">YES</div>
           </div>
         </div>
         <div class="fj-field" id="dmg-desc-wrap" style="display:none; margin-top:12px;">
@@ -1586,6 +1587,7 @@ function buildServices() {
         if (cb.checked) selectedServices.add(svc.name);
         else selectedServices.delete(svc.name);
         updateSelectedCount();
+      });
       list.appendChild(label);
     });
     groupEl.appendChild(list);
