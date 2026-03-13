@@ -769,6 +769,246 @@ body {
 /* purple-dim variable */
 :root { --purple-dim: rgba(167,139,250,0.12); }
 
+/* ── LANDING SCREEN ── */
+.landing-hero {
+  text-align: center;
+  padding: 48px 0 28px;
+}
+.landing-hero h2 {
+  font-family: 'Barlow', sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff 40%, var(--sky));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.landing-hero p {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-bottom: 36px;
+  line-height: 1.6;
+}
+.landing-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+@media (max-width: 520px) { .landing-cards { grid-template-columns: 1fr; } }
+.landing-card {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 18px;
+  padding: 28px 24px 24px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.landing-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: 18px;
+}
+.landing-card.fun-jumper::before { background: radial-gradient(ellipse at top left, rgba(56,189,248,0.08), transparent 60%); }
+.landing-card.dz-gear::before   { background: radial-gradient(ellipse at top left, rgba(74,222,128,0.08), transparent 60%); }
+.landing-card:hover { transform: translateY(-3px); }
+.landing-card:hover::before { opacity: 1; }
+.landing-card.fun-jumper:hover { border-color: rgba(56,189,248,0.5); box-shadow: 0 8px 32px rgba(56,189,248,0.1); }
+.landing-card.dz-gear:hover   { border-color: rgba(74,222,128,0.5); box-shadow: 0 8px 32px rgba(74,222,128,0.1); }
+.lc-icon {
+  font-size: 36px;
+  margin-bottom: 14px;
+  display: block;
+}
+.lc-title {
+  font-family: 'Barlow', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.landing-card.fun-jumper .lc-title { color: var(--sky); }
+.landing-card.dz-gear   .lc-title { color: var(--green); }
+.lc-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+.lc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  letter-spacing: 0.3px;
+}
+.lc-btn:hover { opacity: 0.88; }
+.landing-card.fun-jumper .lc-btn { background: var(--sky); color: #080c12; }
+.landing-card.dz-gear   .lc-btn { background: var(--green); color: #080c12; }
+
+/* ── FUN JUMPER FORM ── */
+.fj-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 20px;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  transition: color 0.15s;
+}
+.fj-back:hover { color: var(--sky); }
+
+.fj-section {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  animation: fadeSlideUp 0.3s ease both;
+}
+.fj-section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.fj-section-num {
+  width: 28px;
+  height: 28px;
+  background: var(--sky-dim);
+  border: 1px solid rgba(56,189,248,0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--sky);
+  flex-shrink: 0;
+}
+.fj-section-title {
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+.fj-section-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+.fj-body { padding: 20px; }
+.fj-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 500px) { .fj-grid { grid-template-columns: 1fr; } }
+.fj-field { display: flex; flex-direction: column; gap: 5px; }
+.fj-field.full { grid-column: 1 / -1; }
+.fj-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.fj-label span { color: var(--sky); margin-left: 2px; }
+.fj-input, .fj-select, .fj-textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  padding: 10px 13px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.fj-input:focus, .fj-select:focus, .fj-textarea:focus {
+  border-color: var(--sky);
+  box-shadow: 0 0 0 3px var(--sky-dim);
+}
+.fj-input::placeholder, .fj-textarea::placeholder { color: var(--text-muted); }
+.fj-select { appearance: none; cursor: pointer; }
+.fj-textarea { resize: vertical; min-height: 80px; }
+
+/* Collapsible rig subsections */
+.fj-subsection {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.fj-subsection:last-child { margin-bottom: 0; }
+.fj-sub-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.fj-sub-toggle:hover { background: var(--surface2); }
+.fj-sub-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.fj-sub-chevron { color: var(--text-muted); font-size: 12px; transition: transform 0.2s; }
+.fj-subsection.open .fj-sub-chevron { transform: rotate(180deg); }
+.fj-sub-body { display: none; padding: 14px 16px; border-top: 1px solid var(--border); }
+.fj-subsection.open .fj-sub-body { display: block; }
+.fj-sub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 500px) { .fj-sub-grid { grid-template-columns: 1fr; } }
+
+/* damage toggle */
+.damage-toggle { display: flex; gap: 10px; margin-top: 4px; }
+.damage-opt {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text-dim);
+}
+.damage-opt.selected-no  { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+.damage-opt.selected-yes { border-color: var(--red);   color: var(--red);   background: var(--red-dim); }
+
 </style>
 </head>
 <body>
@@ -787,8 +1027,29 @@ body {
 
 <div class="main">
 
-  <!-- SCREEN 1: SERIAL LOOKUP -->
-  <div class="screen active" id="screen-serial">
+  <!-- SCREEN 0: LANDING — choose path -->
+  <div class="screen active" id="screen-landing">
+    <div class="landing-hero">
+      <h2>Request Gear Service</h2>
+    </div>
+    <div class="landing-cards">
+
+      <div class="landing-card fun-jumper" onclick="showScreen('screen-funjumper')">
+        <div class="lc-title">Fun Jumper<br>Rigging Request</div>
+        <button class="lc-btn">Get Started ▶</button>
+      </div>
+
+      <div class="landing-card dz-gear" onclick="showScreen('screen-serial')">
+        <div class="lc-title">DZ Owned<br>Gear Request</div>
+        <button class="lc-btn">Look Up Rig ▶</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCREEN 1: SERIAL LOOKUP (DZ gear) -->
+  <div class="screen" id="screen-serial">
+    <button class="fj-back" onclick="showScreen('screen-landing')">← Back</button>
     <div class="serial-hero">
       <span class="serial-icon">🔍</span>
       <h2>Find Your Gear</h2>
@@ -801,6 +1062,220 @@ body {
         </div>
         <div class="error-pill" id="serial-error"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- SCREEN FJ: FUN JUMPER FORM -->
+  <div class="screen" id="screen-funjumper">
+    <button class="fj-back" onclick="showScreen('screen-landing')">← Back</button>
+
+    <!-- Section 1: Customer Info -->
+    <div class="fj-section">
+      <div class="fj-section-header">
+        <div class="fj-section-num">1</div>
+        <div>
+          <div class="fj-section-title">Customer Information</div>
+          <div class="fj-section-sub">Tell us how to reach you.</div>
+        </div>
+      </div>
+      <div class="fj-body">
+        <div class="fj-grid">
+          <div class="fj-field">
+            <label class="fj-label">Full Name <span>*</span></label>
+            <input class="fj-input" id="fj-name" type="text" placeholder="John Smith" autocomplete="name">
+          </div>
+          <div class="fj-field">
+            <label class="fj-label">Phone Number <span>*</span></label>
+            <input class="fj-input" id="fj-phone" type="tel" placeholder="(631) 555-0123" autocomplete="tel">
+          </div>
+          <div class="fj-field">
+            <label class="fj-label">Email Address <span>*</span></label>
+            <input class="fj-input" id="fj-email" type="email" placeholder="john@example.com" autocomplete="email">
+          </div>
+          <div class="fj-field">
+            <label class="fj-label">Requested Completion Date <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+            <input class="fj-input" id="fj-date" type="date">
+          </div>
+          <div class="fj-field full">
+            <label class="fj-label">Mailing Address <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+            <input class="fj-input" id="fj-address" type="text" placeholder="123 Main St, City, NY 12345" autocomplete="street-address">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Rig Info -->
+    <div class="fj-section">
+      <div class="fj-section-header">
+        <div class="fj-section-num">2</div>
+        <div>
+          <div class="fj-section-title">Rig Information</div>
+          <div class="fj-section-sub">Container serial # is required to submit.</div>
+        </div>
+      </div>
+      <div class="fj-body">
+        <!-- Harness & Container -->
+        <div class="fj-subsection open" id="fj-sub-container">
+          <div class="fj-sub-toggle" onclick="toggleFjSub('fj-sub-container')">
+            <span class="fj-sub-label">Harness &amp; Container <span style="color:var(--sky)">— serial # required</span></span>
+            <span class="fj-sub-chevron">▾</span>
+          </div>
+          <div class="fj-sub-body">
+            <div class="fj-sub-grid">
+              <div class="fj-field">
+                <label class="fj-label">Manufacturer</label>
+                <input class="fj-input" id="fj-con-make" type="text" placeholder="e.g. Sunpath, Vector, Mirage">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Model</label>
+                <input class="fj-input" id="fj-con-model" type="text" placeholder="e.g. Javelin Odyssey">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Serial Number <span>*</span></label>
+                <input class="fj-input" id="fj-con-sn" type="text" placeholder="e.g. JO-12345">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Date of Manufacture</label>
+                <input class="fj-input" id="fj-con-dom" type="date">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Canopy -->
+        <div class="fj-subsection" id="fj-sub-main">
+          <div class="fj-sub-toggle" onclick="toggleFjSub('fj-sub-main')">
+            <span class="fj-sub-label">Main Canopy <span style="color:var(--text-muted);font-weight:400">— click to fill in</span></span>
+            <span class="fj-sub-chevron">▾</span>
+          </div>
+          <div class="fj-sub-body">
+            <div class="fj-sub-grid">
+              <div class="fj-field">
+                <label class="fj-label">Manufacturer</label>
+                <input class="fj-input" id="fj-main-make" type="text" placeholder="e.g. Performance Designs">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Model</label>
+                <input class="fj-input" id="fj-main-model" type="text" placeholder="e.g. Sabre 2">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Size (sqft)</label>
+                <input class="fj-input" id="fj-main-size" type="text" placeholder="e.g. 170">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Serial Number</label>
+                <input class="fj-input" id="fj-main-sn" type="text" placeholder="e.g. 12345">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reserve Canopy -->
+        <div class="fj-subsection" id="fj-sub-reserve">
+          <div class="fj-sub-toggle" onclick="toggleFjSub('fj-sub-reserve')">
+            <span class="fj-sub-label">Reserve Canopy <span style="color:var(--text-muted);font-weight:400">— click to fill in</span></span>
+            <span class="fj-sub-chevron">▾</span>
+          </div>
+          <div class="fj-sub-body">
+            <div class="fj-sub-grid">
+              <div class="fj-field">
+                <label class="fj-label">Manufacturer</label>
+                <input class="fj-input" id="fj-res-make" type="text" placeholder="e.g. Relative Workshop">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Model</label>
+                <input class="fj-input" id="fj-res-model" type="text" placeholder="e.g. Tempo">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Size (sqft)</label>
+                <input class="fj-input" id="fj-res-size" type="text" placeholder="e.g. 193">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Serial Number</label>
+                <input class="fj-input" id="fj-res-sn" type="text" placeholder="e.g. 49198">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Last Pack Date</label>
+                <input class="fj-input" id="fj-res-pack" type="date">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Repack Due</label>
+                <input class="fj-input" id="fj-res-due" type="date">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AAD -->
+        <div class="fj-subsection" id="fj-sub-aad">
+          <div class="fj-sub-toggle" onclick="toggleFjSub('fj-sub-aad')">
+            <span class="fj-sub-label">AAD <span style="color:var(--text-muted);font-weight:400">— click to fill in</span></span>
+            <span class="fj-sub-chevron">▾</span>
+          </div>
+          <div class="fj-sub-body">
+            <div class="fj-sub-grid">
+              <div class="fj-field">
+                <label class="fj-label">Manufacturer</label>
+                <input class="fj-input" id="fj-aad-make" type="text" placeholder="e.g. Cypres, Vigil, MARS">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Serial Number</label>
+                <input class="fj-input" id="fj-aad-sn" type="text" placeholder="e.g. 57472">
+              </div>
+              <div class="fj-field">
+                <label class="fj-label">Date of Manufacture</label>
+                <input class="fj-input" id="fj-aad-dom" type="date">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Services -->
+    <div class="fj-section">
+      <div class="fj-section-header">
+        <div class="fj-section-num">3</div>
+        <div>
+          <div class="fj-section-title">Requested Services</div>
+          <div class="fj-section-sub">Select all services needed for your rig.</div>
+        </div>
+      </div>
+      <div id="fj-services-container"></div>
+      <div class="notes-section">
+        <label class="notes-label">Additional Notes / Write-In Service</label>
+        <textarea class="notes-textarea" id="fj-extra-notes" placeholder="Describe any extra work, special requests, or services not listed above…"></textarea>
+      </div>
+    </div>
+
+    <!-- Section 4: Damage -->
+    <div class="fj-section">
+      <div class="fj-section-header">
+        <div class="fj-section-num">4</div>
+        <div>
+          <div class="fj-section-title">Known Damage</div>
+          <div class="fj-section-sub">Let us know before we start.</div>
+        </div>
+      </div>
+      <div class="fj-body">
+        <div class="fj-field">
+          <label class="fj-label">Is there known damage?</label>
+          <div class="damage-toggle">
+            <div class="damage-opt selected-no" id="dmg-no" onclick="setDamage('no')">NO</div>
+            <div class="damage-opt" id="dmg-yes" onclick="setDamage('yes')">YES</div>
+          </div>
+        </div>
+        <div class="fj-field" id="dmg-desc-wrap" style="display:none; margin-top:12px;">
+          <label class="fj-label">Describe the damage</label>
+          <textarea class="fj-textarea" id="fj-damage-desc" placeholder="e.g. Soft reserve handle, slider grommet wear, frayed closing loop…"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div style="padding: 0 0 4px;">
+      <div class="form-error" id="fj-form-error"></div>
+      <button class="btn-submit" id="fj-submit-btn" onclick="submitFunJumper()">▶&nbsp; Submit Service Request</button>
     </div>
   </div>
 
@@ -914,31 +1389,31 @@ const SERVICE_GROUPS = [
     { name: 'Install AAD',             price: '$10',    note: 'Installation of a customer-supplied AAD into the container.' },
   ]},
   { label: 'Lines', items: [
-    { name: 'Reserve Safety Stow Replacement',          price: '$12',   note: 'Replace worn or damaged reserve closing loop / safety stow.' },
-    { name: 'Replace Lower Steering Lines',             price: '$40',   note: 'Lower brake lines from guide ring to toggle. Lines included.' },
-    { name: 'Replace Steering Lines Toggles to Cascades', price: '$65', note: 'Full steering line replacement from toggle to cascade junction.' },
+    { name: 'Reserve Safety Stow Replacement',            price: '$12',   note: 'Replace worn or damaged reserve closing loop / safety stow.' },
+    { name: 'Replace Lower Steering Lines',               price: '$40',   note: 'Lower brake lines from guide ring to toggle. Lines included.' },
+    { name: 'Replace Steering Lines Toggles to Cascades', price: '$65',   note: 'Full steering line replacement from toggle to cascade junction.' },
     { name: 'Full Line Set',   price: 'Varies', note: 'Complete reline — price depends on canopy size and line type. Lines not included.' },
     { name: 'Re-line Sport',   price: '$130',   note: 'Labour only — lines not included. Supply your own or request a quote.' },
     { name: 'Re-line Tandem',  price: '$175',   note: 'Labour only — lines not included. Supply your own or request a quote.' },
     { name: 'Slinks',          price: '$35',    note: 'Soft links for main or reserve. Recommended whenever a new line set is installed.' },
   ]},
   { label: 'Assembly', items: [
-    { name: 'Assembly, Inspection & Pack Reserve (Sport)',   price: '$140', note: 'Full gear assembly from components, plus inspection and reserve repack.' },
-    { name: 'Assembly, Inspection & Repack Reserve (Tandem)',price: '$175', note: 'Full tandem gear assembly from components, plus inspection and reserve repack.' },
-    { name: 'Assembly, Inspection & Pack Main',              price: '$75',  note: 'Assemble canopy onto risers, inspect, and pack.' },
-    { name: 'Disassemble Main or Reserve',                   price: '$10',  note: 'Remove canopy, risers, or reserve from the container.' },
+    { name: 'Assembly, Inspection & Pack Reserve (Sport)',    price: '$140', note: 'Full gear assembly from components, plus inspection and reserve repack.' },
+    { name: 'Assembly, Inspection & Repack Reserve (Tandem)', price: '$175', note: 'Full tandem gear assembly from components, plus inspection and reserve repack.' },
+    { name: 'Assembly, Inspection & Pack Main',               price: '$75',  note: 'Assemble canopy onto risers, inspect, and pack.' },
+    { name: 'Disassemble Main or Reserve',                    price: '$10',  note: 'Remove canopy, risers, or reserve from the container.' },
   ]},
   { label: 'Additional Services', items: [
-    { name: 'Install Slider Bumpers', price: '$25',    note: 'Replace grommets or install bumpers to reduce wear on slider.' },
-    { name: 'Fabric Tensile Test',    price: '$20',    note: 'Porosity and strength test for reserve or main canopy fabric.' },
-    { name: 'Kill Line Replacement',  price: '$25',    note: 'Replace the kill line on a collapsible pilot chute.' },
-    { name: 'BOC Replacement',        price: '$100',   note: 'Replace a worn or damaged bottom-of-container pilot chute pocket.' },
-    { name: 'Tack Slinks / Links',    price: '$5',     note: 'Tack soft links or connector links to prevent accidental loosening.' },
-    { name: 'Wash Rig',               price: '$65',    note: 'Does NOT include disassemble / reassemble, reserve repack, or AAD reinstall.' },
+    { name: 'Install Slider Bumpers', price: '$25',  note: 'Replace grommets or install bumpers to reduce wear on slider.' },
+    { name: 'Fabric Tensile Test',    price: '$20',  note: 'Porosity and strength test for reserve or main canopy fabric.' },
+    { name: 'Kill Line Replacement',  price: '$25',  note: 'Replace the kill line on a collapsible pilot chute.' },
+    { name: 'BOC Replacement',        price: '$100', note: 'Replace a worn or damaged bottom-of-container pilot chute pocket.' },
+    { name: 'Tack Slinks / Links',    price: '$5',   note: 'Tack soft links or connector links to prevent accidental loosening.' },
+    { name: 'Wash Rig',               price: '$65',  note: 'Does NOT include disassemble / reassemble, reserve repack, or AAD reinstall.' },
   ]},
   { label: 'Repair', items: [
-    { name: 'Sewing',        price: '$85/hr', note: 'Velcro replacement, strap repairs, closing loop replacement, and general sewing.' },
-    { name: 'Canopy Patch',  price: 'Varies', note: 'Price depends on size and location of damage. Describe in notes below.' },
+    { name: 'Sewing',       price: '$85/hr', note: 'Velcro replacement, strap repairs, closing loop replacement, and general sewing.' },
+    { name: 'Canopy Patch', price: 'Varies', note: 'Price depends on size and location of damage. Describe in notes below.' },
   ]},
   { label: 'Maintenance', items: [
     { name: 'Monthly Maintenance', price: '—', note: 'Scheduled monthly maintenance plan. Contact us to set up an agreement.' },
@@ -951,6 +1426,7 @@ let selectedServices = new Set();
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if (id === 'screen-funjumper') buildFjServices();
 }
 
 async function lookupSerial() {
@@ -1159,7 +1635,140 @@ function resetAll() {
   document.getElementById('serial-input').value = '';
   document.getElementById('serial-error').style.display = 'none';
   document.getElementById('extra-notes').value = '';
-  showScreen('screen-serial');
+  showScreen('screen-landing');
+  window.scrollTo(0, 0);
+}
+
+// ── FUN JUMPER ──────────────────────────────────────────────
+
+let fjSelectedServices = new Set();
+let fjDamage = 'no';
+
+function toggleFjSub(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function setDamage(val) {
+  fjDamage = val;
+  document.getElementById('dmg-no').className  = 'damage-opt' + (val === 'no'  ? ' selected-no'  : '');
+  document.getElementById('dmg-yes').className = 'damage-opt' + (val === 'yes' ? ' selected-yes' : '');
+  document.getElementById('dmg-desc-wrap').style.display = val === 'yes' ? 'block' : 'none';
+}
+
+function buildFjServices() {
+  const container = document.getElementById('fj-services-container');
+  if (!container || container.children.length > 0) return; // already built
+  fjSelectedServices.clear();
+
+  SERVICE_GROUPS.forEach(group => {
+    const groupEl = document.createElement('div');
+    groupEl.className = 'svc-group';
+    groupEl.innerHTML = '<div class="svc-group-label">' + group.label + '</div>';
+    const list = document.createElement('div');
+    list.className = 'svc-list';
+    group.items.forEach(svc => {
+      const label = document.createElement('label');
+      label.className = 'svc-item';
+      label.innerHTML = `
+        <input type="checkbox" value="${svc.name}">
+        <div class="svc-check">
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+            <path d="M1 4L3.5 6.5L9 1" stroke="#080c12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="svc-label">${svc.name}${svc.note ? `<span class="svc-note">${svc.note}</span>` : ''}</span>
+        <span class="svc-price">${svc.price}</span>`;
+      label.addEventListener('click', function(e) {
+        e.preventDefault();
+        const cb = this.querySelector('input');
+        cb.checked = !cb.checked;
+        this.classList.toggle('checked', cb.checked);
+        if (cb.checked) fjSelectedServices.add(svc.name);
+        else fjSelectedServices.delete(svc.name);
+      });
+      list.appendChild(label);
+    });
+    groupEl.appendChild(list);
+    container.appendChild(groupEl);
+  });
+}
+
+
+function gv(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+async function submitFunJumper() {
+  const errEl = document.getElementById('fj-form-error');
+  errEl.style.display = 'none';
+
+  // Validate required fields
+  const name  = gv('fj-name');
+  const phone = gv('fj-phone');
+  const email = gv('fj-email');
+  const conSN = gv('fj-con-sn');
+
+  if (!name)  { errEl.textContent = 'Please enter your full name.';          errEl.style.display = 'block'; return; }
+  if (!phone) { errEl.textContent = 'Please enter your phone number.';       errEl.style.display = 'block'; return; }
+  if (!email) { errEl.textContent = 'Please enter your email address.';      errEl.style.display = 'block'; return; }
+  if (!conSN) { errEl.textContent = 'Container serial # is required.';       errEl.style.display = 'block'; return; }
+  if (fjSelectedServices.size === 0 && !gv('fj-extra-notes')) {
+    errEl.textContent = 'Please select at least one service or add notes.';
+    errEl.style.display = 'block'; return;
+  }
+
+  const btn = document.getElementById('fj-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  const woNum = 'SSX-FJ-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*9000+1000);
+
+  const payload = {
+    action:           'addPending',
+    work_order:       woNum,
+    submitted_at:     new Date().toISOString(),
+    gear_type:        'fun-jumper',
+    // customer
+    customer_name:    name,
+    customer_phone:   phone,
+    customer_email:   email,
+    completion_date:  gv('fj-date'),
+    mailing_address:  gv('fj-address'),
+    // rig
+    rig_make:         gv('fj-con-make'),
+    rig_model:        gv('fj-con-model'),
+    rig_sn:           conSN,
+    rig_dom:          gv('fj-con-dom'),
+    main_make:        gv('fj-main-make'),
+    main_model:       gv('fj-main-model'),
+    main_size:        gv('fj-main-size'),
+    main_sn:          gv('fj-main-sn'),
+    res_make:         gv('fj-res-make'),
+    res_model:        gv('fj-res-model'),
+    res_size:         gv('fj-res-size'),
+    res_sn:           gv('fj-res-sn'),
+    res_pack_date:    gv('fj-res-pack'),
+    res_repack_due:   gv('fj-res-due'),
+    aad_make:         gv('fj-aad-make'),
+    aad_sn:           gv('fj-aad-sn'),
+    aad_dom:          gv('fj-aad-dom'),
+    // services
+    services:         [...fjSelectedServices].join(' | '),
+    extra_notes:      gv('fj-extra-notes'),
+    known_damage:     fjDamage,
+    damage_desc:      fjDamage === 'yes' ? gv('fj-damage-desc') : '',
+    status:           'PENDING'
+  };
+
+  try {
+    await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
+  } catch(e) { console.log(e); }
+
+  document.getElementById('success-wo').textContent = 'Work Order #' + woNum;
+  btn.disabled = false;
+  btn.textContent = '▶  Submit Service Request';
+  showScreen('screen-success');
   window.scrollTo(0, 0);
 }
 
