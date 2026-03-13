@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skydive Sussex — Gear Service</title>
+<link href="index_files/css2.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c12;
+  --surface: #0f1520;
+  --surface2: #161e2e;
+  --surface3: #1c2640;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.14);
+  --sky: #38bdf8;
+  --sky-dim: rgba(56,189,248,0.12);
+  --sky-glow: rgba(56,189,248,0.25);
+  --green: #4ade80;
+  --green-dim: rgba(74,222,128,0.1);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.1);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.1);
+  --text: #f0f4ff;
+  --text-dim: #8896b0;
+  --text-muted: #4a5568;
+  --radius: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(56,189,248,0.08) 0%, transparent 60%);
+}
+
+/* ── HEADER ── */
+.header {
+  background: #0d1829;
+  border-bottom: 2px solid #e8191a;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 20px rgba(232,25,26,0.2);
+}
+.header-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.queue-link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+.queue-link:hover {
+  border-color: #e8191a;
+  color: #fff;
+  background: rgba(232,25,26,0.1);
+}
+.header-text h1 {
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--text);
+}
+.header-text p {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #e8191a;
+  margin-top: 3px;
+}
+
+/* ── MAIN ── */
+.main { max-width: 680px; margin: 0 auto; padding: 24px 16px 80px; }
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── SERIAL SCREEN ── */
+.serial-hero {
+  text-align: center;
+  padding: 48px 0 36px;
+}
+.serial-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+.serial-hero h2 {
+  font-family: 'Barlow', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff 40%, var(--sky));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.serial-hero p {
+  color: var(--text-dim);
+  font-size: 14px;
+  max-width: 300px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
+}
+.serial-input-wrap {
+  max-width: 380px;
+  margin: 0 auto;
+}
+.serial-input-row {
+  display: flex;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 6px 6px 6px 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.serial-input-row:focus-within {
+  border-color: var(--sky);
+  box-shadow: 0 0 0 3px var(--sky-dim);
+}
+.serial-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  outline: none;
+  letter-spacing: 1px;
+}
+.serial-input::placeholder { color: var(--text-muted); letter-spacing: 0; font-size: 14px; }
+.btn-serial {
+  background: var(--sky);
+  color: #080c12;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.btn-serial:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-serial:active { transform: translateY(0); }
+
+.error-pill {
+  display: none;
+  margin-top: 12px;
+  padding: 10px 16px;
+  background: var(--red-dim);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 8px;
+  color: var(--red);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ── GEAR CARD ── */
+.gear-card {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.gear-card-top {
+  padding: 20px 20px 0;
+}
+.gear-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.gear-title-block .rig-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sky);
+  margin-bottom: 4px;
+}
+.gear-title-block .rig-name {
+  font-family: 'Barlow', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.gear-title-block .rig-sub {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.type-badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.badge-student { background: var(--sky-dim); color: var(--sky); border: 1px solid rgba(56,189,248,0.3); }
+.badge-tandem { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+
+/* ── REPACK STATUS BAR ── */
+.repack-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border-top: 1px solid var(--border);
+}
+.repack-bar .rp-icon { font-size: 16px; flex-shrink: 0; }
+.repack-bar .rp-text { flex: 1; }
+.repack-bar .rp-days {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.rp-ok { background: var(--green-dim); border-top-color: rgba(74,222,128,0.15); color: var(--green); }
+.rp-ok .rp-days { background: rgba(74,222,128,0.15); }
+.rp-soon { background: var(--yellow-dim); border-top-color: rgba(251,191,36,0.15); color: var(--yellow); }
+.rp-soon .rp-days { background: rgba(251,191,36,0.15); }
+.rp-over { background: var(--red-dim); border-top-color: rgba(248,113,113,0.15); color: var(--red); }
+.rp-over .rp-days { background: rgba(248,113,113,0.15); }
+.rp-unknown { background: var(--surface2); border-top-color: var(--border); color: var(--text-dim); }
+
+/* ── NOTES BAR ── */
+.notes-bar {
+  display: none;
+  padding: 12px 20px;
+  background: var(--yellow-dim);
+  border-top: 1px solid rgba(251,191,36,0.15);
+  color: var(--yellow);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.notes-bar-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  opacity: 0.7;
+}
+
+/* ── GEAR SPECS GRID ── */
+.gear-specs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 16px 20px 20px;
+}
+@media (max-width: 480px) { .gear-specs { grid-template-columns: 1fr; } }
+.spec-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.spec-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.spec-row { margin-bottom: 4px; }
+.spec-row:last-child { margin-bottom: 0; }
+.spec-label { font-size: 10px; color: var(--text-muted); }
+.spec-val {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+/* ── SERVICE SELECTION ── */
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.section-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.section-title {
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+.selected-count {
+  background: var(--sky-dim);
+  color: var(--sky);
+  border: 1px solid rgba(56,189,248,0.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  display: none;
+}
+.selected-count.show { display: block; }
+
+/* Category groups */
+.svc-group { border-bottom: 1px solid var(--border); }
+.svc-group:last-child { border-bottom: none; }
+.svc-group-label {
+  padding: 10px 20px 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.svc-list { padding: 0 12px 10px; display: flex; flex-direction: column; gap: 4px; }
+
+/* Service items */
+.svc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  border: 1px solid transparent;
+  user-select: none;
+}
+.svc-item:hover { background: var(--surface2); }
+.svc-item.checked {
+  background: var(--sky-dim);
+  border-color: rgba(56,189,248,0.3);
+}
+.svc-item input { display: none; }
+.svc-check {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-strong);
+  border-radius: 5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.svc-item.checked .svc-check {
+  background: var(--sky);
+  border-color: var(--sky);
+}
+.svc-check svg { display: none; }
+.svc-item.checked .svc-check svg { display: block; }
+.svc-label { flex: 1; font-size: 13px; font-weight: 500; line-height: 1.3; }
+.svc-price {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.svc-item.checked .svc-price { color: var(--sky); }
+
+/* ── NOTES FIELD ── */
+.notes-section { padding: 16px 20px 20px; }
+.notes-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.notes-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  padding: 12px 14px;
+  resize: vertical;
+  min-height: 90px;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.notes-textarea:focus { border-color: var(--sky); }
+.notes-textarea::placeholder { color: var(--text-muted); }
+
+/* ── SUBMIT ── */
+.submit-wrap { padding: 0 0 4px; }
+.form-error {
+  display: none;
+  padding: 10px 14px;
+  background: var(--red-dim);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 10px;
+  color: var(--red);
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.btn-submit {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--sky), #0ea5e9);
+  color: #080c12;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Barlow', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 24px var(--sky-glow);
+}
+.btn-submit:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 32px var(--sky-glow); }
+.btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ── SUCCESS SCREEN ── */
+.success-wrap {
+  text-align: center;
+  padding: 64px 20px 48px;
+}
+.success-anim {
+  width: 72px;
+  height: 72px;
+  background: var(--green-dim);
+  border: 2px solid rgba(74,222,128,0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 32px;
+  animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.success-title {
+  font-family: 'Barlow', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+.success-wo {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  color: var(--sky);
+  background: var(--sky-dim);
+  border: 1px solid rgba(56,189,248,0.25);
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+.success-sub { color: var(--text-dim); font-size: 14px; margin-bottom: 32px; line-height: 1.6; }
+.btn-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  border-radius: var(--radius);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-decoration: none;
+}
+.btn-new:hover { border-color: var(--sky); background: var(--sky-dim); color: var(--sky); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.gear-card, .section-card { animation: fadeSlideUp 0.3s ease both; }
+.section-card { animation-delay: 0.08s; }
+
+/* ── ADMIN BTN ── */
+.admin-btn {
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+.admin-btn:hover { border-color: var(--yellow); color: var(--yellow); background: var(--yellow-dim); }
+.admin-btn.unlocked { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+
+/* ── ADMIN MODAL OVERLAY ── */
+.admin-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  display: none; z-index: 200;
+  overflow-y: auto;
+}
+.admin-overlay.open { display: block; }
+
+/* ── ADMIN PANEL ── */
+.admin-panel {
+  background: var(--bg);
+  min-height: 100vh;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 0 80px;
+}
+.admin-header {
+  background: #0d1829;
+  border-bottom: 2px solid var(--yellow);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 20px rgba(251,191,36,0.15);
+}
+.admin-title { font-family: 'Barlow', sans-serif; font-size: 18px; font-weight: 800; color: var(--yellow); letter-spacing: 0.5px; }
+.admin-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+.admin-close {
+  background: transparent; border: 1px solid var(--border-strong);
+  color: var(--text-dim); border-radius: 8px; padding: 8px 16px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.admin-close:hover { border-color: var(--red); color: var(--red); }
+
+.admin-body { padding: 24px 16px; }
+
+/* ── LOGIN CARD ── */
+.admin-login-card {
+  max-width: 360px; margin: 60px auto; text-align: center;
+}
+.admin-login-card h2 { font-family: 'Barlow', sans-serif; font-size: 26px; font-weight: 800; color: var(--yellow); margin-bottom: 6px; }
+.admin-login-card p { color: var(--text-dim); font-size: 13px; margin-bottom: 24px; }
+.admin-login-box {
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: 16px; padding: 24px;
+}
+.a-field { margin-bottom: 16px; text-align: left; }
+.a-field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+.a-field input, .a-field select, .a-field textarea {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 9px; color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 13px;
+  outline: none; transition: border-color 0.2s;
+}
+.a-field input:focus, .a-field select:focus, .a-field textarea:focus { border-color: var(--sky); }
+.a-field select { appearance: none; cursor: pointer; }
+.a-field textarea { resize: vertical; min-height: 70px; }
+.btn-admin-login {
+  width: 100%; padding: 13px;
+  background: var(--yellow); color: #080c12;
+  border: none; border-radius: 9px;
+  font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 800;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.btn-admin-login:hover { opacity: 0.88; }
+.admin-err { display: none; padding: 9px 12px; background: var(--red-dim); border: 1px solid rgba(248,113,113,0.25); border-radius: 8px; color: var(--red); font-size: 12px; margin-bottom: 14px; }
+
+/* ── GEAR MANAGER ── */
+.gear-manager { display: none; }
+.gear-manager.show { display: block; }
+
+.gm-toolbar {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.gm-search {
+  flex: 1; min-width: 180px;
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: 9px; color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 14px;
+  outline: none; transition: border-color 0.2s;
+}
+.gm-search:focus { border-color: var(--sky); }
+.gm-filter {
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: 9px; color: var(--text-dim);
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+  padding: 10px 14px; cursor: pointer; transition: border-color 0.2s, color 0.2s;
+}
+.gm-filter.active { border-color: var(--sky); color: var(--sky); }
+.btn-add-rig {
+  background: var(--green); color: #080c12; border: none;
+  border-radius: 9px; padding: 10px 18px;
+  font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 800;
+  cursor: pointer; transition: opacity 0.2s; white-space: nowrap;
+}
+.btn-add-rig:hover { opacity: 0.88; }
+
+.gm-count { font-size: 12px; color: var(--text-muted); }
+
+/* Rig rows */
+.rig-row {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; margin-bottom: 8px; overflow: hidden;
+  transition: border-color 0.15s;
+}
+.rig-row:hover { border-color: var(--border-strong); }
+.rig-row-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; cursor: pointer;
+}
+.rig-row-header:hover { background: var(--surface2); }
+.rig-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 20px; flex-shrink: 0;
+}
+.rb-student { background: var(--sky-dim); color: var(--sky); border: 1px solid rgba(56,189,248,0.25); }
+.rb-tandem { background: var(--purple-dim); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
+.rig-row-name { font-weight: 600; font-size: 14px; flex: 1; }
+.rig-row-sn { font-family: 'Roboto Mono', monospace; font-size: 11px; color: var(--text-muted); }
+.rig-row-repack {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+}
+.rrp-ok { background: var(--green-dim); color: var(--green); }
+.rrp-soon { background: var(--yellow-dim); color: var(--yellow); }
+.rrp-over { background: var(--red-dim); color: var(--red); }
+.rrp-unknown { background: var(--surface2); color: var(--text-muted); }
+.rig-row-chevron { color: var(--text-muted); font-size: 13px; transition: transform 0.2s; flex-shrink: 0; }
+.rig-row.expanded .rig-row-chevron { transform: rotate(180deg); }
+.rig-edit-body { display: none; border-top: 1px solid var(--border); padding: 20px; }
+.rig-row.expanded .rig-edit-body { display: block; }
+
+/* Edit form grid */
+.edit-section-title {
+  font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-muted); margin: 16px 0 10px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.edit-section-title:first-child { margin-top: 0; }
+.edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 500px) { .edit-grid { grid-template-columns: 1fr; } }
+.edit-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+@media (max-width: 600px) { .edit-grid-3 { grid-template-columns: 1fr 1fr; } }
+.edit-full { grid-column: 1 / -1; }
+
+.edit-actions {
+  display: flex; gap: 10px; margin-top: 18px; padding-top: 16px;
+  border-top: 1px solid var(--border); flex-wrap: wrap;
+}
+.btn-save-rig {
+  background: var(--sky); color: #080c12; border: none;
+  border-radius: 8px; padding: 10px 22px;
+  font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 800;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.btn-save-rig:hover { opacity: 0.88; }
+.btn-delete-rig {
+  background: var(--red-dim); border: 1px solid rgba(248,113,113,0.3);
+  color: var(--red); border-radius: 8px; padding: 10px 16px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s; margin-left: auto;
+}
+.btn-delete-rig:hover { background: rgba(248,113,113,0.2); }
+.save-toast {
+  display: none; padding: 8px 12px;
+  background: var(--green-dim); border: 1px solid rgba(74,222,128,0.3);
+  border-radius: 8px; color: var(--green); font-size: 12px;
+}
+
+/* Add rig modal */
+.add-rig-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+  display: none; align-items: center; justify-content: center;
+  z-index: 300; padding: 20px;
+}
+.add-rig-modal.open { display: flex; }
+.add-rig-box {
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: 20px; padding: 28px; max-width: 560px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+  animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.add-rig-title { font-family: 'Barlow', sans-serif; font-size: 20px; font-weight: 800; color: var(--green); margin-bottom: 18px; }
+.add-rig-actions { display: flex; gap: 10px; margin-top: 18px; }
+.btn-create-rig {
+  background: var(--green); color: #080c12; border: none;
+  border-radius: 8px; padding: 11px 24px;
+  font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 800;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.btn-create-rig:hover { opacity: 0.88; }
+.btn-cancel-add {
+  background: transparent; border: 1px solid var(--border-strong);
+  color: var(--text-dim); border-radius: 8px; padding: 11px 18px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: border-color 0.2s, color 0.2s;
+}
+.btn-cancel-add:hover { border-color: var(--red); color: var(--red); }
+
+/* purple-dim variable */
+:root { --purple-dim: rgba(167,139,250,0.12); }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <img src="data:image/png;base64,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" alt="Skydive Sussex" style="height:44px;width:auto;display:block;">
+    </div>
+    <div class="header-nav">
+      <a href="file:///C:/Users/elite/Downloads/ssx_queue.html" class="queue-link">📋 Rigger Queue</a>
+      <button class="admin-btn" onclick="openAdmin()">🔒 Admin</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SCREEN 1: SERIAL LOOKUP -->
+  <div class="screen active" id="screen-serial">
+    <div class="serial-hero">
+      <span class="serial-icon">🔍</span>
+      <h2>Find Your Gear</h2>
+      <p>Enter the container serial number to load your rig info and request service</p>
+      <div id="gear-loading-msg" style="font-size: 12px; color: var(--sky); margin-bottom: 12px; min-height: 18px; display: none;">Loading gear data…</div>
+      <div class="serial-input-wrap">
+        <div class="serial-input-row">
+          <input class="serial-input" id="serial-input" type="text" placeholder="Serial number (e.g. 53214)" autocomplete="off" autocapitalize="none">
+          <button class="btn-serial" onclick="lookupSerial()">Load ▶</button>
+        </div>
+        <div class="error-pill" id="serial-error"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: FORM -->
+  <div class="screen" id="screen-form">
+
+    <!-- Gear Info Card -->
+    <div class="gear-card" id="gear-card">
+      <div class="gear-card-top">
+        <div class="gear-header-row">
+          <div class="gear-title-block">
+            <div class="rig-label">Rig Identified</div>
+            <div class="rig-name" id="gc-title"></div>
+            <div class="rig-sub" id="gc-sub"></div>
+          </div>
+          <div class="type-badge" id="gc-badge"></div>
+        </div>
+      </div>
+      <div class="repack-bar" id="repack-bar">
+        <span class="rp-icon"></span>
+        <span class="rp-text"></span>
+        <span class="rp-days"></span>
+      </div>
+      <div class="notes-bar" id="notes-bar">
+        <div class="notes-bar-label">⚠ Outstanding Notes</div>
+        <div id="notes-bar-content"></div>
+      </div>
+      <div class="gear-specs" id="gear-specs"></div>
+    </div>
+
+    <!-- Services Card -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">Select Services</div>
+        <div class="selected-count" id="selected-count">0 selected</div>
+      </div>
+      <div id="services-container"></div>
+      <div class="notes-section">
+        <label class="notes-label">Additional Notes / Write-In Service</label>
+        <textarea class="notes-textarea" id="extra-notes" placeholder="Describe any extra work, special observations, or services not listed above…"></textarea>
+      </div>
+      <div style="padding: 0 20px 20px;">
+        <div class="form-error" id="form-error"></div>
+        <button class="btn-submit" id="submit-btn" onclick="submitRequest()">▶&nbsp; Submit Service Request</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCREEN 3: SUCCESS -->
+  <div class="screen" id="screen-success">
+    <div class="success-wrap">
+      <div class="success-anim">✓</div>
+      <div class="success-title">Request Submitted</div>
+      <div class="success-wo" id="success-wo"></div>
+      <p class="success-sub">Your request is now in the rigger queue.<br>Someone will review it shortly.</p>
+      <a class="btn-new" onclick="resetAll()" href="#">+ New Request</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyTFaT-bkTEYOKObfbkMpyVlG7sAA7uPtkpcWYzqEkuXxTq6mRDDr_v_MLLgYI4oFlh/exec';
+
+let GEAR_DATA = []; // loaded from Google Sheet on init
+let gearLoaded = false;
+let gearLoadError = false;
+
+async function loadGearFromSheet() {
+  const serialScreen = document.getElementById('screen-serial');
+  const loadingEl = document.getElementById('gear-loading-msg');
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=getGear', { redirect: 'follow' });
+    const data = await res.json();
+    if (data.gear && data.gear.length > 0) {
+      GEAR_DATA = data.gear;
+      gearLoaded = true;
+      if (loadingEl) loadingEl.style.display = 'none';
+    } else {
+      // Sheet is empty — fall back to hardcoded data on first run
+      gearLoaded = true;
+      if (loadingEl) { loadingEl.textContent = '&#9888; No gear in sheet yet. Using local data.'; loadingEl.style.color = 'var(--yellow)'; }
+      setTimeout(() => { if (loadingEl) loadingEl.style.display = 'none'; }, 3000);
+    }
+  } catch(err) {
+    gearLoadError = true;
+    if (loadingEl) { loadingEl.textContent = '&#9888; Could not reach server. Using local data.'; loadingEl.style.color = 'var(--yellow)'; }
+    setTimeout(() => { if (loadingEl) loadingEl.style.display = 'none'; }, 3000);
+    console.warn('getGear failed:', err);
+  }
+}
+
+
+const SERVICE_GROUPS = [
+  { label: 'Reserve', items: [
+    { name: 'Reserve Inspection & Repack (Sport)', price: '$115' },
+    { name: 'Reserve Inspection & Repack (Tandem)', price: '$150' },
+  ]},
+  { label: 'Inspection', items: [
+    { name: 'Inspect Main or Reserve', price: '$25' },
+    { name: 'Inspect Harness / Container', price: '$20' },
+    { name: "Inspect & Pack Pilot's Emergency Rig", price: '$120' },
+  ]},
+  { label: 'Packing', items: [
+    { name: 'Pack Main Sport', price: '$15' },
+    { name: 'Pack Main Tandem', price: '$20' },
+  ]},
+  { label: 'AAD', items: [
+    { name: 'AAD Batteries / Service', price: 'Varies' },
+    { name: 'Install AAD', price: '$10' },
+  ]},
+  { label: 'Lines', items: [
+    { name: 'Reserve Safety Stow Replacement', price: '$12' },
+    { name: 'Replace Lower Steering Lines', price: '$40' },
+    { name: 'Replace Steering Lines Toggles to Cascades', price: '$65' },
+    { name: 'Full Line Set', price: 'Varies' },
+    { name: 'Re-line Sport', price: '$130' },
+    { name: 'Re-line Tandem', price: '$175' },
+    { name: 'Slinks', price: '$35' },
+  ]},
+  { label: 'Assembly', items: [
+    { name: 'Assembly, Inspection & Pack Reserve (Sport)', price: '$140' },
+    { name: 'Assembly, Inspection & Repack Reserve (Tandem)', price: '$175' },
+    { name: 'Assembly, Inspection & Pack Main', price: '$75' },
+    { name: 'Disassemble Main or Reserve', price: '$10' },
+  ]},
+  { label: 'Additional', items: [
+    { name: 'Install Slider Bumpers', price: '$25' },
+    { name: 'Fabric Tensile Test', price: '$20' },
+    { name: 'Kill Line Replacement', price: '$25' },
+    { name: 'BOC Replacement', price: '$100' },
+    { name: 'Tack Slinks / Links', price: '$5' },
+    { name: 'Wash Rig', price: '$65' },
+  ]},
+  { label: 'Repair', items: [
+    { name: 'Sewing', price: '$85/hr' },
+    { name: 'Canopy Patch', price: 'Varies' },
+  ]},
+  { label: 'Maintenance', items: [
+    { name: 'Monthly Maintenance', price: '—' },
+  ]},
+];
+
+let currentGear = null;
+let selectedServices = new Set();
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function lookupSerial() {
+  const val = document.getElementById('serial-input').value.trim();
+  const errEl = document.getElementById('serial-error');
+  errEl.style.display = 'none';
+  if (!val) { showErr(errEl, 'Please enter a serial number.'); return; }
+  if (GEAR_DATA.length === 0) {
+    showErr(errEl, 'Loading gear data, please wait…');
+    await loadGearFromSheet();
+    errEl.style.display = 'none';
+  }
+  const gear = GEAR_DATA.find(g => String(g.rig_sn).replace('.0','').trim() === val.trim());
+  if (!gear) { showErr(errEl, `No gear found with serial "${val}". Check and try again.`); return; }
+  currentGear = gear;
+  selectedServices.clear();
+  renderGear(gear);
+  buildServices();
+  showScreen('screen-form');
+  window.scrollTo(0, 0);
+}
+
+function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+
+document.getElementById('serial-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupSerial(); });
+(function() {
+  loadGearFromSheet().then(() => {
+    const sn = new URLSearchParams(window.location.search).get('sn');
+    if (sn) { document.getElementById('serial-input').value = sn; lookupSerial(); }
+  });
+})();
+
+function renderGear(g) {
+  const sn = String(g.rig_sn).replace('.0','');
+  document.getElementById('gc-title').textContent = g.type === 'tandem' ? 'Rig #' + g.rig_num : g.rig_num;
+  document.getElementById('gc-sub').textContent = g.rig_make + ' · S/N ' + sn;
+
+  const badge = document.getElementById('gc-badge');
+  badge.textContent = g.type === 'student' ? 'Student' : 'Tandem';
+  badge.className = 'type-badge ' + (g.type === 'student' ? 'badge-student' : 'badge-tandem');
+
+  // Repack status
+  const rb = document.getElementById('repack-bar');
+  const icon = rb.querySelector('.rp-icon');
+  const text = rb.querySelector('.rp-text');
+  const days = rb.querySelector('.rp-days');
+
+  if (!g.res_repack_due) {
+    rb.className = 'repack-bar rp-unknown';
+    icon.textContent = '&#128203;'; text.textContent = 'Reserve repack due date unknown'; days.textContent = '';
+  } else {
+    const diff = Math.round((new Date(g.res_repack_due) - new Date()) / 86400000);
+    if (diff < 0) {
+      rb.className = 'repack-bar rp-over';
+      icon.textContent = '🚨';
+      text.textContent = 'RESERVE OVERDUE — was due ' + g.res_repack_due;
+      days.textContent = Math.abs(diff) + 'd overdue';
+    } else if (diff <= 30) {
+      rb.className = 'repack-bar rp-soon';
+      icon.textContent = '&#9888;️';
+      text.textContent = 'Repack due soon — ' + g.res_repack_due;
+      days.textContent = diff + ' days';
+    } else {
+      rb.className = 'repack-bar rp-ok';
+      icon.textContent = '&#10003;';
+      text.textContent = 'Reserve current — due ' + g.res_repack_due;
+      days.textContent = diff + ' days';
+    }
+  }
+
+  // Notes bar
+  const notesBar = document.getElementById('notes-bar');
+  const notesCont = document.getElementById('notes-bar-content');
+  const allNotes = [g.notes, g.notes2, g.needed_parts, g.svc_req].filter(Boolean).join('\n');
+  if (allNotes.trim()) {
+    notesBar.style.display = 'block';
+    notesCont.innerHTML = allNotes.replace(/\n/g, '<br>');
+  } else {
+    notesBar.style.display = 'none';
+  }
+
+  // Gear specs
+  const specs = document.getElementById('gear-specs');
+  specs.innerHTML = '';
+  const blocks = [
+    { title: 'Container', rows: [['Make', g.rig_make], ['S/N', sn], ['DOM', g.rig_dom]] },
+    { title: 'Main Canopy', rows: [['Make', g.main_make], ['Size', g.main_size ? g.main_size.replace('.0','') + ' sqft' : '—'], ['Color', g.main_color || '—']] },
+    { title: 'Reserve', rows: [['Make', g.res_make], ['Size', g.res_size ? g.res_size.replace('.0','') + ' sqft' : '—'], ['Last Pack', g.res_pack_date || '—'], ['Due', g.res_repack_due || '—']] },
+    { title: 'AAD', rows: [['Make', g.aad_make], ['S/N', g.aad_sn ? String(g.aad_sn).replace('.0','') : '—'], ['DOM', g.aad_dom || '—'], g.jumps ? ['Jumps', g.jumps] : null].filter(Boolean) },
+  ];
+  blocks.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'spec-block';
+    div.innerHTML = '<div class="spec-title">' + b.title + '</div>' +
+      b.rows.map(r => r ? `<div class="spec-row"><div class="spec-label">${r[0]}</div><div class="spec-val">${r[1]}</div></div>` : '').join('');
+    specs.appendChild(div);
+  });
+}
+
+function buildServices() {
+  const container = document.getElementById('services-container');
+  container.innerHTML = '';
+  selectedServices.clear();
+  updateSelectedCount();
+
+  SERVICE_GROUPS.forEach(group => {
+    const groupEl = document.createElement('div');
+    groupEl.className = 'svc-group';
+    groupEl.innerHTML = '<div class="svc-group-label">' + group.label + '</div>';
+    const list = document.createElement('div');
+    list.className = 'svc-list';
+    group.items.forEach(svc => {
+      const label = document.createElement('label');
+      label.className = 'svc-item';
+      label.innerHTML = `
+        <input type="checkbox" value="${svc.name}">
+        <div class="svc-check">
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+            <path d="M1 4L3.5 6.5L9 1" stroke="#080c12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="svc-label">${svc.name}</span>
+        <span class="svc-price">${svc.price}</span>`;
+      label.addEventListener('click', function(e) {
+        e.preventDefault();
+        const cb = this.querySelector('input');
+        cb.checked = !cb.checked;
+        this.classList.toggle('checked', cb.checked);
+        if (cb.checked) selectedServices.add(svc.name);
+        else selectedServices.delete(svc.name);
+        updateSelectedCount();
+      });
+      list.appendChild(label);
+    });
+    groupEl.appendChild(list);
+    container.appendChild(groupEl);
+  });
+}
+
+function updateSelectedCount() {
+  const el = document.getElementById('selected-count');
+  if (selectedServices.size > 0) {
+    el.textContent = selectedServices.size + ' selected';
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
+}
+
+async function submitRequest() {
+  const errEl = document.getElementById('form-error');
+  errEl.style.display = 'none';
+  const notes = document.getElementById('extra-notes').value.trim();
+  if (selectedServices.size === 0 && !notes) {
+    errEl.textContent = 'Please select at least one service or add notes.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  const woNum = 'SSX-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*9000+1000);
+  const payload = {
+    action: 'addPending',
+    work_order: woNum,
+    submitted_at: new Date().toISOString(),
+    gear_type: currentGear.type,
+    rig_num: currentGear.rig_num,
+    rig_make: currentGear.rig_make,
+    rig_sn: String(currentGear.rig_sn).replace('.0',''),
+    res_repack_due: currentGear.res_repack_due || '',
+    services: [...selectedServices].join(' | '),
+    extra_notes: notes,
+    status: 'PENDING'
+  };
+
+  try {
+    await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
+  } catch(e) { console.log(e); }
+
+  document.getElementById('success-wo').textContent = 'Work Order #' + woNum;
+  btn.disabled = false;
+  btn.textContent = '&#9654;  Submit Service Request';
+  showScreen('screen-success');
+  window.scrollTo(0, 0);
+}
+
+function resetAll() {
+  currentGear = null;
+  selectedServices.clear();
+  document.getElementById('serial-input').value = '';
+  document.getElementById('serial-error').style.display = 'none';
+  document.getElementById('extra-notes').value = '';
+  showScreen('screen-serial');
+  window.scrollTo(0, 0);
+}
+
+
+// ── ADMIN ──
+let adminUnlocked = false;
+let gearFilter = 'all';
+
+function openAdmin() {
+  document.getElementById('admin-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (adminUnlocked) {
+    document.getElementById('admin-login-card').style.display = 'none';
+    document.getElementById('gear-manager').classList.add('show');
+    renderGearList();
+  }
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function adminLogin() {
+  const pw = document.getElementById('admin-pw-input').value;
+  const err = document.getElementById('admin-err');
+  const stored = localStorage.getItem('ssxQueuePw') || '1234';
+  if (pw === stored) {
+    adminUnlocked = true;
+    err.style.display = 'none';
+    document.getElementById('admin-login-card').style.display = 'none';
+    document.getElementById('gear-manager').classList.add('show');
+    document.querySelector('.admin-btn').classList.add('unlocked');
+    document.querySelector('.admin-btn').textContent = '&#9881; Admin';
+    renderGearList();
+  } else {
+    err.style.display = 'block';
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('admin-pw-input');
+  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
+});
+
+function setFilter(f) {
+  gearFilter = f;
+  ['all','student','tandem'].forEach(x => {
+    document.getElementById('filter-' + x).classList.toggle('active', x === f);
+  });
+  renderGearList();
+}
+
+function repackStatus(due) {
+  if (!due) return { cls: 'rrp-unknown', label: 'Unknown' };
+  const diff = Math.round((new Date(due) - new Date()) / 86400000);
+  if (diff < 0) return { cls: 'rrp-over', label: 'OVERDUE' };
+  if (diff <= 30) return { cls: 'rrp-soon', label: diff + 'd' };
+  return { cls: 'rrp-ok', label: diff + 'd' };
+}
+
+function renderGearList() {
+  const q = (document.getElementById('gm-search').value || '').toLowerCase();
+  const list = document.getElementById('gm-list');
+  const filtered = GEAR_DATA.filter(g => {
+    if (gearFilter !== 'all' && g.type !== gearFilter) return false;
+    if (!q) return true;
+    return [g.rig_num, g.rig_make, g.rig_sn, g.main_make, g.res_make, g.aad_make]
+      .some(v => v && String(v).toLowerCase().includes(q));
+  });
+  document.getElementById('gm-count').textContent = filtered.length + ' rig' + (filtered.length !== 1 ? 's' : '');
+  list.innerHTML = '';
+  filtered.forEach((g, fi) => {
+    const realIdx = GEAR_DATA.indexOf(g);
+    const rp = repackStatus(g.res_repack_due);
+    const sn = String(g.rig_sn || '').replace('.0','');
+    const row = document.createElement('div');
+    row.className = 'rig-row';
+    row.id = 'rig-row-' + realIdx;
+    row.innerHTML = `
+      <div class="rig-row-header" onclick="toggleRigRow(\${realIdx})">
+        <span class="rig-badge \${g.type === 'tandem' ? 'rb-tandem' : 'rb-student'}">\${g.type}</span>
+        <span class="rig-row-name">\${g.type === 'tandem' ? 'Rig #' : ''}\${g.rig_num || '—'} — \${g.rig_make || '—'}</span>
+        <span class="rig-row-sn">S/N \${sn}</span>
+        <span class="rig-row-repack \${rp.cls}">\${rp.label}</span>
+        <span class="rig-row-chevron">&#9662;</span>
+      </div>
+      <div class="rig-edit-body" id="rig-edit-\${realIdx}">
+        \${buildEditForm(g, realIdx)}
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function toggleRigRow(idx) {
+  document.getElementById('rig-row-' + idx).classList.toggle('expanded');
+}
+
+function fld(label, id, val, placeholder) {
+  return `<div class="a-field"><label>\${label}</label><input type="text" id="\${id}" value="\${val || ''}" placeholder="\${placeholder || ''}"></div>`;
+}
+function fldTA(label, id, val) {
+  return `<div class="a-field edit-full"><label>\${label}</label><textarea id="\${id}">\${val || ''}</textarea></div>`;
+}
+
+function buildEditForm(g, idx) {
+  const sn = String(g.rig_sn || '').replace('.0', '');
+  return `
+    <div class="edit-section-title">Container</div>
+    <div class="edit-grid">
+      ${fld('Rig Number / Name', 'e' + idx + '-rig_num', g.rig_num)}
+      ${fld('Container Make / Model', 'e' + idx + '-rig_make', g.rig_make)}
+      ${fld('Container S/N', 'e' + idx + '-rig_sn', sn)}
+      ${fld('DOM', 'e' + idx + '-rig_dom', g.rig_dom)}
+      <div class="a-field"><label>Type</label><select id="e${idx}-type"><option value="student" ${g.type === 'student' ? 'selected' : ''}>Student</option><option value="tandem" ${g.type === 'tandem' ? 'selected' : ''}>Tandem</option></select></div>
+    </div>
+    <div class="edit-section-title">Main Canopy</div>
+    <div class="edit-grid">
+      ${fld('Make', 'e' + idx + '-main_make', g.main_make)}
+      ${fld('Size (sqft)', 'e' + idx + '-main_size', String(g.main_size || '').replace('.0', ''))}
+      ${fld('S/N', 'e' + idx + '-main_sn', g.main_sn)}
+      ${fld('Colour', 'e' + idx + '-main_color', g.main_color)}
+    </div>
+    <div class="edit-section-title">Reserve</div>
+    <div class="edit-grid">
+      ${fld('Make', 'e' + idx + '-res_make', g.res_make)}
+      ${fld('Size (sqft)', 'e' + idx + '-res_size', String(g.res_size || '').replace('.0', ''))}
+      ${fld('S/N', 'e' + idx + '-res_sn', g.res_sn)}
+      ${fld('Last Pack Date', 'e' + idx + '-res_pack_date', g.res_pack_date, 'YYYY-MM-DD')}
+      ${fld('Repack Due', 'e' + idx + '-res_repack_due', g.res_repack_due, 'YYYY-MM-DD')}
+    </div>
+    <div class="edit-section-title">AAD</div>
+    <div class="edit-grid">
+      ${fld('Make', 'e' + idx + '-aad_make', g.aad_make)}
+      ${fld('S/N', 'e' + idx + '-aad_sn', String(g.aad_sn || '').replace('.0', ''))}
+      ${fld('DOM', 'e' + idx + '-aad_dom', g.aad_dom)}
+    </div>
+    <div class="edit-section-title">Notes & Flags</div>
+    <div class="edit-grid">
+      ${fldTA('Notes', 'e' + idx + '-notes', g.notes)}
+      ${fldTA('Service Requests / Needed Parts', 'e' + idx + '-svc_req', g.svc_req || g.needed_parts)}
+    </div>
+    <div class="edit-actions">
+      <button class="btn-save-rig" onclick="saveRig(${idx})">&#10003; Save Changes</button>
+      <span class="save-toast" id="toast-${idx}">&#10003; Saved!</span>
+      <button class="btn-delete-rig" onclick="deleteRig(${idx})">&#10005; Delete Rig</button>
+    </div>`;
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+async function saveRig(idx) {
+  const g = GEAR_DATA[idx];
+  const fields = ['type','rig_num','rig_make','rig_sn','rig_dom','main_make','main_size','main_sn','main_color','res_make','res_size','res_sn','res_pack_date','res_repack_due','aad_make','aad_sn','aad_dom','notes','svc_req'];
+  fields.forEach(f => { g[f] = getVal('e' + idx + '-' + f); });
+  const t = document.getElementById('toast-' + idx);
+  t.textContent = 'Saving…'; t.style.display = 'inline-block';
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'saveGear', gear: g })
+    });
+    t.textContent = '&#10003; Saved to sheet!';
+  } catch(e) {
+    t.textContent = '&#9888; Save failed'; t.style.color = 'var(--red)';
+  }
+  setTimeout(() => { t.style.display = 'none'; t.style.color = ''; }, 3000);
+  renderGearList();
+  setTimeout(() => {
+    const row = document.getElementById('rig-row-' + idx);
+    if (row) row.classList.add('expanded');
+  }, 50);
+}
+
+async function deleteRig(idx) {
+  const g = GEAR_DATA[idx];
+  if (!confirm('Delete ' + (g.rig_num || 'this rig') + '? This cannot be undone.')) return;
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'deleteGear', row: g._row })
+    });
+  } catch(e) { console.warn('deleteGear failed:', e); }
+  GEAR_DATA.splice(idx, 1);
+  renderGearList();
+}
+
+function openAddRig() {
+  document.getElementById('add-rig-modal').classList.add('open');
+}
+function closeAddRig() {
+  document.getElementById('add-rig-modal').classList.remove('open');
+}
+
+async function createRig() {
+  const newRig = {
+    type: document.getElementById('new-type').value,
+    rig_num: getVal('new-rig_num'),
+    rig_make: getVal('new-rig_make'),
+    rig_sn: getVal('new-rig_sn'),
+    rig_dom: getVal('new-rig_dom'),
+    main_make: getVal('new-main_make'),
+    main_size: getVal('new-main_size'),
+    main_sn: getVal('new-main_sn'),
+    main_color: getVal('new-main_color'),
+    res_make: getVal('new-res_make'),
+    res_size: getVal('new-res_size'),
+    res_sn: getVal('new-res_sn'),
+    res_pack_date: getVal('new-res_pack_date'),
+    res_repack_due: getVal('new-res_repack_due'),
+    aad_make: getVal('new-aad_make'),
+    aad_sn: getVal('new-aad_sn'),
+    aad_dom: getVal('new-aad_dom'),
+    notes: getVal('new-notes'),
+    svc_req: getVal('new-svc_req'),
+    notes2: '', needed_parts: '', rigger: '', jumps: '', monthly_maintenance: ''
+  };
+  if (!newRig.rig_sn) { alert('Container S/N is required.'); return; }
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'addGear', gear: newRig })
+    });
+    // Reload from sheet to get the real _row assigned by GAS
+    await loadGearFromSheet();
+  } catch(e) {
+    console.warn('addGear failed:', e);
+    GEAR_DATA.push(newRig); // fallback: add locally
+  }
+  closeAddRig();
+  ['rig_num','rig_make','rig_sn','rig_dom','main_make','main_size','main_sn','main_color','res_make','res_size','res_sn','res_pack_date','res_repack_due','aad_make','aad_sn','aad_dom','notes','svc_req'].forEach(f => {
+    const el = document.getElementById('new-' + f);
+    if (el) el.value = '';
+  });
+  renderGearList();
+  setTimeout(() => {
+    const list = document.getElementById('gm-list');
+    if (list) list.lastElementChild?.scrollIntoView({ behavior: 'smooth' });
+  }, 100);
+}
+
+</script>
+
+<!-- ── ADMIN OVERLAY ── -->
+<div class="admin-overlay" id="admin-overlay">
+  <div class="admin-panel">
+    <div class="admin-header">
+      <div>
+        <div class="admin-title">⚙ Gear Manager</div>
+        <div class="admin-subtitle">Admin Access Required</div>
+      </div>
+      <button class="admin-close" onclick="closeAdmin()">✕ Close</button>
+    </div>
+    <div class="admin-body">
+
+      <!-- LOGIN -->
+      <div class="admin-login-card" id="admin-login-card">
+        <h2>Admin Access</h2>
+        <p>Enter your password to manage gear records</p>
+        <div class="admin-login-box">
+          <div class="admin-err" id="admin-err">Incorrect password.</div>
+          <div class="a-field">
+            <label>Password</label>
+            <input type="password" id="admin-pw-input" placeholder="Enter password">
+          </div>
+          <button class="btn-admin-login" onclick="adminLogin()">Unlock ▶</button>
+        </div>
+      </div>
+
+      <!-- GEAR MANAGER -->
+      <div class="gear-manager" id="gear-manager">
+        <div class="gm-toolbar">
+          <input class="gm-search" id="gm-search" type="text" placeholder="Search by name, serial, make…" oninput="renderGearList()">
+          <button class="gm-filter active" id="filter-all" onclick="setFilter('all')">All</button>
+          <button class="gm-filter" id="filter-student" onclick="setFilter('student')">Student</button>
+          <button class="gm-filter" id="filter-tandem" onclick="setFilter('tandem')">Tandem</button>
+          <button class="btn-add-rig" onclick="openAddRig()">+ Add Rig</button>
+        </div>
+        <div class="gm-count" id="gm-count"></div>
+        <div id="gm-list" style="margin-top:12px;"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ADD RIG MODAL -->
+<div class="add-rig-modal" id="add-rig-modal">
+  <div class="add-rig-box">
+    <div class="add-rig-title">+ Add New Rig</div>
+    <div class="a-field">
+      <label>Rig Type</label>
+      <select id="new-type"><option value="student" selected="selected">Student</option><option value="tandem">Tandem</option></select>
+    </div>
+    <div class="edit-section-title">Container</div>
+    <div class="edit-grid">
+      <div class="a-field"><label>Rig Number / Name</label><input type="text" id="new-rig_num" placeholder="e.g. JUAN or 5"></div>
+      <div class="a-field"><label>Container Make / Model</label><input type="text" id="new-rig_make" placeholder="e.g. MIRAGE M6"></div>
+      <div class="a-field"><label>Container S/N</label><input type="text" id="new-rig_sn" placeholder="e.g. 53214"></div>
+      <div class="a-field"><label>DOM</label><input type="text" id="new-rig_dom" placeholder="e.g. 2022-04-01"></div>
+    </div>
+    <div class="edit-section-title">Main Canopy</div>
+    <div class="edit-grid">
+      <div class="a-field"><label>Make</label><input type="text" id="new-main_make"></div>
+      <div class="a-field"><label>Size (sqft)</label><input type="text" id="new-main_size"></div>
+      <div class="a-field"><label>S/N</label><input type="text" id="new-main_sn"></div>
+      <div class="a-field"><label>Colour</label><input type="text" id="new-main_color"></div>
+    </div>
+    <div class="edit-section-title">Reserve</div>
+    <div class="edit-grid">
+      <div class="a-field"><label>Make</label><input type="text" id="new-res_make"></div>
+      <div class="a-field"><label>Size (sqft)</label><input type="text" id="new-res_size"></div>
+      <div class="a-field"><label>S/N</label><input type="text" id="new-res_sn"></div>
+      <div class="a-field"><label>Last Pack Date</label><input type="text" id="new-res_pack_date" placeholder="YYYY-MM-DD"></div>
+      <div class="a-field"><label>Repack Due</label><input type="text" id="new-res_repack_due" placeholder="YYYY-MM-DD"></div>
+    </div>
+    <div class="edit-section-title">AAD</div>
+    <div class="edit-grid">
+      <div class="a-field"><label>Make</label><input type="text" id="new-aad_make"></div>
+      <div class="a-field"><label>S/N</label><input type="text" id="new-aad_sn"></div>
+      <div class="a-field"><label>DOM</label><input type="text" id="new-aad_dom"></div>
+    </div>
+    <div class="edit-section-title">Notes</div>
+    <div class="a-field"><label>Notes</label><textarea id="new-notes"></textarea></div>
+    <div class="a-field"><label>Needed Parts / Service Requests</label><textarea id="new-svc_req"></textarea></div>
+    <div class="add-rig-actions">
+      <button class="btn-cancel-add" onclick="closeAddRig()">Cancel</button>
+      <button class="btn-create-rig" onclick="createRig()">✓ Add Rig</button>
+    </div>
+  </div>
+</div>
+
+
+
+</body></html>
