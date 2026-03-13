@@ -93,6 +93,29 @@
 
   .refresh-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;}
   .refresh-btn:hover{border-color:var(--blue);color:var(--accent);}
+  .svc-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  @media(max-width:500px){.svc-edit-grid{grid-template-columns:1fr;}}
+  .svc-item{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;cursor:pointer;transition:border-color 0.15s,background 0.15s;user-select:none;}
+  .svc-item:hover{border-color:rgba(59,130,246,0.4);}
+  .svc-item input{display:none;}
+  .svc-item.checked{background:var(--blue-dim);border-color:rgba(59,130,246,0.5);}
+  .svc-check{width:17px;height:17px;border:2px solid var(--text-muted);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .svc-item.checked .svc-check{background:var(--blue);border-color:var(--blue);}
+  .svc-check::after{content:'✓';font-size:10px;color:#fff;display:none;}
+  .svc-item.checked .svc-check::after{display:block;}
+  .svc-label{font-size:12px;line-height:1.3;}
+
+  .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:1000;}
+  .modal-overlay.open{display:flex;}
+  .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:420px;width:90%;text-align:center;}
+  .modal-icon{font-size:44px;margin-bottom:14px;}
+  .modal-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--yellow);margin-bottom:10px;}
+  .modal-text{color:var(--text-dim);font-size:14px;line-height:1.6;margin-bottom:22px;}
+  .modal-text strong{color:var(--text);}
+  .modal-actions{display:flex;gap:10px;justify-content:center;}
+  .btn-confirm{background:var(--green);color:#0e1117;border:none;border-radius:8px;padding:12px 28px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1.5px;cursor:pointer;}
+  .btn-cancel-modal{background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:12px 20px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;}
+  .btn-cancel-modal:hover{border-color:var(--red);color:var(--red);}
 </style>
 </head>
 <body>
@@ -173,6 +196,7 @@
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxs6BQFEIylV2AM8Eot4uXz-YakkaroRmT6YSVBopWwvFU5FIyleq4RVYcTRp1TWdR-/exec';
+const SERVICES = ["Reserve Inspection & Repack (Sport) - $115","Reserve Inspection & Repack (Tandem) - $150","Inspect Main or Reserve - $25","Inspect Harness / Container - $20","Inspect & Pack Pilot's Emergency Rig - $120","Pack Main Sport - $15","Pack Main Tandem - $20","AAD Batteries / Service - Varies","Install AAD - $10","Reserve Safety Stow Replacement - $12","Replace Lower Steering Lines - $40","Replace Steering Lines Toggles to Cascades - $65","Full Line Set - Varies","Re-line Sport - $130","Re-line Tandem - $175","Slinks - $35","Assembly, Inspection & Pack Reserve (Sport) - $140","Assembly, Inspection & Repack Reserve (Tandem) - $175","Assembly, Inspection & Pack Main - $75","Disassemble Main or Reserve - $10","Install Slider Bumpers - $25","Fabric Tensile Test - $20","Kill Line Replacement - $25","BOC Replacement - $100","Tack Slinks / Links - $5","Wash Rig - $65","Sewing - $85/hr","Canopy Patch - Varies","Monthly Maintenance"];
 let pendingOrders = [];
 let currentPassword = localStorage.getItem('ssxQueuePw') || '1234';
 
@@ -238,6 +262,15 @@ function renderQueue(){
     const submittedDate = order.submitted_at ? new Date(order.submitted_at).toLocaleString() : 'Unknown';
     const svcs = (order.services||'').split(' | ').filter(Boolean);
 
+    const svcCheckboxes = SERVICES.map((svc) => {
+      const checked = svcs.includes(svc);
+      return '<label class="svc-item' + (checked?' checked':'') + '" onclick="toggleSvc(this)">' +
+        '<input type="checkbox" value="' + svc + '"' + (checked?' checked':'') + '>' +
+        '<div class="svc-check"></div>' +
+        '<span class="svc-label">' + svc + '</span>' +
+        '</label>';
+    }).join('');
+
     card.innerHTML = `
       <div class="order-card-header" onclick="toggleOrder(${idx})">
         <div>
@@ -251,17 +284,14 @@ function renderQueue(){
         </div>
       </div>
       <div class="order-body">
-        <div class="order-grid">
-          <div class="info-block">
-            <div class="info-title">Services Requested</div>
-            <div class="info-content">${svcs.length>0 ? svcs.map(s=>'• '+s).join('<br>') : '<span style="color:var(--text-muted)">None selected</span>'}</div>
-          </div>
-          <div class="info-block">
-            <div class="info-title">Additional Notes</div>
-            <div class="info-content">${order.extra_notes || '<span style="color:var(--text-muted)">No notes</span>'}</div>
-          </div>
+        <div class="info-block" style="margin-bottom:12px;">
+          <div class="info-title">Additional Notes from Submission</div>
+          <div class="info-content">${order.extra_notes || '<span style="color:var(--text-muted)">No notes</span>'}</div>
         </div>
-
+        <div class="info-block" style="margin-bottom:16px;">
+          <div class="info-title" style="margin-bottom:12px;">Edit Services — Check/Uncheck as Needed</div>
+          <div class="svc-edit-grid" id="svc-grid-${idx}">\${svcCheckboxes}</div>
+        </div>
         <div class="complete-section">
           <div class="complete-title">✓ Mark as Completed</div>
           <div class="complete-row">
@@ -286,11 +316,40 @@ function renderQueue(){
   });
 }
 
+function toggleSvc(label){
+  const cb = label.querySelector('input');
+  cb.checked = !cb.checked;
+  label.classList.toggle('checked', cb.checked);
+}
+
 function toggleOrder(idx){
   document.getElementById('order-'+idx).classList.toggle('expanded');
 }
 
-async function markComplete(idx){
+let pendingCompleteIdx = null;
+
+function markComplete(idx){
+  const rigger = document.getElementById('rigger-'+idx).value.trim();
+  const errEl = document.getElementById('comp-error-'+idx);
+  errEl.style.display='none';
+  if(!rigger){ errEl.textContent='Please enter the rigger name.'; errEl.style.display='block'; return; }
+  pendingCompleteIdx = idx;
+  document.getElementById('signoff-modal').classList.add('open');
+}
+
+function closeSignoffModal(){
+  document.getElementById('signoff-modal').classList.remove('open');
+  pendingCompleteIdx = null;
+}
+
+async function confirmAndComplete(){
+  document.getElementById('signoff-modal').classList.remove('open');
+  const idx = pendingCompleteIdx;
+  pendingCompleteIdx = null;
+  await doMarkComplete(idx);
+}
+
+async function doMarkComplete(idx){
   const order = pendingOrders[idx];
   const rigger = document.getElementById('rigger-'+idx).value.trim();
   const compNotes = document.getElementById('comp-notes-'+idx).value.trim();
@@ -299,10 +358,15 @@ async function markComplete(idx){
 
   if(!rigger){ errEl.textContent='Please enter the rigger name.'; errEl.style.display='block'; return; }
 
+  // Get updated services from checkboxes
+  const svcGrid = document.getElementById('svc-grid-'+idx);
+  const updatedServices = svcGrid ? [...svcGrid.querySelectorAll('input[type="checkbox"]:checked')].map(c=>c.value).join(' | ') : order.services;
+
   const payload = {
     action: 'completeOrder',
     work_order: order.work_order,
     rigger: rigger,
+    services: updatedServices,
     completion_notes: compNotes,
     row: order._row
   };
@@ -349,5 +413,20 @@ function changePassword(){
   setTimeout(()=>successEl.style.display='none', 3000);
 }
 </script>
+
+<div class="modal-overlay" id="signoff-modal">
+  <div class="modal-box">
+    <div class="modal-icon">✍️</div>
+    <div class="modal-title">Sign-Off Required</div>
+    <div class="modal-text">
+      Before completing this service record, confirm that the <strong>physical service record has been filled out</strong> and signed with your <strong>name and rigger symbol</strong>.<br><br>
+      This cannot be undone once submitted.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel-modal" onclick="closeSignoffModal()">← Go Back</button>
+      <button class="btn-confirm" onclick="confirmAndComplete()">✓ I Confirm</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
