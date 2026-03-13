@@ -85,6 +85,7 @@ body {
 }
 .btn-home:hover { background: rgba(56,189,248,0.2); border-color: var(--sky); }
 
+.queue-link {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -1035,7 +1036,7 @@ body {
     </div>
     <div class="header-nav">
       <button class="btn-home" onclick="showScreen('screen-landing')">✚ Request Service</button>
-      <a href="file:///C:/Users/elite/Downloads/ssx_queue.html" class="queue-link">📋 Rigger Queue</a>
+      <a href="ssx_queue.html" class="queue-link">📋 Rigger Queue</a>
       <button class="admin-btn" onclick="openAdmin()">🔒 Admin</button>
     </div>
   </div>
@@ -1863,15 +1864,15 @@ function renderGearList() {
     row.className = 'rig-row';
     row.id = 'rig-row-' + realIdx;
     row.innerHTML = `
-      <div class="rig-row-header" onclick="toggleRigRow(\${realIdx})">
-        <span class="rig-badge \${g.type === 'tandem' ? 'rb-tandem' : 'rb-student'}">\${g.type}</span>
-        <span class="rig-row-name">\${g.type === 'tandem' ? 'Rig #' : ''}\${g.rig_num || '—'} — \${g.rig_make || '—'}</span>
-        <span class="rig-row-sn">S/N \${sn}</span>
-        <span class="rig-row-repack \${rp.cls}">\${rp.label}</span>
+      <div class="rig-row-header" onclick="toggleRigRow(${realIdx})">
+        <span class="rig-badge ${g.type === 'tandem' ? 'rb-tandem' : 'rb-student'}">${g.type}</span>
+        <span class="rig-row-name">${g.type === 'tandem' ? 'Rig #' : ''}${g.rig_num || '—'} — ${g.rig_make || '—'}</span>
+        <span class="rig-row-sn">S/N ${sn}</span>
+        <span class="rig-row-repack ${rp.cls}">${rp.label}</span>
         <span class="rig-row-chevron">&#9662;</span>
       </div>
-      <div class="rig-edit-body" id="rig-edit-\${realIdx}">
-        \${buildEditForm(g, realIdx)}
+      <div class="rig-edit-body" id="rig-edit-${realIdx}">
+        ${buildEditForm(g, realIdx)}
       </div>`;
     list.appendChild(row);
   });
@@ -1882,10 +1883,10 @@ function toggleRigRow(idx) {
 }
 
 function fld(label, id, val, placeholder) {
-  return `<div class="a-field"><label>\${label}</label><input type="text" id="\${id}" value="\${val || ''}" placeholder="\${placeholder || ''}"></div>`;
+  return `<div class="a-field"><label>${label}</label><input type="text" id="${id}" value="${val || ''}" placeholder="${placeholder || ''}"></div>`;
 }
 function fldTA(label, id, val) {
-  return `<div class="a-field edit-full"><label>\${label}</label><textarea id="\${id}">\${val || ''}</textarea></div>`;
+  return `<div class="a-field edit-full"><label>${label}</label><textarea id="${id}">${val || ''}</textarea></div>`;
 }
 
 function buildEditForm(g, idx) {
