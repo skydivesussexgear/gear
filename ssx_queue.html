@@ -150,6 +150,10 @@
         </div>
         <div class="error-msg" id="login-error">Incorrect password. Please try again.</div>
         <button class="btn btn-primary" onclick="login()">Access Queue ▶</button>
+        <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px;">
+          <button class="btn btn-ghost btn-sm" style="width:100%;" onclick="testConnection()">🔌 Test Connection</button>
+          <div id="conn-result" style="margin-top:10px;font-size:12px;color:var(--text-muted);text-align:center;display:none;"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -250,7 +254,25 @@ function login(){
     errEl.style.display='block';
   }
 }
-document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+async function testConnection(){
+  const el = document.getElementById('conn-result');
+  el.style.display = 'block';
+  el.style.color = 'var(--text-muted)';
+  el.textContent = 'Testing...';
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=getPending', { method:'GET', redirect:'follow', mode:'cors' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    JSON.parse(text); // validate JSON
+    el.style.color = 'var(--green)';
+    el.textContent = '✅ Connected! Script is responding correctly.';
+  } catch(e) {
+    el.style.color = 'var(--red)';
+    el.textContent = '❌ ' + e.message + ' — Check the script is deployed with "Anyone" access.';
+  }
+}
+
+
 
 function logout(){
   document.getElementById('logout-btn').style.display='none';
