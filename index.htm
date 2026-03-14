@@ -1537,15 +1537,12 @@ async function lookupSerial() {
   const errEl = document.getElementById('serial-error');
   errEl.style.display = 'none';
   if (!val) { showErr(errEl, 'Please enter a serial number.'); return; }
-  if (GEAR_DATA.length === 0) {
-    showErr(errEl, 'Loading gear data, please wait...');
-    await loadGearFromSheet();
-    if (GEAR_DATA.length === 0) {
-      showErr(errEl, 'Could not load gear data. Please try again in a moment.');
-      return;
-    }
-    errEl.style.display = 'none';
-  }
+  // Always fetch fresh data from sheet
+  showErr(errEl, 'Loading...');
+  errEl.style.color = 'var(--sky)';
+  await loadGearFromSheet();
+  errEl.style.display = 'none';
+  errEl.style.color = '';
   const stripped = val.replace(/^[tT]/,'');
   // normalise: remove .0, trim, lowercase for comparison
   const norm = s => String(s).replace(/\.0+$/,'').trim().toLowerCase();
