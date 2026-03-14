@@ -1547,12 +1547,19 @@ async function lookupSerial() {
     errEl.style.display = 'none';
   }
   const stripped = val.replace(/^[tT]/,'');
+  // normalise: remove .0, trim, lowercase for comparison
+  const norm = s => String(s).replace(/\.0+$/,'').trim().toLowerCase();
   const gear = GEAR_DATA.find(g =>
-    String(g.rig_sn).replace('.0','').trim().toLowerCase() === val.toLowerCase() ||
-    String(g.rig_num).replace('.0','').trim().toLowerCase() === val.toLowerCase() ||
-    String(g.rig_num).replace('.0','').trim() === stripped
+    norm(g.rig_sn) === norm(val) ||
+    norm(g.rig_num) === norm(val) ||
+    norm(g.rig_num) === norm(stripped)
   );
-  if (!gear) { showErr(errEl, 'Rig not found. Check the number and try again.'); return; }
+  if (!gear) {
+    // show what rig_nums are available to help diagnose
+    const nums = GEAR_DATA.map(g => g.rig_num).join(', ');
+    showErr(errEl, 'Rig not found. Available rig #s: ' + nums);
+    return;
+  }
   document.getElementById('serial-input').value = '';
   errEl.style.display = 'none';
   try {
