@@ -889,12 +889,12 @@ body {
   pointer-events: none;
 }
 .landing-card.fun-jumper::before { background: radial-gradient(ellipse at top left, rgba(56,189,248,0.08), transparent 60%); }
-.landing-card.dz-gear::before   { background: radial-gradient(ellipse at top left, rgba(74,222,128,0.08), transparent 60%); }
+.landing-card.dz-gear::before   { background: radial-gradient(ellipse at top left, rgba(232,25,26,0.12), transparent 60%); }
 .landing-card:active { transform: scale(0.98); }
 .landing-card:hover { transform: translateY(-3px); }
 .landing-card:hover::before { opacity: 1; }
 .landing-card.fun-jumper:hover { border-color: rgba(56,189,248,0.5); box-shadow: 0 8px 32px rgba(56,189,248,0.1); }
-.landing-card.dz-gear:hover   { border-color: rgba(74,222,128,0.5); box-shadow: 0 8px 32px rgba(74,222,128,0.1); }
+.landing-card.dz-gear:hover   { border-color: rgba(180,30,30,0.4); box-shadow: 0 8px 32px rgba(180,30,30,0.12); }
 .lc-icon {
   font-size: 32px;
   margin-bottom: 12px;
@@ -907,8 +907,22 @@ body {
   margin-bottom: 6px;
   line-height: 1.2;
 }
-.landing-card.fun-jumper .lc-title { color: var(--sky); }
-.landing-card.dz-gear   .lc-title { color: var(--green); }
+.landing-card.fun-jumper .lc-title {
+  color: #7dd3f0;
+  text-shadow:
+    0 1px 0 #1a5a78,
+    0 2px 0 #134a63,
+    0 3px 4px rgba(0,0,0,0.5),
+    0 0 12px rgba(56,189,248,0.15);
+}
+.landing-card.dz-gear   .lc-title {
+  color: #c0392b;
+  text-shadow:
+    0 1px 0 #5a1010,
+    0 2px 0 #4a0c0c,
+    0 3px 4px rgba(0,0,0,0.5),
+    0 0 12px rgba(150,20,20,0.15);
+}
 .lc-desc {
   font-size: 12px;
   color: var(--text-muted);
@@ -933,7 +947,12 @@ body {
 }
 .lc-btn:hover { opacity: 0.88; }
 .landing-card.fun-jumper .lc-btn { background: var(--sky); color: #080c12; }
-.landing-card.dz-gear   .lc-btn { background: var(--green); color: #080c12; }
+.landing-card.dz-gear   .lc-btn {
+  background: linear-gradient(135deg, #9b2020, #7a1515);
+  color: #e8c8c8;
+  box-shadow: 0 2px 8px rgba(120,20,20,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
 
 /* ── FUN JUMPER FORM ── */
 .fj-back {
@@ -1103,7 +1122,7 @@ body {
     </div>
     <div class="header-nav">
       <button class="btn-home" onclick="showScreen('screen-landing')">✚ <span class="btn-label">Request Service</span></button>
-      <a href="ssx_queue.html" class="queue-link">📋 <span class="ql-label">Rigger Queue</span></a>
+      <a href="file:///C:/Users/elite/Downloads/ssx_queue.html" class="queue-link">📋 <span class="ql-label">Rigger Queue</span></a>
       <button class="admin-btn" onclick="openAdmin()">🔒 <span class="admin-label">Admin</span></button>
     </div>
   </div>
@@ -1123,8 +1142,8 @@ body {
         <button class="lc-btn" onclick="showScreen('screen-funjumper')">Get Started ▶</button>
       </div>
 
-      <div class="landing-card dz-gear">
-        <div class="lc-title">DZ Owned<br>Gear Request</div>
+      <div class="landing-card dz-gear" style="border-color: rgba(150,30,30,0.25); background: linear-gradient(160deg, #130808 0%, var(--surface) 55%);">
+        <div class="lc-title">DZ TDM &amp; Student<br>Gear Request</div>
         <button class="lc-btn" onclick="showScreen('screen-serial')">Look Up Rig ▶</button>
       </div>
 
