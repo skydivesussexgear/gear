@@ -1546,17 +1546,15 @@ async function lookupSerial() {
     }
     errEl.style.display = 'none';
   }
-  const firstSN = GEAR_DATA.length > 0 ? String(GEAR_DATA[0].rig_sn) : 'none';
-  showErr(errEl, 'Searching ' + GEAR_DATA.length + ' rigs. First SN in data: ' + firstSN + ' | You typed: ' + val);
-  errEl.style.color = '#4af';
-  const stripped = val.replace(/^[tT]/,''); // strip leading T so T1 matches rig_num "1"
+  const stripped = val.replace(/^[tT]/,'');
   const gear = GEAR_DATA.find(g =>
     String(g.rig_sn).replace('.0','').trim().toLowerCase() === val.toLowerCase() ||
     String(g.rig_num).replace('.0','').trim().toLowerCase() === val.toLowerCase() ||
     String(g.rig_num).replace('.0','').trim() === stripped
   );
-  errEl.style.color = '';
-  if (!gear) { showErr(errEl, 'No match. First SN: "' + firstSN + '" vs typed: "' + val + '"'); return; }
+  if (!gear) { showErr(errEl, 'Rig not found. Check the number and try again.'); return; }
+  document.getElementById('serial-input').value = '';
+  errEl.style.display = 'none';
   try {
     currentGear = gear;
     selectedServices.clear();
