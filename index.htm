@@ -1156,11 +1156,11 @@ body {
     <div class="serial-hero">
       <span class="serial-icon">🔍</span>
       <h2>Find Your Gear</h2>
-      <p>Enter the container serial number to load your rig info and request service</p>
+      <p>Enter the container serial number <strong>or</strong> rig number to load your rig info and request service</p>
       <div id="gear-loading-msg" style="font-size: 12px; color: var(--sky); margin-bottom: 12px; min-height: 18px; display: none;">Loading gear data…</div>
       <div class="serial-input-wrap">
         <div class="serial-input-row">
-          <input class="serial-input" id="serial-input" type="text" placeholder="Serial number (e.g. 53214)" autocomplete="off" autocapitalize="none">
+          <input class="serial-input" id="serial-input" type="text" placeholder="e.g. T1, T2, T3, etc." autocomplete="off" autocapitalize="none">
           <button class="btn-serial" onclick="lookupSerial()">Load ▶</button>
         </div>
         <div class="error-pill" id="serial-error"></div>
@@ -1549,7 +1549,10 @@ async function lookupSerial() {
   const firstSN = GEAR_DATA.length > 0 ? String(GEAR_DATA[0].rig_sn) : 'none';
   showErr(errEl, 'Searching ' + GEAR_DATA.length + ' rigs. First SN in data: ' + firstSN + ' | You typed: ' + val);
   errEl.style.color = '#4af';
-  const gear = GEAR_DATA.find(g => String(g.rig_sn).replace('.0','').trim() === val.trim());
+  const gear = GEAR_DATA.find(g =>
+    String(g.rig_sn).replace('.0','').trim().toLowerCase() === val.toLowerCase() ||
+    String(g.rig_num).replace('.0','').trim().toLowerCase() === val.toLowerCase()
+  );
   errEl.style.color = '';
   if (!gear) { showErr(errEl, 'No match. First SN: "' + firstSN + '" vs typed: "' + val + '"'); return; }
   try {
