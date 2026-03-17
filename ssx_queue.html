@@ -212,6 +212,7 @@
   <div class="screen" id="screen-queue">
     <div class="tab-bar">
       <div class="tab active" onclick="switchTab('queue')" id="tab-btn-queue">📋 Queue</div>
+      <div class="tab" onclick="switchTab('svchistory')" id="tab-btn-svchistory">📁 Service History</div>
       <div class="tab" onclick="switchTab('history')" id="tab-btn-history">🔍 Customer History</div>
       <div class="tab" onclick="switchTab('settings')" id="tab-btn-settings">⚙ Settings</div>
     </div>
@@ -242,6 +243,42 @@
         </div>
       </div>
       <div id="queue-list"></div>
+    </div>
+
+    <!-- SERVICE HISTORY TAB -->
+    <div id="tab-svchistory" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:4px;">Service History</div>
+          <div style="font-size:13px;color:var(--text-dim);">All completed service orders</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <a href="https://docs.google.com/spreadsheets/d/18xWrsryd3PUw_y02wrCJOPQ4ZBkFFPtZrCILRsrnSD8" target="_blank"
+             style="display:flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">
+            📊 Open in Sheets
+          </a>
+          <button class="refresh-btn" onclick="loadServiceHistory()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <!-- Search + Filter -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <input type="text" id="sh-search" placeholder="Search by name, rig #, S/N, rigger…" autocomplete="off"
+          style="flex:1;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;min-height:44px;outline:none;"
+          oninput="filterServiceHistory()">
+        <select id="sh-type-filter" onchange="filterServiceHistory()"
+          style="background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 12px;min-height:44px;outline:none;cursor:pointer;">
+          <option value="all">All Types</option>
+          <option value="fun-jumper">Fun Jumper</option>
+          <option value="tandem">Tandem</option>
+          <option value="student">Student</option>
+        </select>
+      </div>
+
+      <!-- Stats row -->
+      <div id="sh-stats" style="font-size:12px;color:var(--text-muted);margin-bottom:12px;"></div>
+      <div class="error-msg" id="sh-error"></div>
+      <div id="sh-list"><div style="text-align:center;padding:40px;color:var(--text-muted);">Click Refresh to load history</div></div>
     </div>
 
     <!-- CUSTOMER HISTORY TAB -->
@@ -366,10 +403,11 @@ async function testConnection(){
 
 // ── TABS ──────────────────────────────────────────────────────
 function switchTab(tab){
-  ['queue','history','settings'].forEach(t=>{
+  ['queue','svchistory','history','settings'].forEach(t=>{
     document.getElementById('tab-btn-'+t).classList.toggle('active', t===tab);
     document.getElementById('tab-'+t).style.display = t===tab?'block':'none';
   });
+  if(tab==='svchistory' && allCompletedOrders.length===0) loadServiceHistory();
 }
 
 // ── QUEUE FILTER ──────────────────────────────────────────────
@@ -684,6 +722,181 @@ async function deleteOrder(idx){
     updateDashboard();
     renderQueue();
   } catch(e){ alert('Error deleting order.'); }
+}
+
+// ── SERVICE HISTORY ───────────────────────────────────────────
+let allCompletedOrders = [];
+
+const SVC_PRICES = {
+  'Reserve Inspection & Repack (Sport)': 115,
+  'Reserve Inspection & Repack (Tandem)': 150,
+  'Inspect Main or Reserve': 25,
+  'Inspect Harness / Container': 20,
+  "Inspect & Pack Pilot's Emergency Rig": 120,
+  'Pack Main Sport': 15,
+  'Pack Main Tandem': 20,
+  'Install AAD': 10,
+  'Reserve Safety Stow Replacement': 12,
+  'Replace Lower Steering Lines': 40,
+  'Replace Steering Lines Toggles to Cascades': 65,
+  'Re-line Sport': 130,
+  'Re-line Tandem': 175,
+  'Slinks': 35,
+  'Assembly, Inspection & Pack Reserve (Sport)': 140,
+  'Assembly, Inspection & Repack Reserve (Tandem)': 175,
+  'Assembly, Inspection & Pack Main': 75,
+  'Disassemble Main or Reserve': 10,
+  'Install Slider Bumpers': 25,
+  'Fabric Tensile Test': 20,
+  'Kill Line Replacement': 25,
+  'BOC Replacement': 100,
+  'Tack Slinks / Links': 5,
+  'Wash Rig': 65,
+  '2–5 Day Rush +$40': 40,
+  'Same / Next Day Rush +$65': 65,
+};
+
+function calcTotal(services) {
+  let total = 0;
+  let hasVaries = false;
+  (services||'').split(' | ').filter(Boolean).forEach(s => {
+    const p = SVC_PRICES[s];
+    if (p > 0) total += p;
+    else if (p === undefined) hasVaries = true;
+  });
+  return { total, hasVaries };
+}
+
+async function loadServiceHistory() {
+  const listEl = document.getElementById('sh-list');
+  const errEl  = document.getElementById('sh-error');
+  errEl.style.display = 'none';
+  listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Loading…</div>';
+
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=getCompleted', { method:'GET', redirect:'follow', mode:'cors' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = JSON.parse(await res.text());
+    allCompletedOrders = (data.completed || []).sort((a,b) => new Date(b.completed_at) - new Date(a.completed_at));
+    filterServiceHistory();
+  } catch(e) {
+    errEl.textContent = 'Failed to load history: ' + e.message;
+    errEl.style.display = 'block';
+    listEl.innerHTML = '';
+  }
+}
+
+function filterServiceHistory() {
+  const q    = (document.getElementById('sh-search').value || '').toLowerCase();
+  const type = document.getElementById('sh-type-filter').value;
+
+  const filtered = allCompletedOrders.filter(o => {
+    if (type !== 'all' && (o.gear_type || '') !== type) return false;
+    if (!q) return true;
+    return [o.work_order, o.rig_num, o.rig_sn, o.rig_make, o.customer_name, o.rigger]
+      .some(v => v && String(v).toLowerCase().includes(q));
+  });
+
+  const statsEl = document.getElementById('sh-stats');
+  let totalRevenue = 0;
+  filtered.forEach(o => { totalRevenue += calcTotal(o.services).total; });
+  statsEl.textContent = filtered.length + ' completed order' + (filtered.length !== 1 ? 's' : '')
+    + (filtered.length > 0 ? ' · Est. Revenue: $' + totalRevenue.toFixed(2) + (filtered.some(o=>calcTotal(o.services).hasVaries)?' +varies':'') : '');
+
+  renderServiceHistory(filtered);
+}
+
+function renderServiceHistory(orders) {
+  const listEl = document.getElementById('sh-list');
+  if (orders.length === 0) {
+    listEl.innerHTML = '<div class="queue-empty"><div class="icon">📋</div><p>No completed orders found.</p></div>';
+    return;
+  }
+  listEl.innerHTML = '';
+  orders.forEach((o, i) => {
+    const isFJ       = o.gear_type === 'fun-jumper';
+    const rigLine    = isFJ ? (o.customer_name || 'Fun Jumper') : ((o.rig_num ? 'Rig #' + o.rig_num + ' — ' : '') + (o.rig_make || ''));
+    const svcs       = (o.services || '').split(' | ').filter(Boolean);
+    const { total, hasVaries } = calcTotal(o.services);
+    const totalStr   = total > 0 ? '$' + total.toFixed(2) + (hasVaries ? '+' : '') : (hasVaries ? 'Varies' : '—');
+    const completedDate = o.completed_at ? new Date(o.completed_at).toLocaleDateString() : '—';
+    const submittedDate = o.submitted_at ? new Date(o.submitted_at).toLocaleDateString() : '—';
+
+    const typeBadge = isFJ
+      ? '<span style="background:var(--sky-dim);border:1px solid rgba(56,189,248,0.3);color:var(--sky);font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;">FUN JUMPER</span>'
+      : o.gear_type === 'tandem'
+        ? '<span style="background:var(--purple-dim);border:1px solid rgba(167,139,250,0.3);color:var(--purple);font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;">TANDEM</span>'
+        : '<span style="background:var(--blue-dim);border:1px solid rgba(59,130,246,0.3);color:var(--accent);font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;">STUDENT</span>';
+
+    const card = document.createElement('div');
+    card.className = 'order-card';
+    card.id = 'sh-card-' + i;
+    card.innerHTML = `
+      <div class="order-card-header" onclick="toggleSHCard(${i})">
+        <div>
+          <div class="order-wo" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            ${o.work_order||'—'} ${typeBadge}
+            <span style="background:var(--green-dim);border:1px solid rgba(74,222,128,0.3);color:var(--green);font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;">✓ COMPLETE</span>
+          </div>
+          <div class="order-rig">${rigLine}</div>
+          <div class="order-meta">
+            S/N: ${o.rig_sn||'—'} · Completed: ${completedDate} · Rigger: ${o.rigger||'—'}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--green);">${totalStr}</div>
+          <div class="order-expand">▾</div>
+        </div>
+      </div>
+      <div class="order-body">
+        <div class="order-grid">
+          ${isFJ ? `
+          <div class="info-block">
+            <div class="info-title">Customer</div>
+            <div class="info-content">
+              ${o.customer_name||'—'}<br>
+              ${o.customer_phone||''} ${o.customer_email?'· '+o.customer_email:''}
+            </div>
+          </div>` : ''}
+          <div class="info-block">
+            <div class="info-title">Rig</div>
+            <div class="info-content">
+              ${o.rig_make||'—'} · S/N ${o.rig_sn||'—'}
+              ${o.rig_num?'<br>Rig #'+o.rig_num:''}
+            </div>
+          </div>
+          <div class="info-block">
+            <div class="info-title">Dates</div>
+            <div class="info-content">
+              Submitted: ${submittedDate}<br>
+              Completed: ${completedDate}
+            </div>
+          </div>
+        </div>
+        <div class="info-block" style="margin-bottom:12px;">
+          <div class="info-title" style="margin-bottom:10px;">Services & Invoice</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            ${svcs.map(s => {
+              const p = SVC_PRICES[s];
+              const pStr = p > 0 ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:12px;color:var(--green);margin-left:auto;">$'+p.toFixed(2)+'</span>'
+                                  : '<span style="font-size:11px;color:var(--text-muted);margin-left:auto;">Varies</span>';
+              return `<div style="display:flex;align-items:center;padding:6px 10px;background:var(--surface2);border-radius:6px;font-size:13px;">• ${s}${pStr}</div>`;
+            }).join('')}
+            <div style="display:flex;justify-content:flex-end;padding:8px 10px 0;border-top:1px solid var(--border);margin-top:4px;">
+              <span style="font-size:12px;color:var(--text-muted);margin-right:8px;">TOTAL</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--green);">${totalStr}</span>
+            </div>
+          </div>
+        </div>
+        ${o.completion_notes?`<div class="info-block"><div class="info-title">Rigger Notes</div><div class="info-content">${o.completion_notes}</div></div>`:''}
+        ${o.extra_notes?`<div class="info-block" style="margin-top:8px;"><div class="info-title">Customer Notes</div><div class="info-content">${o.extra_notes}</div></div>`:''}
+      </div>`;
+    listEl.appendChild(card);
+  });
+}
+
+function toggleSHCard(i) {
+  document.getElementById('sh-card-' + i).classList.toggle('expanded');
 }
 
 // ── CUSTOMER HISTORY SEARCH ───────────────────────────────────
