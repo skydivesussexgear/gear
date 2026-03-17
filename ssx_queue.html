@@ -479,7 +479,7 @@ function renderQueue(){
     card.className='order-card status-'+status;
     card.id='order-'+realIdx;
 
-    const submittedDate = order.submitted_at ? new Date(order.submitted_at).toLocaleString() : 'Unknown';
+    const submittedDate = order.submitted_at ? new Date(order.submitted_at).toLocaleDateString() : 'Unknown';
     const svcs = (order.services||'').split(' | ').filter(Boolean);
     const isFJ = order.gear_type==='fun-jumper';
 
