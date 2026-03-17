@@ -632,15 +632,10 @@ async function doMarkComplete(idx){
 
   const riggerFull = rigger + ' (' + symbol + ')';
 
-  // Complete the order
+  // Complete the order (invoice sent server-side inside completeOrder)
   const payload={action:'completeOrder',work_order:order.work_order,rigger:riggerFull,services:updatedServices,completion_notes:compNotes,row:order._row};
   try {
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
-
-    // Auto-send invoice to DZ on completion
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({action:'sendInvoice',order:{...order,services:updatedServices,rigger:riggerFull,completion_notes:compNotes}})});
-
     pendingOrders.splice(idx,1);
     updateDashboard();
     renderQueue();
