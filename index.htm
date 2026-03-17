@@ -1814,8 +1814,50 @@ function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
 document.getElementById('serial-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupSerial(); });
 (function() {
   loadGearFromSheet().then(() => {
-    const sn = new URLSearchParams(window.location.search).get('sn');
-    if (sn) { document.getElementById('serial-input').value = sn; lookupSerial(); }
+    const params = new URLSearchParams(window.location.search);
+    const sn = params.get('sn');
+    const prefill = params.get('prefill');
+
+    if (sn && !prefill) {
+      // DZ gear lookup via S/N from QR code
+      document.getElementById('serial-input').value = sn;
+      lookupSerial();
+    }
+
+    if (prefill === '1') {
+      // Coming from customer portal — go straight to FJ form and pre-fill
+      showScreen('screen-funjumper');
+      buildFjServices();
+
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        const name  = params.get('name')     || '';
+        const email = params.get('email')    || '';
+        const phone = params.get('phone')    || '';
+        const rigSN = params.get('sn')       || '';
+        const rigMake = params.get('rig_make') || '';
+
+        if (name)    setFjVal('fj-name',     name);
+        if (email)   setFjVal('fj-email',    email);
+        if (phone)   setFjVal('fj-phone',    phone);
+        if (rigSN)   setFjVal('fj-con-sn',   rigSN);
+        if (rigMake) setFjVal('fj-con-make',  rigMake);
+
+        // Open the container section so user sees it's filled
+        const sub = document.getElementById('fj-sub-container');
+        if (sub && !sub.classList.contains('open')) sub.classList.add('open');
+
+        // Show a banner so customer knows info was loaded
+        const retResult = document.getElementById('returning-result');
+        const retBody   = document.getElementById('returning-body');
+        if (retResult && retBody) {
+          retBody.classList.add('open');
+          document.getElementById('returning-chevron').textContent = '▴';
+          retResult.textContent = '✓ Rig info loaded from your service record. Just select the services you need and submit.';
+          retResult.style.display = 'block';
+        }
+      }, 100);
+    }
   });
 })();
 
