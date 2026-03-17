@@ -1586,32 +1586,6 @@ body {
       </div>
     </div>
 
-    <!-- Rush Service Selector (DZ gear) -->
-    <div class="rush-section">
-      <div class="rush-title">⚡ Turnaround</div>
-      <div class="rush-sub">Does this rig need rush service?</div>
-      <div class="rush-options" id="dz-rush-options">
-        <label class="rush-opt selected" onclick="selectRush(this,'Standard Turnaround','dz-rush-options')">
-          <div class="rush-radio"></div>
-          <div class="rush-icon">📋</div>
-          <div class="rush-label-wrap">
-            <div class="rush-label">Standard Turnaround</div>
-            <div class="rush-label-sub">Normal queue — no additional charge</div>
-          </div>
-          <div class="rush-price">$0</div>
-        </label>
-        <label class="rush-opt" onclick="selectRush(this,'Priority Rush','dz-rush-options')">
-          <div class="rush-radio"></div>
-          <div class="rush-icon">⚡</div>
-          <div class="rush-label-wrap">
-            <div class="rush-label">Priority Rush</div>
-            <div class="rush-label-sub">Flag for immediate attention</div>
-          </div>
-          <div class="rush-price">Priority</div>
-        </label>
-      </div>
-    </div>
-
   </div>
 
   <!-- SCREEN 3: SUCCESS -->
@@ -1986,7 +1960,7 @@ async function submitRequest() {
     res_repack_due: currentGear.res_repack_due || '',
     services: [...selectedServices].join(' | '),
     extra_notes: notes,
-    rush: selectedRush.dz || 'Standard Turnaround',
+    rush: '',
     status: 'PENDING'
   };
 
