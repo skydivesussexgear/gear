@@ -2,11 +2,6 @@
 <html lang="en"><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta charset="UTF-8">
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="SSXgear">
-<meta name="theme-color" content="#080c12">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Skydive Sussex — Gear Service</title>
 <link href="index_files/css2.css" rel="stylesheet">
@@ -55,19 +50,19 @@ body {
   box-shadow: 0 2px 20px rgba(232,25,26,0.2);
 }
 .header-inner {
-  max-width: 900px;
+  max-width: 680px;
   margin: 0 auto;
   padding: 10px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 8px;
 }
 .header-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: 10px;
+  flex: 1;
   min-width: 0;
 }
 .header-brand img {
@@ -78,88 +73,17 @@ body {
 .header-nav {
   display: flex;
   align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
-}
-
-/* ── HAMBURGER ── */
-.hamburger {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 8px;
-  cursor: pointer;
-  padding: 8px;
-  flex-shrink: 0;
-  -webkit-tap-highlight-color: transparent;
-}
-.hamburger span {
-  display: block;
-  height: 2px;
-  background: var(--text-dim);
-  border-radius: 2px;
-  transition: all 0.2s;
-}
-.hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-.hamburger.open span:nth-child(2) { opacity: 0; }
-.hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
-
-/* ── MOBILE DROPDOWN NAV ── */
-.mobile-nav {
-  display: none;
-  flex-direction: column;
   gap: 6px;
-  padding: 12px;
-  background: #0d1829;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-.mobile-nav.open { display: flex; }
-.mobile-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 9px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.03);
-  color: var(--text-dim);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.15s, border-color 0.15s;
-  -webkit-tap-highlight-color: transparent;
-}
-.mobile-nav-item:hover, .mobile-nav-item:active {
-  background: rgba(255,255,255,0.07);
-  border-color: rgba(255,255,255,0.2);
-  color: var(--text);
-}
-.mobile-nav-item.sky  { border-color: rgba(56,189,248,0.3); color: var(--sky); background: var(--sky-dim); }
-.mobile-nav-item.red  { border-color: rgba(232,25,26,0.3); color: #f87171; }
-.mobile-nav-item.gold { border-color: rgba(251,191,36,0.3); color: var(--yellow); }
-
-@media (max-width: 600px) {
-  .header-nav { display: none; }
-  .hamburger  { display: flex; }
-}
-@media (min-width: 601px) {
-  .mobile-nav { display: none !important; }
+  flex-shrink: 0;
 }
 .btn-home {
   background: var(--sky-dim);
   border: 1px solid rgba(56,189,248,0.3);
   color: var(--sky);
   border-radius: 8px;
-  padding: 7px 9px;
+  padding: 8px 10px;
   font-family: 'Barlow', sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
@@ -168,20 +92,21 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .btn-home:hover { background: rgba(56,189,248,0.2); border-color: var(--sky); }
+/* Hide label text on very small screens, keep icon */
 .btn-home .btn-label { display: inline; }
-@media (max-width: 900px) { .btn-home .btn-label { display: none; } }
+@media (max-width: 400px) { .btn-home .btn-label { display: none; } }
 
 .queue-link {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 7px 9px;
+  gap: 5px;
+  padding: 8px 10px;
   background: transparent;
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 8px;
   color: var(--text-dim);
   font-family: 'Inter', sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -195,7 +120,7 @@ body {
   background: rgba(232,25,26,0.1);
 }
 .queue-link .ql-label { display: inline; }
-@media (max-width: 900px) { .queue-link .ql-label { display: none; } }
+@media (max-width: 400px) { .queue-link .ql-label { display: none; } }
 
 .header-text h1 {
   font-family: 'Barlow', sans-serif;
@@ -216,10 +141,6 @@ body {
   text-transform: uppercase;
   color: #e8191a;
   margin-top: 3px;
-}
-/* Hide text on medium screens where nav overflows */
-@media (max-width: 700px) {
-  .header-text { display: none; }
 }
 @media (max-width: 380px) {
   .header-text { display: none; }
@@ -945,7 +866,7 @@ body {
   max-width: 680px;
   margin: 0 auto;
 }
-@media (max-width: 480px) { .landing-cards { grid-template-columns: 1fr; gap: 12px; } }
+@media (max-width: 480px) { .landing-cards { grid-template-columns: 1fr; gap: 10px; } }
 .landing-card {
   background: var(--surface);
   border: 1px solid var(--border-strong);
@@ -1012,16 +933,16 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 14px 28px;
-  border-radius: 10px;
+  padding: 10px 18px;
+  border-radius: 8px;
   font-family: 'Barlow', sans-serif;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 800;
   border: none;
   cursor: pointer;
   transition: opacity 0.15s;
   letter-spacing: 0.3px;
-  min-height: 52px;
+  min-height: 44px;
   -webkit-tap-highlight-color: transparent;
 }
 .lc-btn:hover { opacity: 0.88; }
@@ -1190,114 +1111,6 @@ body {
 .damage-opt.selected-no  { border-color: var(--green); color: var(--green); background: var(--green-dim); }
 .damage-opt.selected-yes { border-color: var(--red);   color: var(--red);   background: var(--red-dim); }
 
-/* ── RETURNING CUSTOMER LOOKUP ── */
-.returning-wrap {
-  max-width: 420px; margin: 0 auto 16px; text-align: left;
-}
-.returning-toggle {
-  display: flex; align-items: center; gap: 8px; cursor: pointer;
-  background: var(--surface); border: 1px solid var(--border-strong);
-  border-radius: var(--radius); padding: 12px 16px;
-  font-size: 13px; font-weight: 600; color: var(--text-dim);
-  transition: border-color 0.2s, color 0.2s;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-.returning-toggle:hover { border-color: var(--sky); color: var(--text); }
-.returning-body { display: none; margin-top: 10px; }
-.returning-body.open { display: block; }
-.returning-input-row {
-  display: flex; gap: 8px;
-  background: var(--surface); border: 1px solid var(--border-strong);
-  border-radius: var(--radius); padding: 6px 6px 6px 16px;
-  transition: border-color 0.2s;
-}
-.returning-input-row:focus-within { border-color: var(--sky); box-shadow: 0 0 0 3px var(--sky-dim); }
-.returning-input {
-  flex: 1; background: transparent; border: none; color: var(--text);
-  font-family: 'Inter', sans-serif; font-size: 15px; outline: none; min-width: 0;
-}
-.returning-input::placeholder { color: var(--text-muted); font-size: 13px; }
-.btn-returning {
-  background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border-strong);
-  border-radius: 8px; padding: 10px 16px; font-family: 'Barlow', sans-serif;
-  font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap;
-  transition: border-color 0.2s, color 0.2s; min-height: 40px;
-  -webkit-tap-highlight-color: transparent;
-}
-.btn-returning:hover { border-color: var(--sky); color: var(--sky); }
-.returning-result {
-  margin-top: 10px; padding: 10px 14px; border-radius: 9px;
-  background: var(--green-dim); border: 1px solid rgba(74,222,128,0.25);
-  color: var(--green); font-size: 13px; display: none;
-}
-.returning-err {
-  margin-top: 10px; padding: 10px 14px; border-radius: 9px;
-  background: var(--red-dim); border: 1px solid rgba(248,113,113,0.25);
-  color: var(--red); font-size: 13px; display: none;
-}
-
-/* ── RUSH SERVICE SELECTOR ── */
-.rush-section {
-  background: var(--surface); border: 1px solid var(--border-strong);
-  border-radius: 16px; margin-bottom: 16px; overflow: hidden; padding: 18px 20px 20px;
-}
-.rush-title {
-  font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 800;
-  letter-spacing: 0.3px; margin-bottom: 4px;
-}
-.rush-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
-.rush-options { display: flex; flex-direction: column; gap: 8px; }
-.rush-opt {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 16px; border-radius: 10px; cursor: pointer;
-  background: var(--surface2); border: 1px solid var(--border);
-  transition: border-color 0.15s, background 0.15s;
-  user-select: none; -webkit-tap-highlight-color: transparent; min-height: 56px;
-}
-.rush-opt:hover { border-color: rgba(56,189,248,0.3); }
-.rush-opt.selected { background: var(--sky-dim); border-color: rgba(56,189,248,0.5); }
-.rush-radio {
-  width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-strong);
-  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-}
-.rush-opt.selected .rush-radio { border-color: var(--sky); background: var(--sky); }
-.rush-radio::after { content:''; width:7px; height:7px; border-radius:50%; background:#080c12; display:none; }
-.rush-opt.selected .rush-radio::after { display:block; }
-.rush-icon { font-size: 20px; flex-shrink: 0; }
-.rush-label-wrap { flex: 1; }
-.rush-label { font-size: 14px; font-weight: 600; }
-.rush-label-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.rush-opt.selected .rush-label-sub { color: var(--sky); opacity: 0.8; }
-.rush-price {
-  font-family: 'Roboto Mono', monospace; font-size: 13px; font-weight: 600;
-  color: var(--text-dim); white-space: nowrap; flex-shrink: 0;
-}
-.rush-opt.selected .rush-price { color: var(--sky); }
-
-/* ── PWA BANNER ── */
-.pwa-banner {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: #0d1829; border-top: 1px solid rgba(56,189,248,0.3);
-  padding: 12px 16px; display: flex; align-items: center; gap: 12px;
-  z-index: 100; transform: translateY(100%); transition: transform 0.3s ease;
-}
-.pwa-banner.show { transform: translateY(0); }
-.pwa-banner-icon { font-size: 28px; flex-shrink: 0; }
-.pwa-banner-text { flex: 1; }
-.pwa-banner-title { font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 800; }
-.pwa-banner-sub { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
-.btn-pwa-install {
-  background: var(--sky); color: #080c12; border: none; border-radius: 8px;
-  padding: 8px 14px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 800;
-  cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent;
-}
-.btn-pwa-dismiss {
-  background: transparent; border: none; color: var(--text-muted); cursor: pointer;
-  font-size: 18px; padding: 4px; -webkit-tap-highlight-color: transparent;
-}
-
 </style>
 </head>
 <body>
@@ -1310,22 +1123,8 @@ body {
     <div class="header-nav">
       <button class="btn-home" onclick="showScreen('screen-landing')">✚ <span class="btn-label">Request Service</span></button>
       <button class="queue-link" onclick="window.location.href='ssx_queue.html'">📋 <span class="ql-label">Rigger Queue</span></button>
-      <a href="customer.html" style="display:flex;align-items:center;gap:5px;padding:8px 10px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;transition:border-color 0.2s,color 0.2s;-webkit-tap-highlight-color:transparent;" onmouseover="this.style.borderColor='var(--sky)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='var(--text-dim)'">🪂 <span class="ql-label">My Rig</span></a>
-      <button id="pwa-nav-btn" onclick="triggerPWAInstall()" style="display:flex;align-items:center;gap:5px;padding:8px 10px;background:var(--sky-dim);border:1px solid rgba(56,189,248,0.3);border-radius:8px;color:var(--sky);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;">📲 <span class="ql-label">Install App</span></button>
       <button class="admin-btn" onclick="openAdmin()">🔒 <span class="admin-label">Admin</span></button>
     </div>
-    <!-- HAMBURGER (mobile only) -->
-    <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-  <!-- MOBILE NAV DROPDOWN -->
-  <div class="mobile-nav" id="mobile-nav">
-    <button class="mobile-nav-item sky" onclick="showScreen('screen-landing');closeMobileNav()">✚ Request Service</button>
-    <a class="mobile-nav-item red" href="ssx_queue.html">📋 Rigger Queue</a>
-    <a class="mobile-nav-item" href="customer.html">🪂 My Rig</a>
-    <button class="mobile-nav-item" onclick="triggerPWAInstall();closeMobileNav()">📲 Install App</button>
-    <button class="mobile-nav-item gold" onclick="openAdmin();closeMobileNav()">🔒 Admin</button>
   </div>
 </div>
 
@@ -1372,22 +1171,6 @@ body {
   <!-- SCREEN FJ: FUN JUMPER FORM -->
   <div class="screen" id="screen-funjumper">
     <button class="fj-back" onclick="showScreen('screen-landing')">← Back</button>
-
-    <!-- RETURNING CUSTOMER LOOKUP -->
-    <div style="max-width:680px;margin:0 0 16px;">
-      <div class="returning-toggle" onclick="toggleReturning()">
-        <span>↺</span> <span>Returning Customer? Load your info automatically</span>
-        <span id="returning-chevron" style="margin-left:auto;font-size:12px;color:var(--text-muted);">▾</span>
-      </div>
-      <div class="returning-body" id="returning-body">
-        <div class="returning-input-row">
-          <input class="returning-input" id="ret-email" type="email" placeholder="Email address used previously">
-          <button class="btn-returning" onclick="loadReturningCustomer()">Load Rig ▶</button>
-        </div>
-        <div class="returning-result" id="returning-result"></div>
-        <div class="returning-err" id="returning-err"></div>
-      </div>
-    </div>
 
     <!-- Section 1: Customer Info -->
     <div class="fj-section">
@@ -1592,41 +1375,6 @@ body {
       </div>
     </div>
 
-    <!-- Rush Service Selector -->
-    <div class="rush-section">
-      <div class="rush-title">⚡ Turnaround</div>
-      <div class="rush-sub">Do you need rush service on this order?</div>
-      <div class="rush-options" id="fj-rush-options">
-        <label class="rush-opt selected" onclick="selectRush(this,'Standard Turnaround','fj-rush-options')">
-          <div class="rush-radio"></div>
-          <div class="rush-icon">📋</div>
-          <div class="rush-label-wrap">
-            <div class="rush-label">Standard Turnaround</div>
-            <div class="rush-label-sub">Approx. 1–2 weeks — no additional charge</div>
-          </div>
-          <div class="rush-price">$0</div>
-        </label>
-        <label class="rush-opt" onclick="selectRush(this,'2–5 Day Rush +$40','fj-rush-options')">
-          <div class="rush-radio"></div>
-          <div class="rush-icon">📅</div>
-          <div class="rush-label-wrap">
-            <div class="rush-label">2–5 Day Rush</div>
-            <div class="rush-label-sub">Subject to availability — contact us to confirm</div>
-          </div>
-          <div class="rush-price">+$40</div>
-        </label>
-        <label class="rush-opt" onclick="selectRush(this,'Same / Next Day Rush +$65','fj-rush-options')">
-          <div class="rush-radio"></div>
-          <div class="rush-icon">⚡</div>
-          <div class="rush-label-wrap">
-            <div class="rush-label">Same Day / Next Day</div>
-            <div class="rush-label-sub">Subject to availability — contact us to confirm</div>
-          </div>
-          <div class="rush-price">+$65</div>
-        </label>
-      </div>
-    </div>
-
     <!-- Submit -->
     <div style="padding: 0 0 4px;">
       <div class="form-error" id="fj-form-error"></div>
@@ -1694,93 +1442,7 @@ body {
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZtzIAUZ8NvFaPCSAmWP3Br3nDFsfXpkZ3sUqH39c5X7Biwd_2ViqkJXerWpgJ5PWVHw/exec';
-
-// ── RUSH SELECTION ────────────────────────────────────────────
-let selectedRush = { fj: 'Standard Turnaround', dz: 'Standard Turnaround' };
-
-function selectRush(el, value, groupId) {
-  const container = document.getElementById(groupId);
-  container.querySelectorAll('.rush-opt').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  if (groupId === 'fj-rush-options') selectedRush.fj = value;
-  else selectedRush.dz = value;
-}
-
-// ── RETURNING CUSTOMER LOOKUP ─────────────────────────────────
-function toggleReturning() {
-  const body = document.getElementById('returning-body');
-  const chev = document.getElementById('returning-chevron');
-  const isOpen = body.classList.toggle('open');
-  chev.textContent = isOpen ? '▴' : '▾';
-}
-
-async function loadReturningCustomer() {
-  const email   = document.getElementById('ret-email').value.trim().toLowerCase();
-  const resultEl = document.getElementById('returning-result');
-  const errEl    = document.getElementById('returning-err');
-  resultEl.style.display = 'none';
-  errEl.style.display    = 'none';
-
-  if (!email) { errEl.textContent = 'Please enter your email address.'; errEl.style.display = 'block'; return; }
-
-  resultEl.textContent = 'Loading…'; resultEl.style.display = 'block';
-  try {
-    const params = new URLSearchParams({ action: 'customerLookup', email });
-    const res  = await fetch(SCRIPT_URL + '?' + params.toString(), { method: 'GET', redirect: 'follow', mode: 'cors' });
-    const data = JSON.parse(await res.text());
-    const rig  = data.rig;
-
-    if (!rig) {
-      resultEl.style.display = 'none';
-      errEl.textContent = 'No previous records found for that email. Please fill in your rig info manually.';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    // Auto-fill customer info
-    if (rig.customer_name)  setFjVal('fj-name',      rig.customer_name);
-    if (rig.customer_phone) setFjVal('fj-phone',     rig.customer_phone);
-    if (rig.customer_email) setFjVal('fj-email',     rig.customer_email);
-    // Rig info
-    if (rig.rig_make)       setFjVal('fj-con-make',  rig.rig_make);
-    if (rig.con_model)      setFjVal('fj-con-model', rig.con_model);
-    if (rig.rig_sn)         setFjVal('fj-con-sn',    rig.rig_sn);
-    if (rig.rig_dom)        setFjVal('fj-con-dom',   rig.rig_dom);
-    if (rig.main_make)      setFjVal('fj-main-make', rig.main_make);
-    if (rig.main_model)     setFjVal('fj-main-model',rig.main_model);
-    if (rig.main_size)      setFjVal('fj-main-size', rig.main_size);
-    if (rig.main_sn)        setFjVal('fj-main-sn',   rig.main_sn);
-    if (rig.res_make)       setFjVal('fj-res-make',  rig.res_make);
-    if (rig.res_model)      setFjVal('fj-res-model', rig.res_model);
-    if (rig.res_size)       setFjVal('fj-res-size',  rig.res_size);
-    if (rig.res_sn)         setFjVal('fj-res-sn',    rig.res_sn);
-    if (rig.res_pack_date)  setFjVal('fj-res-pack',  rig.res_pack_date);
-    if (rig.res_repack_due) setFjVal('fj-res-due',   rig.res_repack_due);
-    if (rig.aad_make)       setFjVal('fj-aad-make',  rig.aad_make);
-    if (rig.aad_sn)         setFjVal('fj-aad-sn',    rig.aad_sn);
-    if (rig.aad_dom)        setFjVal('fj-aad-dom',   rig.aad_dom);
-
-    // Open container section so the user sees it filled in
-    const sub = document.getElementById('fj-sub-container');
-    if (sub && !sub.classList.contains('open')) sub.classList.add('open');
-
-    resultEl.textContent = '✓ Rig info loaded from your service record. Just select the services you need and submit.';
-    resultEl.style.display = 'block';
-  } catch(e) {
-    resultEl.style.display = 'none';
-    errEl.textContent = 'Error loading records: ' + e.message;
-    errEl.style.display = 'block';
-  }
-}
-
-function setFjVal(id, val) {
-  const el = document.getElementById(id);
-  if (el && val) el.value = val;
-}
-
-let fjSelectedServices = new Set();
-let fjDamage = 'no';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQvA6t6r4LxUzPJfdiqE3qywbGmE4c0aOa5VI_IlJkQp6dCUFKe2Ok6oAHSwcaJ9ln/exec';
 
 let GEAR_DATA = []; // loaded from Google Sheet on init
 let gearLoaded = false;
@@ -1857,18 +1519,7 @@ const SERVICE_GROUPS = [
 let currentGear = null;
 let selectedServices = new Set();
 
-function toggleMobileNav() {
-  const nav = document.getElementById('mobile-nav');
-  const btn = document.getElementById('hamburger-btn');
-  nav.classList.toggle('open');
-  btn.classList.toggle('open');
-}
-function closeMobileNav() {
-  document.getElementById('mobile-nav').classList.remove('open');
-  document.getElementById('hamburger-btn').classList.remove('open');
-}
-
-
+function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (id === 'screen-funjumper') buildFjServices();
@@ -1918,94 +1569,12 @@ async function lookupSerial() {
 function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
 
 document.getElementById('serial-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupSerial(); });
-
-document.addEventListener('DOMContentLoaded', function() {
-  const params  = new URLSearchParams(window.location.search);
-  const sn      = params.get('sn');
-  const prefill = params.get('prefill');
-  const email   = params.get('email');
-
-  // Coming from customer portal — jump straight to FJ form
-  if (prefill === '1') {
-    showScreen('screen-funjumper');
-    buildFjServices();
-
-    // Show loading state immediately
-    const retBody   = document.getElementById('returning-body');
-    const retResult = document.getElementById('returning-result');
-    const retChev   = document.getElementById('returning-chevron');
-    if (retBody && retResult) {
-      retBody.classList.add('open');
-      if (retChev) retChev.textContent = '▴';
-      retResult.textContent = '⏳ Loading your rig info…';
-      retResult.style.display = 'block';
-    }
-
-    // Fill S/N immediately as fallback
-    if (sn) setFjVal('fj-con-sn', sn);
-
-    // Fetch full rig record from GAS
-    const fetchParams = new URLSearchParams({ action: 'customerLookup' });
-    if (sn)    fetchParams.append('sn', sn.trim().toLowerCase());
-    if (email) fetchParams.append('email', email.trim().toLowerCase());
-
-    fetch(SCRIPT_URL + '?' + fetchParams.toString(), { method: 'GET', redirect: 'follow', mode: 'cors' })
-      .then(r => r.json())
-      .then(data => {
-        const rig = data.rig;
-        if (rig) {
-          if (rig.customer_name)  setFjVal('fj-name',       rig.customer_name);
-          if (rig.customer_email) setFjVal('fj-email',      rig.customer_email);
-          if (rig.customer_phone) setFjVal('fj-phone',      rig.customer_phone);
-          if (rig.rig_make)       setFjVal('fj-con-make',   rig.rig_make);
-          if (rig.con_model)      setFjVal('fj-con-model',  rig.con_model);
-          if (rig.rig_sn || sn)   setFjVal('fj-con-sn',    rig.rig_sn || sn);
-          if (rig.rig_dom)        setFjVal('fj-con-dom',    rig.rig_dom);
-          if (rig.main_make)      setFjVal('fj-main-make',  rig.main_make);
-          if (rig.main_model)     setFjVal('fj-main-model', rig.main_model);
-          if (rig.main_size)      setFjVal('fj-main-size',  rig.main_size);
-          if (rig.main_sn)        setFjVal('fj-main-sn',    rig.main_sn);
-          if (rig.res_make)       setFjVal('fj-res-make',   rig.res_make);
-          if (rig.res_model)      setFjVal('fj-res-model',  rig.res_model);
-          if (rig.res_size)       setFjVal('fj-res-size',   rig.res_size);
-          if (rig.res_sn)         setFjVal('fj-res-sn',     rig.res_sn);
-          if (rig.res_pack_date)  setFjVal('fj-res-pack',   rig.res_pack_date);
-          if (rig.res_repack_due) setFjVal('fj-res-due',    rig.res_repack_due);
-          if (rig.aad_make)       setFjVal('fj-aad-make',   rig.aad_make);
-          if (rig.aad_sn)         setFjVal('fj-aad-sn',     rig.aad_sn);
-          if (rig.aad_dom)        setFjVal('fj-aad-dom',    rig.aad_dom);
-
-          // Open all subsections so user can see everything filled in
-          ['fj-sub-container','fj-sub-main','fj-sub-reserve','fj-sub-aad'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el && !el.classList.contains('open')) el.classList.add('open');
-          });
-
-          if (retResult) retResult.textContent = '✓ Rig info loaded from your service record. Just select the services you need and submit.';
-        } else {
-          if (retResult) retResult.textContent = '✓ Serial number pre-filled. Please complete any missing fields.';
-          // Open container section at minimum
-          const sub = document.getElementById('fj-sub-container');
-          if (sub) sub.classList.add('open');
-        }
-      })
-      .catch(err => {
-        console.warn('prefill lookup failed:', err);
-        if (retResult) retResult.textContent = '⚠ Could not load rig data. Serial number pre-filled — please complete remaining fields.';
-        const sub = document.getElementById('fj-sub-container');
-        if (sub) sub.classList.add('open');
-      });
-    return;
-  }
-
-  // Normal flow — load gear data then handle S/N lookup
+(function() {
   loadGearFromSheet().then(() => {
-    if (sn) {
-      document.getElementById('serial-input').value = sn;
-      lookupSerial();
-    }
+    const sn = new URLSearchParams(window.location.search).get('sn');
+    if (sn) { document.getElementById('serial-input').value = sn; lookupSerial(); }
   });
-});
+})();
 
 function renderGear(g) {
   const sn = String(g.rig_sn).replace('.0','');
@@ -2150,7 +1719,6 @@ async function submitRequest() {
     res_repack_due: currentGear.res_repack_due || '',
     services: [...selectedServices].join(' | '),
     extra_notes: notes,
-    rush: '',
     status: 'PENDING'
   };
 
@@ -2176,6 +1744,9 @@ function resetAll() {
 }
 
 // ── FUN JUMPER ──────────────────────────────────────────────
+
+let fjSelectedServices = new Set();
+let fjDamage = 'no';
 
 function toggleFjSub(id) {
   document.getElementById(id).classList.toggle('open');
@@ -2291,7 +1862,6 @@ async function submitFunJumper() {
     extra_notes:      gv('fj-extra-notes'),
     known_damage:     fjDamage,
     damage_desc:      fjDamage === 'yes' ? gv('fj-damage-desc') : '',
-    rush:             selectedRush.fj || 'Standard Turnaround',
     status:           'PENDING'
   };
 
@@ -2345,8 +1915,6 @@ function adminLogin() {
 document.addEventListener('DOMContentLoaded', () => {
   const inp = document.getElementById('admin-pw-input');
   if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
-  const retInp = document.getElementById('ret-email');
-  if (retInp) retInp.addEventListener('keydown', e => { if (e.key === 'Enter') loadReturningCustomer(); });
 });
 
 function setFilter(f) {
@@ -2642,67 +2210,6 @@ async function createRig() {
   </div>
 </div>
 
-<!-- PWA INSTALL BANNER -->
-<div class="pwa-banner" id="pwa-banner">
-  <div class="pwa-banner-icon">📲</div>
-  <div class="pwa-banner-text">
-    <div class="pwa-banner-title">Install SSXgear App</div>
-    <div class="pwa-banner-sub">Add to your home screen for quick access</div>
-  </div>
-  <button class="btn-pwa-install" id="pwa-install-btn">Install</button>
-  <button class="btn-pwa-dismiss" onclick="dismissPWA()" title="Dismiss">✕</button>
-</div>
 
-<script>
-// Register service worker for PWA
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
-
-// Hide ONLY if already running as installed standalone app
-if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-  const navBtn = document.getElementById('pwa-nav-btn');
-  if (navBtn) navBtn.style.display = 'none';
-  const banner = document.getElementById('pwa-banner');
-  if (banner) banner.style.display = 'none';
-}
-
-// Capture install prompt if Chrome provides it
-let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Button stays visible - it's already display:flex in HTML
-});
-
-async function triggerPWAInstall() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    if (outcome === 'accepted') {
-      const navBtn = document.getElementById('pwa-nav-btn');
-      if (navBtn) navBtn.style.display = 'none';
-      document.getElementById('pwa-banner').classList.remove('show');
-    }
-  } else {
-    // Manual instructions for Safari / Firefox / after Chrome dismissal
-    alert('📲 Install SSXgear as an App:\n\n🍎 iPhone/iPad (Safari):\nTap Share ⬆ at the bottom → "Add to Home Screen" → Add\n\n🤖 Android (Chrome):\nTap Menu ⋮ → "Add to Home Screen"\n\n💻 Desktop Chrome/Edge:\nLook for ⊕ icon in the address bar right side');
-  }
-}
-
-document.getElementById('pwa-install-btn').addEventListener('click', triggerPWAInstall);
-
-window.addEventListener('appinstalled', () => {
-  const navBtn = document.getElementById('pwa-nav-btn');
-  if (navBtn) navBtn.style.display = 'none';
-  document.getElementById('pwa-banner').classList.remove('show');
-  deferredPrompt = null;
-});
-
-function dismissPWA() {
-  document.getElementById('pwa-banner').classList.remove('show');
-  sessionStorage.setItem('pwaDismissed', '1');
-}</script>
 
 </body></html>
