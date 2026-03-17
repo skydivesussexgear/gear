@@ -2023,23 +2023,25 @@ function renderGear(g) {
 
   if (!g.res_repack_due) {
     rb.className = 'repack-bar rp-unknown';
-    icon.textContent = '&#128203;'; text.textContent = 'Reserve repack due date unknown'; days.textContent = '';
+    icon.textContent = '📋'; text.textContent = 'Reserve repack due date unknown'; days.textContent = '';
   } else {
-    const diff = Math.round((new Date(g.res_repack_due) - new Date()) / 86400000);
+    const dueDate = new Date(g.res_repack_due);
+    const dueDateStr = dueDate.toLocaleDateString();
+    const diff = Math.round((dueDate - new Date()) / 86400000);
     if (diff < 0) {
       rb.className = 'repack-bar rp-over';
       icon.textContent = '🚨';
-      text.textContent = 'RESERVE OVERDUE — was due ' + g.res_repack_due;
+      text.textContent = 'RESERVE OVERDUE — was due ' + dueDateStr;
       days.textContent = Math.abs(diff) + 'd overdue';
     } else if (diff <= 30) {
       rb.className = 'repack-bar rp-soon';
-      icon.textContent = '&#9888;️';
-      text.textContent = 'Repack due soon — ' + g.res_repack_due;
+      icon.textContent = '⚠️';
+      text.textContent = 'Repack due soon — ' + dueDateStr;
       days.textContent = diff + ' days';
     } else {
       rb.className = 'repack-bar rp-ok';
-      icon.textContent = '&#10003;';
-      text.textContent = 'Reserve current — due ' + g.res_repack_due;
+      icon.textContent = '✓';
+      text.textContent = 'Reserve current — due ' + dueDateStr;
       days.textContent = diff + ' days';
     }
   }
@@ -2061,7 +2063,7 @@ function renderGear(g) {
   const blocks = [
     { title: 'Container', rows: [['Make', g.rig_make], ['S/N', sn], ['DOM', g.rig_dom]] },
     { title: 'Main Canopy', rows: [['Make', g.main_make], ['Size', g.main_size ? String(g.main_size).replace('.0','') + ' sqft' : '—'], ['Color', g.main_color || '—']] },
-    { title: 'Reserve', rows: [['Make', g.res_make], ['Size', g.res_size ? String(g.res_size).replace('.0','') + ' sqft' : '—'], ['Last Pack', g.res_pack_date || '—'], ['Due', g.res_repack_due || '—']] },
+    { title: 'Reserve', rows: [['Make', g.res_make], ['Size', g.res_size ? String(g.res_size).replace('.0','') + ' sqft' : '—'], ['Last Pack', g.res_pack_date ? new Date(g.res_pack_date).toLocaleDateString() : '—'], ['Due', g.res_repack_due ? new Date(g.res_repack_due).toLocaleDateString() : '—']] },
     { title: 'AAD', rows: [['Make', g.aad_make], ['S/N', g.aad_sn ? String(g.aad_sn).replace('.0','') : '—'], ['DOM', g.aad_dom || '—'], g.jumps ? ['Jumps', g.jumps] : null].filter(Boolean) },
   ];
   blocks.forEach(b => {

@@ -540,7 +540,7 @@ function renderQueue(){
             <div class="info-content">
               Container: ${order.rig_make||''} ${order.con_model||''} S/N: ${order.rig_sn||''}
               ${order.main_make?'<br>Main: '+order.main_make+' '+(order.main_model||'')+' '+(order.main_size||'')+'sqft S/N: '+(order.main_sn||''):''}
-              ${order.res_make?'<br>Reserve: '+order.res_make+' '+(order.res_model||'')+' '+(order.res_size||'')+'sqft S/N: '+(order.res_sn||'')+(order.res_repack_due?' · Due: '+order.res_repack_due:''):''}
+              ${order.res_make?'<br>Reserve: '+order.res_make+' '+(order.res_model||'')+' '+(order.res_size||'')+'sqft S/N: '+(order.res_sn||'')+(order.res_repack_due?' · Due: '+new Date(order.res_repack_due).toLocaleDateString():''):''}
               ${order.aad_make?'<br>AAD: '+order.aad_make+' S/N: '+(order.aad_sn||''):''}
               ${order.known_damage==='yes'?'<br>⚠ <strong>Known damage:</strong> '+(order.damage_desc||''):''}
             </div>
