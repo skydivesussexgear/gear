@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Rig — Skydive Sussex</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#080c12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SSX Gear">
+
+<style>
+:root {
+  --bg: #080c12;
+  --surface: #0f1520;
+  --surface2: #161e2e;
+  --surface3: #1c2640;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.14);
+  --sky: #38bdf8;
+  --sky-dim: rgba(56,189,248,0.12);
+  --sky-glow: rgba(56,189,248,0.25);
+  --green: #4ade80;
+  --green-dim: rgba(74,222,128,0.1);
+  --red: #f87171;
+  --red-dim: rgba(248,113,113,0.1);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.1);
+  --purple: #a78bfa;
+  --purple-dim: rgba(167,139,250,0.12);
+  --text: #f0f4ff;
+  --text-dim: #8896b0;
+  --text-muted: #4a5568;
+  --radius: 12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  min-height: 100vh;
+  background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(56,189,248,0.08) 0%, transparent 60%);
+}
+
+/* HEADER */
+.header {
+  background: #0d1829;
+  border-bottom: 2px solid #e8191a;
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 2px 20px rgba(232,25,26,0.2);
+}
+.header-inner {
+  max-width: 680px; margin: 0 auto; padding: 10px 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.header-brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.header-brand img { height: 36px; width: auto; flex-shrink: 0; }
+.header-text h1 {
+  font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase; line-height: 1; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.header-text p { font-size: 9px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: #e8191a; margin-top: 3px; }
+@media(max-width:380px){ .header-text { display: none; } }
+.btn-back {
+  background: var(--sky-dim); border: 1px solid rgba(56,189,248,0.3); color: var(--sky);
+  border-radius: 8px; padding: 8px 12px; font-family: 'Barlow', sans-serif;
+  font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none;
+  white-space: nowrap; transition: background 0.2s;
+}
+.btn-back:hover { background: rgba(56,189,248,0.2); }
+
+/* MAIN */
+.main { max-width: 680px; margin: 0 auto; padding: 16px 12px 80px; }
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* PORTAL SELECTION */
+.portal-hero { text-align: center; padding: 40px 0 32px; }
+.portal-hero span { font-size: 48px; display: block; margin-bottom: 14px; }
+.portal-hero h2 {
+  font-family: 'Barlow', sans-serif; font-size: 26px; font-weight: 800; margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff 40%, var(--sky));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.portal-hero p { color: var(--text-dim); font-size: 14px; line-height: 1.6; margin-bottom: 0; }
+.portal-cards { display: grid; gap: 14px; margin-top: 24px; }
+.portal-card {
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: 16px; padding: 24px 20px;
+  display: flex; align-items: center; gap: 16px; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.portal-card:hover { border-color: rgba(56,189,248,0.4); background: var(--surface2); }
+.portal-card-icon { font-size: 32px; flex-shrink: 0; }
+.portal-card-title { font-family: 'Barlow', sans-serif; font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+.portal-card-sub { font-size: 13px; color: var(--text-dim); line-height: 1.4; }
+.portal-card-arrow { font-size: 18px; color: var(--text-muted); margin-left: auto; flex-shrink: 0; }
+
+/* LOOKUP FORM */
+.lookup-hero { text-align: center; padding: 32px 0 24px; }
+.lookup-hero h2 { font-family: 'Barlow', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+.lookup-hero p { color: var(--text-dim); font-size: 14px; line-height: 1.5; margin-bottom: 0; }
+.lookup-card {
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: 16px; padding: 24px 20px; margin-bottom: 16px;
+}
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+.field input {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border-strong);
+  border-radius: 9px; color: var(--text); font-family: 'Inter', sans-serif;
+  font-size: 16px; padding: 12px 14px; outline: none; transition: border-color 0.2s;
+  min-height: 48px;
+}
+.field input:focus { border-color: var(--sky); }
+.divider { text-align: center; color: var(--text-muted); font-size: 12px; margin: 14px 0; position: relative; }
+.divider::before, .divider::after { content:''; position:absolute; top:50%; width:42%; height:1px; background:var(--border); }
+.divider::before { left: 0; } .divider::after { right: 0; }
+.btn-lookup {
+  width: 100%; padding: 15px; background: linear-gradient(135deg, var(--sky), #0ea5e9);
+  color: #080c12; border: none; border-radius: var(--radius);
+  font-family: 'Barlow', sans-serif; font-size: 16px; font-weight: 800;
+  cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+  min-height: 52px; -webkit-tap-highlight-color: transparent;
+}
+.btn-lookup:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-lookup:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.error-pill {
+  display: none; margin-top: 12px; padding: 10px 16px;
+  background: var(--red-dim); border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 8px; color: var(--red); font-size: 13px; text-align: center;
+}
+.note-pill {
+  background: var(--sky-dim); border: 1px solid rgba(56,189,248,0.2);
+  border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--text-dim);
+  display: flex; align-items: center; gap: 8px; margin-top: 12px;
+}
+
+/* HISTORY RESULTS */
+.results-header { margin-bottom: 16px; }
+.results-title { font-family: 'Barlow', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.results-sub { font-size: 13px; color: var(--text-dim); }
+.history-card {
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: 14px; margin-bottom: 12px; overflow: hidden;
+}
+.history-card-header {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.history-card-header:hover { background: var(--surface2); }
+.hc-wo { font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 500; color: var(--sky); margin-bottom: 3px; }
+.hc-rig { font-family: 'Barlow', sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.5px; }
+.hc-meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+.hc-expand { color: var(--text-muted); font-size: 16px; transition: transform 0.2s; flex-shrink: 0; }
+.history-card.expanded .hc-expand { transform: rotate(180deg); }
+.history-card-body { display: none; padding: 14px 16px; }
+.history-card.expanded .history-card-body { display: block; }
+.svc-list-text { font-size: 13px; color: var(--text-dim); line-height: 1.8; }
+.svc-list-text span { display: block; padding: 3px 0; border-bottom: 1px solid var(--border); }
+.svc-list-text span:last-child { border-bottom: none; }
+
+/* STATUS BADGE */
+.status-badge {
+  display: inline-block; padding: 2px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+}
+.sb-complete { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+.sb-pending  { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+.sb-progress { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+.sb-ready    { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-state .icon { font-size: 48px; margin-bottom: 14px; }
+.btn-new-request {
+  display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px;
+  background: var(--sky); color: #080c12; border: none; border-radius: var(--radius);
+  font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 800;
+  cursor: pointer; transition: opacity 0.2s; text-decoration: none; margin-top: 16px;
+}
+.btn-new-request:hover { opacity: 0.9; }
+.btn-search-again {
+  background: transparent; border: 1px solid var(--border-strong); color: var(--text-dim);
+  border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: border-color 0.2s, color 0.2s; margin-top: 12px;
+}
+.btn-search-again:hover { border-color: var(--sky); color: var(--sky); }
+
+/* PWA INSTALL */
+.pwa-banner {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #0d1829; border-top: 1px solid rgba(56,189,248,0.3);
+  padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+  z-index: 100; transform: translateY(100%); transition: transform 0.3s ease;
+}
+.pwa-banner.show { transform: translateY(0); }
+.pwa-banner-icon { font-size: 28px; flex-shrink: 0; }
+.pwa-banner-text { flex: 1; }
+.pwa-banner-title { font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 800; }
+.pwa-banner-sub { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+.btn-pwa-install {
+  background: var(--sky); color: #080c12; border: none; border-radius: 8px;
+  padding: 8px 14px; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 800;
+  cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent;
+}
+.btn-pwa-dismiss {
+  background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 18px; padding: 4px; -webkit-tap-highlight-color: transparent;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <img src="data:image/png;base64,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" alt="Skydive Sussex">
+      <div class="header-text">
+        <h1>Skydive Sussex</h1>
+        <p>Gear Service</p>
+      </div>
+    </div>
+    <a href="index.htm" class="btn-back">✚ Request Service</a>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SCREEN: PORTAL SELECTION -->
+  <div class="screen active" id="screen-portal">
+    <div class="portal-hero">
+      <span>🪂</span>
+      <h2>Rig Portal</h2>
+      <p>View your service history or check the status of your gear.</p>
+    </div>
+    <div class="portal-cards">
+      <div class="portal-card" onclick="showScreen('screen-lookup')">
+        <div class="portal-card-icon">🙋</div>
+        <div>
+          <div class="portal-card-title">Owner Rig Portal</div>
+          <div class="portal-card-sub">View your service history, repack dates &amp; submit new work orders</div>
+        </div>
+        <div class="portal-card-arrow">→</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: LOOKUP FORM -->
+  <div class="screen" id="screen-lookup">
+    <button onclick="showScreen('screen-portal')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;margin-bottom:16px;padding:0;display:flex;align-items:center;gap:6px;">← Back</button>
+    <div class="lookup-hero">
+      <h2>🔒 My Rig Portal</h2>
+      <p>Enter your email to view your service records.<br>Your information is private and secure.</p>
+    </div>
+    <div class="lookup-card">
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="lookup-email" placeholder="john@example.com" autocomplete="email">
+      </div>
+      <div class="divider">or</div>
+      <div class="field">
+        <label>Container Serial Number</label>
+        <input type="text" id="lookup-sn" placeholder="e.g. JO-12345" autocomplete="off">
+      </div>
+      <div class="note-pill">🔒 Your email and serial number are used to verify ownership. Records are private.</div>
+      <div class="error-pill" id="lookup-error"></div>
+      <button class="btn-lookup" id="lookup-btn" onclick="lookupHistory()" style="margin-top:18px;">🔓 Access My Records</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: HISTORY RESULTS -->
+  <div class="screen" id="screen-history">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div class="results-title">Your Service History</div>
+        <div class="results-sub" id="results-sub"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-search-again" onclick="showScreen('screen-lookup')">← Search Again</button>
+        <a href="index.htm" class="btn-new-request">+ New Request</a>
+      </div>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+</div>
+
+<!-- PWA INSTALL BANNER -->
+<div class="pwa-banner" id="pwa-banner">
+  <div class="pwa-banner-icon">📲</div>
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">Install SSX Gear App</div>
+    <div class="pwa-banner-sub">Add to your home screen for quick access</div>
+  </div>
+  <button class="btn-pwa-install" id="pwa-install-btn">Install</button>
+  <button class="btn-pwa-dismiss" onclick="dismissPWA()" title="Dismiss">✕</button>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQvA6t6r4LxUzPJfdiqE3qywbGmE4c0aOa5VI_IlJkQp6dCUFKe2Ok6oAHSwcaJ9ln/exec';
+
+// ── SCREENS ───────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── HISTORY LOOKUP ────────────────────────────────────────────
+async function lookupHistory(){
+  const email = document.getElementById('lookup-email').value.trim().toLowerCase();
+  const sn    = document.getElementById('lookup-sn').value.trim();
+  const errEl = document.getElementById('lookup-error');
+  const btn   = document.getElementById('lookup-btn');
+  errEl.style.display='none';
+
+  if(!email && !sn){
+    errEl.textContent='Please enter your email address or container serial number.';
+    errEl.style.display='block'; return;
+  }
+
+  btn.disabled=true; btn.textContent='Loading...';
+
+  try {
+    const params = new URLSearchParams({action:'getHistory'});
+    if(email) params.append('email',email);
+    if(sn)    params.append('sn',sn);
+    const res = await fetch(SCRIPT_URL+'?'+params.toString(),{method:'GET',redirect:'follow',mode:'cors'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = JSON.parse(await res.text());
+    const history = data.history||[];
+
+    btn.disabled=false; btn.textContent='🔓 Access My Records';
+
+    const sub = email ? 'Records for '+email : 'Records for S/N '+sn;
+    document.getElementById('results-sub').textContent = history.length+' record'+(history.length!==1?'s':'')+' found · '+sub;
+
+    const listEl = document.getElementById('history-list');
+    listEl.innerHTML='';
+
+    if(history.length===0){
+      listEl.innerHTML=`
+        <div class="empty-state">
+          <div class="icon">📋</div>
+          <p>No service records found for that email / serial number.</p>
+          <p style="font-size:12px;margin-top:8px;">If you've submitted requests before, make sure you use the same email address.</p>
+          <a href="index.htm" class="btn-new-request" style="margin-top:20px;">+ Submit a New Request</a>
+        </div>`;
+      showScreen('screen-history'); return;
+    }
+
+    history.forEach((h,i)=>{
+      const s = (h.status||'PENDING').toUpperCase();
+      let badgeCls = 'sb-pending', badgeText = '📥 Pending';
+      if(s==='COMPLETE')    { badgeCls='sb-complete'; badgeText='✓ Complete'; }
+      if(s==='IN_PROGRESS') { badgeCls='sb-progress'; badgeText='🔧 In Progress'; }
+      if(s==='GEAR_READY')  { badgeCls='sb-ready';    badgeText='✅ Gear Ready'; }
+
+      const svcs = (h.services||'').split(' | ').filter(Boolean);
+      const card = document.createElement('div');
+      card.className='history-card';
+      card.id='hcard-'+i;
+      card.innerHTML=`
+        <div class="history-card-header" onclick="toggleHCard(${i})">
+          <div>
+            <div class="hc-wo">
+              ${h.work_order||'—'}
+              <span class="status-badge ${badgeCls}" style="margin-left:6px;">${badgeText}</span>
+            </div>
+            <div class="hc-rig">${h.rig_make||''} · S/N ${h.rig_sn||''}</div>
+            <div class="hc-meta">
+              Submitted: ${h.submitted_at?new Date(h.submitted_at).toLocaleDateString():'—'}
+              ${h.completed_at?' · Completed: '+new Date(h.completed_at).toLocaleDateString():''}
+            </div>
+          </div>
+          <div class="hc-expand">▾</div>
+        </div>
+        <div class="history-card-body">
+          <div style="margin-bottom:10px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Services</div>
+            <div class="svc-list-text">
+              ${svcs.length>0 ? svcs.map(s=>'<span>• '+s+'</span>').join('') : '<span style="color:var(--text-muted)">No services listed</span>'}
+            </div>
+          </div>
+          ${h.completion_notes?`<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:13px;color:var(--text-dim);">
+            <strong style="color:var(--text)">Rigger Notes:</strong> ${h.completion_notes}
+          </div>`:''}
+          ${h.rigger?`<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">Serviced by: ${h.rigger}</div>`:''}
+          <div style="margin-top:12px;">
+            <a href="index.htm?sn=${encodeURIComponent(h.rig_sn)}" class="btn-new-request" style="font-size:12px;padding:8px 16px;">+ Request Service on this Rig</a>
+          </div>
+        </div>`;
+      listEl.appendChild(card);
+    });
+
+    showScreen('screen-history');
+  } catch(e){
+    btn.disabled=false; btn.textContent='🔓 Access My Records';
+    errEl.textContent='Error: '+e.message+'. Please try again.';
+    errEl.style.display='block';
+  }
+}
+
+function toggleHCard(i){
+  document.getElementById('hcard-'+i).classList.toggle('expanded');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const e = document.getElementById('lookup-email');
+  const s = document.getElementById('lookup-sn');
+  if(e) e.addEventListener('keydown',ev=>{if(ev.key==='Enter')lookupHistory();});
+  if(s) s.addEventListener('keydown',ev=>{if(ev.key==='Enter')lookupHistory();});
+
+  // Check for ?sn= in URL (from QR code)
+  const params = new URLSearchParams(window.location.search);
+  const snParam = params.get('sn');
+  if(snParam && s){ s.value=snParam; showScreen('screen-lookup'); }
+});
+
+// ── PWA INSTALL ───────────────────────────────────────────────
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  setTimeout(()=>{ document.getElementById('pwa-banner').classList.add('show'); }, 2000);
+});
+
+document.getElementById('pwa-install-btn').addEventListener('click', async ()=>{
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const {outcome} = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('pwa-banner').classList.remove('show');
+});
+
+window.addEventListener('appinstalled', ()=>{
+  document.getElementById('pwa-banner').classList.remove('show');
+  deferredPrompt = null;
+});
+
+function dismissPWA(){
+  document.getElementById('pwa-banner').classList.remove('show');
+  sessionStorage.setItem('pwaDismissed','1');
+}
+
+// Don't show again if dismissed this session
+if(sessionStorage.getItem('pwaDismissed')){
+  window.removeEventListener('beforeinstallprompt', ()=>{});
+}
+</script>
+</body>
+</html>
