@@ -2,6 +2,11 @@
 <html lang="en"><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta charset="UTF-8">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SSXgear">
+<meta name="theme-color" content="#080c12">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Skydive Sussex — Gear Service</title>
 <link href="index_files/css2.css" rel="stylesheet">
@@ -862,16 +867,16 @@ body {
 .landing-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  max-width: 600px;
+  gap: 16px;
+  max-width: 680px;
   margin: 0 auto;
 }
-@media (max-width: 480px) { .landing-cards { grid-template-columns: 1fr; gap: 10px; } }
+@media (max-width: 480px) { .landing-cards { grid-template-columns: 1fr; gap: 12px; } }
 .landing-card {
   background: var(--surface);
   border: 1px solid var(--border-strong);
-  border-radius: 18px;
-  padding: 24px 20px 20px;
+  border-radius: 22px;
+  padding: 36px 24px 28px;
   cursor: pointer;
   transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
   text-align: center;
@@ -902,9 +907,9 @@ body {
 }
 .lc-title {
   font-family: 'Barlow', sans-serif;
-  font-size: 17px;
+  font-size: 22px;
   font-weight: 800;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   line-height: 1.2;
 }
 .landing-card.fun-jumper .lc-title {
@@ -933,16 +938,16 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 18px;
-  border-radius: 8px;
+  padding: 14px 28px;
+  border-radius: 10px;
   font-family: 'Barlow', sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   border: none;
   cursor: pointer;
   transition: opacity 0.15s;
   letter-spacing: 0.3px;
-  min-height: 44px;
+  min-height: 52px;
   -webkit-tap-highlight-color: transparent;
 }
 .lc-btn:hover { opacity: 0.88; }
@@ -2576,6 +2581,11 @@ window.addEventListener('appinstalled', () => {
 function dismissPWA() {
   document.getElementById('pwa-banner').classList.remove('show');
   sessionStorage.setItem('pwaDismissed', '1');
+}
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 </script>
 
