@@ -902,9 +902,9 @@ body {
 }
 .lc-title {
   font-family: 'Barlow', sans-serif;
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 800;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   line-height: 1.2;
 }
 .landing-card.fun-jumper .lc-title {
@@ -1595,23 +1595,21 @@ function renderGear(g) {
     rb.className = 'repack-bar rp-unknown';
     icon.textContent = '📋'; text.textContent = 'Reserve repack due date unknown'; days.textContent = '';
   } else {
-    const dueDate = new Date(g.res_repack_due);
-    const dueDateStr = dueDate.toLocaleDateString();
-    const diff = Math.round((dueDate - new Date()) / 86400000);
+    const diff = Math.round((new Date(g.res_repack_due) - new Date()) / 86400000);
     if (diff < 0) {
       rb.className = 'repack-bar rp-over';
       icon.textContent = '🚨';
-      text.textContent = 'RESERVE OVERDUE — was due ' + dueDateStr;
+      text.textContent = 'RESERVE OVERDUE — was due ' + g.res_repack_due;
       days.textContent = Math.abs(diff) + 'd overdue';
     } else if (diff <= 30) {
       rb.className = 'repack-bar rp-soon';
       icon.textContent = '⚠️';
-      text.textContent = 'Repack due soon — ' + dueDateStr;
+      text.textContent = 'Repack due soon — ' + g.res_repack_due;
       days.textContent = diff + ' days';
     } else {
       rb.className = 'repack-bar rp-ok';
       icon.textContent = '✓';
-      text.textContent = 'Reserve current — due ' + dueDateStr;
+      text.textContent = 'Reserve current — due ' + g.res_repack_due;
       days.textContent = diff + ' days';
     }
   }
