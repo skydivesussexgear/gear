@@ -81,6 +81,78 @@ body {
   gap: 6px;
   flex-shrink: 0;
 }
+
+/* ── HAMBURGER ── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 8px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.hamburger span {
+  display: block;
+  height: 2px;
+  background: var(--text-dim);
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+/* ── MOBILE DROPDOWN NAV ── */
+.mobile-nav {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: #0d1829;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.mobile-nav.open { display: flex; }
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-nav-item:hover, .mobile-nav-item:active {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.2);
+  color: var(--text);
+}
+.mobile-nav-item.sky  { border-color: rgba(56,189,248,0.3); color: var(--sky); background: var(--sky-dim); }
+.mobile-nav-item.red  { border-color: rgba(232,25,26,0.3); color: #f87171; }
+.mobile-nav-item.gold { border-color: rgba(251,191,36,0.3); color: var(--yellow); }
+
+@media (max-width: 600px) {
+  .header-nav { display: none; }
+  .hamburger  { display: flex; }
+}
+@media (min-width: 601px) {
+  .mobile-nav { display: none !important; }
+}
+
 .btn-home {
   background: var(--sky-dim);
   border: 1px solid rgba(56,189,248,0.3);
@@ -97,9 +169,8 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .btn-home:hover { background: rgba(56,189,248,0.2); border-color: var(--sky); }
-/* Hide label text on very small screens, keep icon */
 .btn-home .btn-label { display: inline; }
-@media (max-width: 400px) { .btn-home .btn-label { display: none; } }
+@media (max-width: 700px) { .btn-home .btn-label { display: none; } }
 
 .queue-link {
   display: flex;
@@ -125,7 +196,7 @@ body {
   background: rgba(232,25,26,0.1);
 }
 .queue-link .ql-label { display: inline; }
-@media (max-width: 400px) { .queue-link .ql-label { display: none; } }
+@media (max-width: 700px) { .queue-link .ql-label { display: none; } }
 
 .header-text h1 {
   font-family: 'Barlow', sans-serif;
@@ -1240,6 +1311,20 @@ body {
       <button id="pwa-nav-btn" onclick="triggerPWAInstall()" style="display:flex;align-items:center;gap:5px;padding:8px 10px;background:var(--sky-dim);border:1px solid rgba(56,189,248,0.3);border-radius:8px;color:var(--sky);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;">📲 <span class="ql-label">Install App</span></button>
       <button class="admin-btn" onclick="openAdmin()">🔒 <span class="admin-label">Admin</span></button>
     </div>
+    <!-- HAMBURGER (mobile only) -->
+    <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <!-- MOBILE NAV DROPDOWN -->
+  <div class="mobile-nav" id="mobile-nav">
+    <button class="mobile-nav-item sky" onclick="showScreen('screen-landing');closeMobileNav()">✚ Request Service</button>
+    <a class="mobile-nav-item red" href="ssx_queue.html">📋 Rigger Queue</a>
+    <a class="mobile-nav-item" href="customer.html">🪂 My Rig</a>
+    <button class="mobile-nav-item" onclick="triggerPWAInstall();closeMobileNav()">📲 Install App</button>
+    <button class="mobile-nav-item gold" onclick="openAdmin();closeMobileNav()">🔒 Admin</button>
+  </div>
+    </div>
   </div>
 </div>
 
@@ -1771,7 +1856,18 @@ const SERVICE_GROUPS = [
 let currentGear = null;
 let selectedServices = new Set();
 
-function showScreen(id) {
+function toggleMobileNav() {
+  const nav = document.getElementById('mobile-nav');
+  const btn = document.getElementById('hamburger-btn');
+  nav.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+function closeMobileNav() {
+  document.getElementById('mobile-nav').classList.remove('open');
+  document.getElementById('hamburger-btn').classList.remove('open');
+}
+
+
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (id === 'screen-funjumper') buildFjServices();
