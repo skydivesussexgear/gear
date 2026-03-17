@@ -55,19 +55,19 @@ body {
   box-shadow: 0 2px 20px rgba(232,25,26,0.2);
 }
 .header-inner {
-  max-width: 680px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 10px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 .header-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex: 1;
+  gap: 8px;
+  flex-shrink: 0;
   min-width: 0;
 }
 .header-brand img {
@@ -78,7 +78,7 @@ body {
 .header-nav {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex-shrink: 0;
 }
 
@@ -152,15 +152,14 @@ body {
 @media (min-width: 601px) {
   .mobile-nav { display: none !important; }
 }
-
 .btn-home {
   background: var(--sky-dim);
   border: 1px solid rgba(56,189,248,0.3);
   color: var(--sky);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 7px 9px;
   font-family: 'Barlow', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
@@ -170,19 +169,19 @@ body {
 }
 .btn-home:hover { background: rgba(56,189,248,0.2); border-color: var(--sky); }
 .btn-home .btn-label { display: inline; }
-@media (max-width: 700px) { .btn-home .btn-label { display: none; } }
+@media (max-width: 900px) { .btn-home .btn-label { display: none; } }
 
 .queue-link {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 8px 10px;
+  gap: 4px;
+  padding: 7px 9px;
   background: transparent;
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 8px;
   color: var(--text-dim);
   font-family: 'Inter', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -196,7 +195,7 @@ body {
   background: rgba(232,25,26,0.1);
 }
 .queue-link .ql-label { display: inline; }
-@media (max-width: 700px) { .queue-link .ql-label { display: none; } }
+@media (max-width: 900px) { .queue-link .ql-label { display: none; } }
 
 .header-text h1 {
   font-family: 'Barlow', sans-serif;
@@ -217,6 +216,10 @@ body {
   text-transform: uppercase;
   color: #e8191a;
   margin-top: 3px;
+}
+/* Hide text on medium screens where nav overflows */
+@media (max-width: 700px) {
+  .header-text { display: none; }
 }
 @media (max-width: 380px) {
   .header-text { display: none; }
@@ -1323,8 +1326,6 @@ body {
     <a class="mobile-nav-item" href="customer.html">🪂 My Rig</a>
     <button class="mobile-nav-item" onclick="triggerPWAInstall();closeMobileNav()">📲 Install App</button>
     <button class="mobile-nav-item gold" onclick="openAdmin();closeMobileNav()">🔒 Admin</button>
-  </div>
-    </div>
   </div>
 </div>
 
