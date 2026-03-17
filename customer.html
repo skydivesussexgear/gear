@@ -395,7 +395,7 @@ async function lookupHistory(){
           </div>`:''}
           ${h.rigger?`<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">Serviced by: ${h.rigger}</div>`:''}
           <div style="margin-top:12px;">
-            <a href="index.htm?sn=${encodeURIComponent(h.rig_sn)}&prefill=1&name=${encodeURIComponent(h.customer_name||'')}&email=${encodeURIComponent(h.customer_email||'')}&phone=${encodeURIComponent(h.customer_phone||'')}&rig_make=${encodeURIComponent(h.rig_make||'')}" 
+            <a href="index.htm?prefill=1&sn=${encodeURIComponent(h.rig_sn)}&email=${encodeURIComponent(h.customer_email||'')}" 
                class="btn-new-request" style="font-size:12px;padding:8px 16px;">+ Request Service on this Rig</a>
           </div>
         </div>`;

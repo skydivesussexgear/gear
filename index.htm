@@ -1813,43 +1813,79 @@ function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
 
 document.getElementById('serial-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupSerial(); });
 (function() {
-  const params = new URLSearchParams(window.location.search);
+  const params  = new URLSearchParams(window.location.search);
   const sn      = params.get('sn');
   const prefill = params.get('prefill');
+  const email   = params.get('email');
 
-  // If coming from customer portal, jump to FJ form immediately (before gear loads)
+  // Coming from customer portal — jump straight to FJ form
   if (prefill === '1') {
     showScreen('screen-funjumper');
     buildFjServices();
-    setTimeout(() => {
-      const name    = params.get('name')     || '';
-      const email   = params.get('email')    || '';
-      const phone   = params.get('phone')    || '';
-      const rigSN   = params.get('sn')       || '';
-      const rigMake = params.get('rig_make') || '';
 
-      if (name)    setFjVal('fj-name',     name);
-      if (email)   setFjVal('fj-email',    email);
-      if (phone)   setFjVal('fj-phone',    phone);
-      if (rigSN)   setFjVal('fj-con-sn',   rigSN);
-      if (rigMake) setFjVal('fj-con-make',  rigMake);
+    // Fetch full rig record from GAS using S/N + email
+    const fetchParams = new URLSearchParams({ action: 'customerLookup' });
+    if (sn)    fetchParams.append('sn', sn);
+    if (email) fetchParams.append('email', email);
 
-      // Open container section so user sees filled fields
-      const sub = document.getElementById('fj-sub-container');
-      if (sub && !sub.classList.contains('open')) sub.classList.add('open');
+    fetch(SCRIPT_URL + '?' + fetchParams.toString(), { method: 'GET', redirect: 'follow', mode: 'cors' })
+      .then(r => r.json())
+      .then(data => {
+        const rig = data.rig;
+        setTimeout(() => {
+          if (rig) {
+            if (rig.customer_name)  setFjVal('fj-name',       rig.customer_name);
+            if (rig.customer_email) setFjVal('fj-email',      rig.customer_email);
+            if (rig.customer_phone) setFjVal('fj-phone',      rig.customer_phone);
+            if (rig.rig_make)       setFjVal('fj-con-make',   rig.rig_make);
+            if (rig.con_model)      setFjVal('fj-con-model',  rig.con_model);
+            if (rig.rig_sn || sn)   setFjVal('fj-con-sn',    rig.rig_sn || sn);
+            if (rig.rig_dom)        setFjVal('fj-con-dom',    rig.rig_dom);
+            if (rig.main_make)      setFjVal('fj-main-make',  rig.main_make);
+            if (rig.main_model)     setFjVal('fj-main-model', rig.main_model);
+            if (rig.main_size)      setFjVal('fj-main-size',  rig.main_size);
+            if (rig.main_sn)        setFjVal('fj-main-sn',    rig.main_sn);
+            if (rig.res_make)       setFjVal('fj-res-make',   rig.res_make);
+            if (rig.res_model)      setFjVal('fj-res-model',  rig.res_model);
+            if (rig.res_size)       setFjVal('fj-res-size',   rig.res_size);
+            if (rig.res_sn)         setFjVal('fj-res-sn',     rig.res_sn);
+            if (rig.res_pack_date)  setFjVal('fj-res-pack',   rig.res_pack_date);
+            if (rig.res_repack_due) setFjVal('fj-res-due',    rig.res_repack_due);
+            if (rig.aad_make)       setFjVal('fj-aad-make',   rig.aad_make);
+            if (rig.aad_sn)         setFjVal('fj-aad-sn',     rig.aad_sn);
+            if (rig.aad_dom)        setFjVal('fj-aad-dom',    rig.aad_dom);
+          } else if (sn) {
+            // Fallback — at least fill in S/N
+            setFjVal('fj-con-sn', sn);
+          }
 
-      // Show the green loaded banner
-      const retBody   = document.getElementById('returning-body');
-      const retResult = document.getElementById('returning-result');
-      const retChev   = document.getElementById('returning-chevron');
-      if (retBody && retResult) {
-        retBody.classList.add('open');
-        if (retChev) retChev.textContent = '▴';
-        retResult.textContent = '✓ Rig info loaded from your service record. Just select the services you need and submit.';
-        retResult.style.display = 'block';
-      }
-    }, 150);
-    return; // skip gear load for FJ prefill — not needed
+          // Open container section
+          const sub = document.getElementById('fj-sub-container');
+          if (sub && !sub.classList.contains('open')) sub.classList.add('open');
+
+          // Show loaded banner
+          const retBody   = document.getElementById('returning-body');
+          const retResult = document.getElementById('returning-result');
+          const retChev   = document.getElementById('returning-chevron');
+          if (retBody && retResult) {
+            retBody.classList.add('open');
+            if (retChev) retChev.textContent = '▴';
+            retResult.textContent = rig
+              ? '✓ Rig info loaded from your service record. Just select the services you need and submit.'
+              : '✓ Serial number loaded. Please fill in any missing details.';
+            retResult.style.display = 'block';
+          }
+        }, 150);
+      })
+      .catch(() => {
+        // Network failed — just fill S/N at minimum
+        setTimeout(() => {
+          if (sn) setFjVal('fj-con-sn', sn);
+          const sub = document.getElementById('fj-sub-container');
+          if (sub) sub.classList.add('open');
+        }, 150);
+      });
+    return;
   }
 
   // Normal flow — load gear data then handle S/N lookup
