@@ -2560,6 +2560,14 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 
+// Hide install button if already installed/running as PWA
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+  const navBtn = document.getElementById('pwa-nav-btn');
+  if (navBtn) navBtn.style.display = 'none';
+  const banner = document.getElementById('pwa-banner');
+  if (banner) banner.style.display = 'none';
+}
+
 // PWA Install
 let deferredPrompt = null;
 
@@ -2576,7 +2584,6 @@ window.addEventListener('beforeinstallprompt', e => {
 
 async function triggerPWAInstall() {
   if (!deferredPrompt) {
-    // Fallback instructions if prompt not available
     alert('To install SSXgear:\n\n📱 iPhone/iPad: Tap the Share button → "Add to Home Screen"\n\n🤖 Android: Tap the menu (⋮) → "Add to Home Screen"\n\n💻 Desktop Chrome: Look for the ⊕ icon in the address bar');
     return;
   }
@@ -2591,10 +2598,12 @@ async function triggerPWAInstall() {
 document.getElementById('pwa-install-btn').addEventListener('click', triggerPWAInstall);
 
 window.addEventListener('appinstalled', () => {
+  // App was just installed — hide everything
   document.getElementById('pwa-banner').classList.remove('show');
   const navBtn = document.getElementById('pwa-nav-btn');
   if (navBtn) navBtn.style.display = 'none';
   deferredPrompt = null;
+  sessionStorage.setItem('pwaInstalled', '1');
 });
 
 function dismissPWA() {
