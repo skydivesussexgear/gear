@@ -161,6 +161,18 @@
   .btn-confirm{background:var(--green);color:#0e1117;border:none;border-radius:8px;padding:13px 28px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;cursor:pointer;min-height:48px;-webkit-tap-highlight-color:transparent;}
   .btn-cancel-modal{background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:13px 20px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;cursor:pointer;min-height:48px;-webkit-tap-highlight-color:transparent;}
   .btn-cancel-modal:hover{border-color:var(--red);color:var(--red);}
+
+  /* SUBMIT BUTTON LOADING STATES */
+  .btn-green{position:relative;overflow:hidden;transition:transform 0.1s ease,box-shadow 0.15s ease;}
+  .btn-green:active{transform:scale(0.95) !important;box-shadow:0 0 0 4px rgba(34,197,94,0.35) !important;}
+  .btn-green.submitting{opacity:0.85;pointer-events:none;cursor:not-allowed;}
+  .btn-green.submitting .btn-text{display:none;}
+  .btn-green .btn-spinner{display:none;align-items:center;justify-content:center;gap:8px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);}
+  .btn-green.submitting .btn-spinner{display:flex;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .spinner-ring{width:16px;height:16px;border:2.5px solid rgba(14,17,23,0.3);border-top-color:#0e1117;border-radius:50%;animation:spin 0.65s linear infinite;flex-shrink:0;}
+  .btn-green .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.28);transform:scale(0);animation:ripple-anim 0.55s linear;pointer-events:none;}
+  @keyframes ripple-anim{to{transform:scale(5);opacity:0;}}
 </style>
 </head>
 <body>
@@ -528,7 +540,10 @@ function renderQueue(){
           </div>
           <div class="error-msg" id="comp-error-${realIdx}" style="margin-top:8px;"></div>
           <div class="complete-actions">
-            <button class="btn btn-green btn-sm" onclick="markComplete(${realIdx})">✓ Mark Complete & Log to Sheet</button>
+            <button class="btn btn-green btn-sm" id="complete-btn-${realIdx}" onclick="addRipple(event,this);markComplete(${realIdx})">
+              <span class="btn-text">✓ Mark Complete & Log to Sheet</span>
+              <span class="btn-spinner"><span class="spinner-ring"></span> Saving…</span>
+            </button>
             <button class="btn btn-danger btn-sm" onclick="deleteOrder(${realIdx})">✕ Delete Request</button>
           </div>
         </div>
@@ -590,6 +605,18 @@ async function changeStatus(idx, newStatus){
   } catch(e){ console.warn('updateStatus failed',e); }
 }
 
+// ── RIPPLE EFFECT ─────────────────────────────────────────────
+function addRipple(e, btn) {
+  const circle = document.createElement('span');
+  const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+  const radius = diameter / 2;
+  const rect = btn.getBoundingClientRect();
+  circle.style.cssText = `width:${diameter}px;height:${diameter}px;left:${e.clientX-rect.left-radius}px;top:${e.clientY-rect.top-radius}px`;
+  circle.className = 'ripple';
+  btn.querySelector('.ripple')?.remove();
+  btn.appendChild(circle);
+}
+
 // ── COMPLETE ORDER ─────────────────────────────────────────────
 let pendingCompleteIdx = null;
 
@@ -633,6 +660,9 @@ async function doMarkComplete(idx){
   const riggerFull = rigger + ' (' + symbol + ')';
 
   // Complete the order (invoice sent server-side inside completeOrder)
+  const btn = document.getElementById('complete-btn-'+idx);
+  if (btn) btn.classList.add('submitting');
+
   const payload={action:'completeOrder',work_order:order.work_order,rigger:riggerFull,services:updatedServices,completion_notes:compNotes,row:order._row};
   try {
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
@@ -640,6 +670,7 @@ async function doMarkComplete(idx){
     updateDashboard();
     renderQueue();
   } catch(e){
+    if (btn) btn.classList.remove('submitting');
     errEl.textContent='Error completing order. Please try again.'; errEl.style.display='block';
   }
 }
