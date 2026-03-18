@@ -1149,7 +1149,17 @@ body {
 }
 .rush-opt.selected .rush-price { color: var(--sky); }
 
-/* ── PWA BANNER ── */
+/* ── PRINT (QR card only) ── */
+@media print {
+  body > *:not(.admin-overlay) { display: none !important; }
+  .admin-overlay { position: static !important; background: white !important; display: block !important; }
+  .admin-panel { box-shadow: none !important; max-height: none !important; overflow: visible !important; }
+  .admin-header, .admin-login-card, .gm-toolbar, .gm-count, #gm-list,
+  .admin-tab-bar, #admin-tab-gear, #admin-tab-email, #qr-url-box,
+  .admin-tab-bar *, button:not(.qr-print-only), #qr-result > div:last-child { display: none !important; }
+  #qr-print-card { box-shadow: none !important; display: inline-block !important; }
+}
+
 .pwa-banner {
   position: fixed; bottom: 0; left: 0; right: 0;
   background: #0d1829; border-top: 1px solid rgba(56,189,248,0.3);
@@ -1172,6 +1182,7 @@ body {
 }
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -2028,20 +2039,85 @@ let adminUnlocked = false;
 let gearFilter = 'all';
 
 function switchAdminTab(tab) {
-  const isGear = tab === 'gear';
-  document.getElementById('admin-tab-gear').style.display  = isGear ? 'block' : 'none';
-  document.getElementById('admin-tab-email').style.display = isGear ? 'none'  : 'block';
+  ['gear','qr','email'].forEach(t => {
+    document.getElementById('admin-tab-' + t).style.display = t === tab ? 'block' : 'none';
+  });
+  const styles = {
+    gear:  { bg:'var(--yellow-dim)', color:'var(--yellow)',   border:'1px solid rgba(245,158,11,0.3)' },
+    qr:    { bg:'var(--sky-dim)',    color:'var(--sky)',      border:'1px solid rgba(56,189,248,0.3)' },
+    email: { bg:'var(--green-dim)',  color:'var(--green)',    border:'1px solid rgba(74,222,128,0.3)' },
+  };
+  ['gear','qr','email'].forEach(t => {
+    const btn = document.getElementById('admin-tab-btn-' + t);
+    if (!btn) return;
+    if (t === tab) {
+      btn.style.background  = styles[t].bg;
+      btn.style.color       = styles[t].color;
+      btn.style.border      = styles[t].border;
+    } else {
+      btn.style.background  = 'transparent';
+      btn.style.color       = 'var(--text-muted)';
+      btn.style.border      = 'none';
+    }
+  });
+  if (tab === 'email') loadDzEmail();
+}
 
-  const gearBtn  = document.getElementById('admin-tab-btn-gear');
-  const emailBtn = document.getElementById('admin-tab-btn-email');
-  if (isGear) {
-    gearBtn.style.cssText  += ';background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);';
-    emailBtn.style.cssText += ';background:transparent;color:var(--text-muted);border:none;';
-  } else {
-    emailBtn.style.cssText += ';background:var(--sky-dim);color:var(--sky);border:1px solid rgba(56,189,248,0.3);';
-    gearBtn.style.cssText  += ';background:transparent;color:var(--text-muted);border:none;';
-    loadDzEmail();
+// ── QR CODE GENERATOR ────────────────────────────────────────
+let qrInstance = null;
+
+function generateQR() {
+  const name      = (document.getElementById('qr-name').value      || '').trim();
+  const serial    = (document.getElementById('qr-serial').value    || '').trim().toUpperCase();
+  const email     = (document.getElementById('qr-email').value     || '').trim();
+  const container = (document.getElementById('qr-container').value || '').trim();
+
+  if (!serial) {
+    alert('Please enter a container serial number.');
+    return;
   }
+
+  // Build URL — goes to customer portal with S/N (and optionally email) pre-filled
+  let url = 'https://ssxgear.com/customer.html?sn=' + encodeURIComponent(serial);
+  if (email) url += '&email=' + encodeURIComponent(email);
+
+  // Update print card
+  document.getElementById('qr-pc-name').textContent      = name || '';
+  document.getElementById('qr-pc-serial').textContent    = 'S/N: ' + serial;
+  document.getElementById('qr-pc-container').textContent = container || '';
+  document.getElementById('qr-url-box').textContent      = url;
+
+  // Generate QR code
+  const qrEl = document.getElementById('qr-canvas');
+  qrEl.innerHTML = '';
+  if (qrInstance) { try { qrInstance.clear(); } catch(e) {} }
+
+  qrInstance = new QRCode(qrEl, {
+    text: url,
+    width: 200,
+    height: 200,
+    colorDark: '#1c1c1e',
+    colorLight: '#f2ede4',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // Style the QR canvas
+  setTimeout(() => {
+    const img = qrEl.querySelector('img, canvas');
+    if (img) { img.style.borderRadius = '8px'; img.style.border = '3px solid #1c1c1e'; }
+  }, 100);
+
+  document.getElementById('qr-result').style.display = 'block';
+  document.getElementById('qr-result').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetQR() {
+  document.getElementById('qr-result').style.display = 'none';
+  document.getElementById('qr-name').value      = '';
+  document.getElementById('qr-serial').value    = '';
+  document.getElementById('qr-email').value     = '';
+  document.getElementById('qr-container').value = '';
+  document.getElementById('qr-name').focus();
 }
 
 // ── DZ EMAIL SETTINGS ─────────────────────────────────────────
@@ -2470,6 +2546,10 @@ async function createRig() {
             style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);-webkit-tap-highlight-color:transparent;">
             🔧 Gear Manager
           </div>
+          <div id="admin-tab-btn-qr" onclick="switchAdminTab('qr')"
+            style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
+            📲 QR Codes
+          </div>
           <div id="admin-tab-btn-email" onclick="switchAdminTab('email')"
             style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
             ✉️ Email Settings
@@ -2487,6 +2567,64 @@ async function createRig() {
           </div>
           <div class="gm-count" id="gm-count"></div>
           <div id="gm-list" style="margin-top:12px;"></div>
+        </div>
+
+        <!-- QR CODE GENERATOR TAB -->
+        <div id="admin-tab-qr" style="display:none;">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
+            <div style="font-family:'Barlow',sans-serif;font-size:15px;font-weight:800;margin-bottom:4px;">📲 Fun Jumper QR Code Generator</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:16px;">Generate a personal QR code for a customer. They scan it and get their full service history + a pre-filled new request form.</div>
+
+            <div class="a-field"><label>Customer Full Name</label>
+              <input type="text" id="qr-name" placeholder="e.g. Jane Skydiver">
+            </div>
+            <div class="a-field"><label>Container Serial Number *</label>
+              <input type="text" id="qr-serial" placeholder="e.g. JO-12345">
+            </div>
+            <div class="a-field"><label>Customer Email <span style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-muted)">(optional — pre-fills lookup)</span></label>
+              <input type="email" id="qr-email" placeholder="e.g. jane@email.com">
+            </div>
+            <div class="a-field"><label>Container Make / Model <span style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-muted)">(optional)</span></label>
+              <input type="text" id="qr-container" placeholder="e.g. Javelin Odyssey">
+            </div>
+
+            <button onclick="generateQR()"
+              style="width:100%;padding:13px;background:linear-gradient(135deg,var(--sky),#7dd3f8);color:#080c12;font-family:'Barlow',sans-serif;font-size:15px;font-weight:800;border:none;border-radius:8px;cursor:pointer;letter-spacing:0.5px;">
+              ⚡ Generate QR Code
+            </button>
+          </div>
+
+          <!-- QR RESULT -->
+          <div id="qr-result" style="display:none;text-align:center;">
+            <!-- Printable card -->
+            <div id="qr-print-card" style="background:#f2ede4;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
+              <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
+              <div id="qr-canvas" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
+              <div id="qr-pc-name" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:#2a1e10;margin-bottom:4px;"></div>
+              <div id="qr-pc-serial" style="font-family:'Courier New',monospace;font-size:12px;color:#5a4a30;background:rgba(138,106,62,0.12);border:1px solid rgba(138,106,62,0.2);padding:4px 14px;border-radius:20px;display:inline-block;"></div>
+              <div id="qr-pc-container" style="font-size:12px;color:#8a7a60;margin-top:5px;"></div>
+              <div style="font-size:10px;color:#a08060;margin-top:12px;letter-spacing:0.5px;border-top:1px solid rgba(138,106,62,0.15);padding-top:10px;">
+                Scan to view service history &amp; request service<br>
+                <strong style="color:#5a4a30;">ssxgear.com</strong>
+              </div>
+            </div>
+
+            <!-- URL display -->
+            <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
+            <div id="qr-url-box" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;"></div>
+
+            <div style="display:flex;gap:10px;margin-bottom:12px;">
+              <button onclick="window.print()"
+                style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                🖨 Print Card
+              </button>
+              <button onclick="resetQR()"
+                style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                + New Customer
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- EMAIL SETTINGS TAB -->
