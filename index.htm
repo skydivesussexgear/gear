@@ -2301,6 +2301,28 @@ async function createRig() {
 
       <!-- GEAR MANAGER -->
       <div class="gear-manager" id="gear-manager">
+
+        <!-- GOOGLE SHEETS QUICK ACCESS -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">📊 Google Sheet — Quick Access</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="https://docs.google.com/spreadsheets/d/18xWrsryd3PUw_y02wrCJOPQ4ZBkFFPtZrCILRsrnSD8/edit#gid=0" target="_blank"
+               style="display:flex;align-items:center;gap:6px;padding:9px 14px;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;text-decoration:none;transition:border-color 0.2s,color 0.2s;white-space:nowrap;"
+               onmouseover="this.style.borderColor='var(--sky)';this.style.color='#fff'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-dim)'">
+              📋 Service Log
+            </a>
+            <a href="https://docs.google.com/spreadsheets/d/18xWrsryd3PUw_y02wrCJOPQ4ZBkFFPtZrCILRsrnSD8/edit#gid=1" target="_blank"
+               style="display:flex;align-items:center;gap:6px;padding:9px 14px;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;text-decoration:none;transition:border-color 0.2s,color 0.2s;white-space:nowrap;"
+               onmouseover="this.style.borderColor='var(--green)';this.style.color='#fff'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-dim)'">
+              ✅ Completed Orders
+            </a>
+            <a href="https://docs.google.com/spreadsheets/d/18xWrsryd3PUw_y02wrCJOPQ4ZBkFFPtZrCILRsrnSD8" target="_blank"
+               style="display:flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">
+              🔗 Open Full Sheet ↗
+            </a>
+          </div>
+        </div>
+
         <div class="gm-toolbar">
           <input class="gm-search" id="gm-search" type="text" placeholder="Search by name, serial, make…" oninput="renderGearList()">
           <button class="gm-filter active" id="filter-all" onclick="setFilter('all')">All</button>
