@@ -2063,6 +2063,61 @@ function switchAdminTab(tab) {
   if (tab === 'email') loadDzEmail();
 }
 
+// ── QR SUB TABS ───────────────────────────────────────────────
+function switchQRSub(sub) {
+  document.getElementById('qr-sub-fj').style.display = sub === 'fj' ? 'block' : 'none';
+  document.getElementById('qr-sub-dz').style.display = sub === 'dz' ? 'block' : 'none';
+  const fjBtn = document.getElementById('qr-sub-btn-fj');
+  const dzBtn = document.getElementById('qr-sub-btn-dz');
+  if (sub === 'fj') {
+    fjBtn.style.background = 'var(--sky-dim)'; fjBtn.style.color = 'var(--sky)'; fjBtn.style.border = '1px solid rgba(56,189,248,0.3)';
+    dzBtn.style.background = 'transparent';    dzBtn.style.color = 'var(--text-muted)'; dzBtn.style.border = 'none';
+  } else {
+    dzBtn.style.background = 'rgba(232,25,26,0.12)'; dzBtn.style.color = '#f87171'; dzBtn.style.border = '1px solid rgba(232,25,26,0.3)';
+    fjBtn.style.background = 'transparent';           fjBtn.style.color = 'var(--text-muted)'; fjBtn.style.border = 'none';
+    // Auto-generate DZ QR on first view
+    if (!document.getElementById('dz-qr-result').style.display || document.getElementById('dz-qr-result').style.display === 'none') {
+      generateDZQR();
+    }
+  }
+}
+
+// ── DZ GEAR QR ───────────────────────────────────────────────
+let dzQrInstance = null;
+
+function generateDZQR() {
+  const url = 'https://ssxgear.com/index.htm?screen=dz';
+  const qrEl = document.getElementById('dz-qr-canvas');
+  qrEl.innerHTML = '';
+  if (dzQrInstance) { try { dzQrInstance.clear(); } catch(e) {} }
+  dzQrInstance = new QRCode(qrEl, {
+    text: url,
+    width: 200,
+    height: 200,
+    colorDark: '#1c1c1e',
+    colorLight: '#f2ede4',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+  setTimeout(() => {
+    const img = qrEl.querySelector('img, canvas');
+    if (img) { img.style.borderRadius = '8px'; img.style.border = '3px solid #1c1c1e'; }
+  }, 100);
+  document.getElementById('dz-qr-result').style.display = 'block';
+}
+
+// ── PRINT SPECIFIC CARD ───────────────────────────────────────
+function printCard(cardId) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const w = window.open('', '_blank', 'width=400,height=500');
+  w.document.write('<html><head><title>SSXgear QR Card</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;font-family:sans-serif;} @media print{body{margin:0;}}</style></head><body>');
+  w.document.write(card.outerHTML);
+  w.document.write('</body></html>');
+  w.document.close();
+  w.focus();
+  setTimeout(() => { w.print(); w.close(); }, 400);
+}
+
 // ── QR CODE GENERATOR ────────────────────────────────────────
 let qrInstance = null;
 
@@ -2209,6 +2264,15 @@ document.addEventListener('DOMContentLoaded', function() {
   const sn      = params.get('sn');
   const prefill = params.get('prefill');
   const email   = params.get('email');
+
+  const screen  = params.get('screen');
+
+  // DZ QR code scan — go straight to serial lookup
+  if (screen === 'dz') {
+    showScreen('screen-serial');
+    loadGearFromSheet();
+    return;
+  }
 
   if (prefill === '1') {
     showScreen('screen-funjumper');
@@ -2548,7 +2612,7 @@ async function createRig() {
           </div>
           <div id="admin-tab-btn-qr" onclick="switchAdminTab('qr')"
             style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
-            📲 QR Codes
+            📲 FJ QR Codes
           </div>
           <div id="admin-tab-btn-email" onclick="switchAdminTab('email')"
             style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
@@ -2571,58 +2635,108 @@ async function createRig() {
 
         <!-- QR CODE GENERATOR TAB -->
         <div id="admin-tab-qr" style="display:none;">
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
-            <div style="font-family:'Barlow',sans-serif;font-size:15px;font-weight:800;margin-bottom:4px;">📲 Fun Jumper QR Code Generator</div>
-            <div style="font-size:12px;color:var(--text-dim);margin-bottom:16px;">Generate a personal QR code for a customer. They scan it and get their full service history + a pre-filled new request form.</div>
 
-            <div class="a-field"><label>Customer Full Name</label>
-              <input type="text" id="qr-name" placeholder="e.g. Jane Skydiver">
+          <!-- QR Sub-tab bar -->
+          <div style="display:flex;gap:4px;margin-bottom:14px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:3px;">
+            <div id="qr-sub-btn-fj" onclick="switchQRSub('fj')"
+              style="flex:1;padding:7px 6px;text-align:center;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;background:var(--sky-dim);color:var(--sky);border:1px solid rgba(56,189,248,0.3);transition:all 0.15s;-webkit-tap-highlight-color:transparent;">
+              🪂 Fun Jumper
             </div>
-            <div class="a-field"><label>Container Serial Number *</label>
-              <input type="text" id="qr-serial" placeholder="e.g. JO-12345">
+            <div id="qr-sub-btn-dz" onclick="switchQRSub('dz')"
+              style="flex:1;padding:7px 6px;text-align:center;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;color:var(--text-muted);transition:all 0.15s;-webkit-tap-highlight-color:transparent;">
+              🏫 DZ Gear
             </div>
-            <div class="a-field"><label>Customer Email <span style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-muted)">(optional — pre-fills lookup)</span></label>
-              <input type="email" id="qr-email" placeholder="e.g. jane@email.com">
-            </div>
-            <div class="a-field"><label>Container Make / Model <span style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-muted)">(optional)</span></label>
-              <input type="text" id="qr-container" placeholder="e.g. Javelin Odyssey">
-            </div>
-
-            <button onclick="generateQR()"
-              style="width:100%;padding:13px;background:linear-gradient(135deg,var(--sky),#7dd3f8);color:#080c12;font-family:'Barlow',sans-serif;font-size:15px;font-weight:800;border:none;border-radius:8px;cursor:pointer;letter-spacing:0.5px;">
-              ⚡ Generate QR Code
-            </button>
           </div>
 
-          <!-- QR RESULT -->
-          <div id="qr-result" style="display:none;text-align:center;">
-            <!-- Printable card -->
-            <div id="qr-print-card" style="background:#f2ede4;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;">
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
-              <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
-              <div id="qr-canvas" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
-              <div id="qr-pc-name" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:#2a1e10;margin-bottom:4px;"></div>
-              <div id="qr-pc-serial" style="font-family:'Courier New',monospace;font-size:12px;color:#5a4a30;background:rgba(138,106,62,0.12);border:1px solid rgba(138,106,62,0.2);padding:4px 14px;border-radius:20px;display:inline-block;"></div>
-              <div id="qr-pc-container" style="font-size:12px;color:#8a7a60;margin-top:5px;"></div>
-              <div style="font-size:10px;color:#a08060;margin-top:12px;letter-spacing:0.5px;border-top:1px solid rgba(138,106,62,0.15);padding-top:10px;">
-                Scan to view service history &amp; request service<br>
-                <strong style="color:#5a4a30;">ssxgear.com</strong>
+          <!-- ── FUN JUMPER QR ── -->
+          <div id="qr-sub-fj">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
+              <div style="font-size:13px;font-weight:800;margin-bottom:3px;">📲 Personal Customer QR</div>
+              <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">Links to their service history + pre-filled new request form.</div>
+
+              <div class="a-field"><label>Customer Full Name</label>
+                <input type="text" id="qr-name" placeholder="e.g. Jane Skydiver">
               </div>
+              <div class="a-field"><label>Container Serial Number *</label>
+                <input type="text" id="qr-serial" placeholder="e.g. JO-12345">
+              </div>
+              <div class="a-field"><label>Customer Email <span style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-muted)">(optional)</span></label>
+                <input type="email" id="qr-email" placeholder="e.g. jane@email.com">
+              </div>
+              <div class="a-field"><label>Container Make / Model <span style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-muted)">(optional)</span></label>
+                <input type="text" id="qr-container" placeholder="e.g. Javelin Odyssey">
+              </div>
+              <button onclick="generateQR()"
+                style="width:100%;padding:12px;background:linear-gradient(135deg,var(--sky),#7dd3f8);color:#080c12;font-family:'Barlow',sans-serif;font-size:14px;font-weight:800;border:none;border-radius:8px;cursor:pointer;">
+                ⚡ Generate QR Code
+              </button>
             </div>
 
-            <!-- URL display -->
-            <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
-            <div id="qr-url-box" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;"></div>
+            <!-- FJ QR Result -->
+            <div id="qr-result" style="display:none;text-align:center;">
+              <div id="qr-print-card" style="background:#f2ede4;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
+                <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
+                <div id="qr-canvas" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
+                <div id="qr-pc-name" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:#2a1e10;margin-bottom:4px;"></div>
+                <div id="qr-pc-serial" style="font-family:'Courier New',monospace;font-size:12px;color:#5a4a30;background:rgba(138,106,62,0.12);border:1px solid rgba(138,106,62,0.2);padding:4px 14px;border-radius:20px;display:inline-block;"></div>
+                <div id="qr-pc-container" style="font-size:12px;color:#8a7a60;margin-top:5px;"></div>
+                <div style="font-size:10px;color:#a08060;margin-top:12px;letter-spacing:0.5px;border-top:1px solid rgba(138,106,62,0.15);padding-top:10px;">
+                  Scan to view service history &amp; request service<br>
+                  <strong style="color:#5a4a30;">ssxgear.com</strong>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
+              <div id="qr-url-box" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;"></div>
+              <div style="display:flex;gap:10px;margin-bottom:12px;">
+                <button onclick="printCard('qr-print-card')"
+                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  🖨 Print Card
+                </button>
+                <button onclick="resetQR()"
+                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  + New Customer
+                </button>
+              </div>
+            </div>
+          </div>
 
-            <div style="display:flex;gap:10px;margin-bottom:12px;">
-              <button onclick="window.print()"
-                style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
-                🖨 Print Card
+          <!-- ── DZ GEAR QR ── -->
+          <div id="qr-sub-dz" style="display:none;">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
+              <div style="font-size:13px;font-weight:800;margin-bottom:3px;">🏫 DZ Gear Service QR</div>
+              <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">One universal QR code for all DZ tandem &amp; student gear. Scan it to go straight to the rig lookup page — enter any rig S/N or number to request service.</div>
+              <button onclick="generateDZQR()"
+                style="width:100%;padding:12px;background:linear-gradient(135deg,#e8191a,#c01010);color:#fff;font-family:'Barlow',sans-serif;font-size:14px;font-weight:800;border:none;border-radius:8px;cursor:pointer;">
+                ⚡ Generate DZ QR Code
               </button>
-              <button onclick="resetQR()"
-                style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
-                + New Customer
-              </button>
+            </div>
+
+            <!-- DZ QR Result -->
+            <div id="dz-qr-result" style="display:none;text-align:center;">
+              <div id="dz-qr-print-card" style="background:#f2ede4;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;min-width:240px;">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
+                <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
+                <div id="dz-qr-canvas" style="display:flex;justify-content:center;margin-bottom:14px;"></div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#2a1e10;margin-bottom:4px;">DZ Tandem &amp; Student Gear</div>
+                <div style="font-size:11px;color:#8a7a60;margin-bottom:12px;">Scan to request gear service</div>
+                <div style="font-size:10px;color:#a08060;border-top:1px solid rgba(138,106,62,0.15);padding-top:10px;">
+                  Enter rig S/N or rig number<br>to look up gear &amp; request service<br>
+                  <strong style="color:#5a4a30;">ssxgear.com</strong>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;">https://ssxgear.com/index.htm?screen=dz</div>
+              <div style="display:flex;gap:10px;margin-bottom:12px;">
+                <button onclick="printCard('dz-qr-print-card')"
+                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  🖨 Print Card
+                </button>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text-dim);text-align:left;line-height:1.6;">
+                <strong style="color:var(--text);">📌 How to use:</strong><br>
+                Print and laminate this card. Attach to the packing area, gear wall, or manifest desk. DZ staff scan it with any phone camera → enter rig S/N or rig number → request service instantly.
+              </div>
             </div>
           </div>
         </div>
