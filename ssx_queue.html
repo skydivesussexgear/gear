@@ -145,9 +145,11 @@
   .info-toast{background:var(--blue-dim);border:1px solid rgba(59,130,246,0.3);color:var(--accent);border-radius:8px;padding:10px 14px;font-size:13px;margin-top:8px;display:none;}
 
   .tab-bar{display:flex;gap:4px;margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;}
-  .tab{flex:1;padding:10px;text-align:center;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-dim);transition:all 0.2s;min-height:44px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+  .tab{flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-dim);transition:all 0.2s;min-height:40px;display:flex;align-items:center;justify-content:center;gap:5px;-webkit-tap-highlight-color:transparent;white-space:nowrap;}
   .tab.active{background:var(--blue);color:#fff;}
   .tab:hover:not(.active){background:var(--surface2);}
+  .tab-label{display:inline;}
+  @media(max-width:500px){.tab{font-size:11px;padding:7px 4px;}.tab-label{display:none;}}
 
   .refresh-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;min-height:44px;-webkit-tap-highlight-color:transparent;}
   .refresh-btn:hover{border-color:var(--blue);color:var(--accent);}
@@ -225,10 +227,10 @@
   <!-- MAIN QUEUE SCREEN -->
   <div class="screen" id="screen-queue">
     <div class="tab-bar">
-      <div class="tab active" onclick="switchTab('queue')" id="tab-btn-queue">📋 Queue</div>
-      <div class="tab" onclick="switchTab('svchistory')" id="tab-btn-svchistory">📁 Service History</div>
-      <div class="tab" onclick="switchTab('history')" id="tab-btn-history">🔍 Customer History</div>
-      <div class="tab" onclick="switchTab('settings')" id="tab-btn-settings">⚙ Settings</div>
+      <div class="tab active" onclick="switchTab('queue')" id="tab-btn-queue">📋 <span class="tab-label">Queue</span></div>
+      <div class="tab" onclick="switchTab('svchistory')" id="tab-btn-svchistory">📁 <span class="tab-label">History</span></div>
+      <div class="tab" onclick="switchTab('history')" id="tab-btn-history">🔍 <span class="tab-label">Customer</span></div>
+      <div class="tab" onclick="switchTab('settings')" id="tab-btn-settings">⚙ <span class="tab-label">Settings</span></div>
     </div>
 
     <!-- QUEUE TAB -->

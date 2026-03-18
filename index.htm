@@ -2027,6 +2027,23 @@ async function submitFunJumper() {
 let adminUnlocked = false;
 let gearFilter = 'all';
 
+function switchAdminTab(tab) {
+  const isGear = tab === 'gear';
+  document.getElementById('admin-tab-gear').style.display  = isGear ? 'block' : 'none';
+  document.getElementById('admin-tab-email').style.display = isGear ? 'none'  : 'block';
+
+  const gearBtn  = document.getElementById('admin-tab-btn-gear');
+  const emailBtn = document.getElementById('admin-tab-btn-email');
+  if (isGear) {
+    gearBtn.style.cssText  += ';background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);';
+    emailBtn.style.cssText += ';background:transparent;color:var(--text-muted);border:none;';
+  } else {
+    emailBtn.style.cssText += ';background:var(--sky-dim);color:var(--sky);border:1px solid rgba(56,189,248,0.3);';
+    gearBtn.style.cssText  += ';background:transparent;color:var(--text-muted);border:none;';
+    loadDzEmail();
+  }
+}
+
 // ── DZ EMAIL SETTINGS ─────────────────────────────────────────
 async function loadDzEmail() {
   try {
@@ -2447,44 +2464,63 @@ async function createRig() {
       <!-- GEAR MANAGER -->
       <div class="gear-manager" id="gear-manager">
 
-        <!-- GOOGLE SHEETS QUICK ACCESS -->
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">📊 Google Sheet</div>
-          <a href="https://docs.google.com/spreadsheets/d/18xWrsryd3PUw_y02wrCJOPQ4ZBkFFPtZrCILRsrnSD8" target="_blank"
-             style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;text-decoration:none;">
-            🔗 Open SSXgear Sheet ↗
-          </a>
-        </div>
-
-        <!-- EMAIL SETTINGS -->
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">✉️ Invoice & Notification Email</div>
-          <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">Emails for new service requests and completed invoices are sent to this address. Separate multiple addresses with a comma.</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
-            <div style="flex:1;min-width:220px;">
-              <input type="email" id="admin-dz-email" placeholder="Loading…"
-                style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;min-height:44px;outline:none;transition:border-color 0.2s;"
-                onfocus="this.style.borderColor='var(--sky)'" onblur="this.style.borderColor='var(--border)'">
-            </div>
-            <button onclick="saveDzEmail()"
-              style="padding:10px 18px;background:var(--sky-dim);border:1px solid rgba(56,189,248,0.3);color:var(--sky);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;min-height:44px;white-space:nowrap;">
-              💾 Save
-            </button>
+        <!-- ADMIN TAB BAR -->
+        <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:4px;">
+          <div id="admin-tab-btn-gear" onclick="switchAdminTab('gear')"
+            style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);-webkit-tap-highlight-color:transparent;">
+            🔧 Gear Manager
           </div>
-          <div id="admin-email-status" style="font-size:12px;margin-top:8px;display:none;"></div>
+          <div id="admin-tab-btn-email" onclick="switchAdminTab('email')"
+            style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
+            ✉️ Email Settings
+          </div>
         </div>
 
-        <div class="gm-toolbar">
-          <input class="gm-search" id="gm-search" type="text" placeholder="Search by name, serial, make…" oninput="renderGearList()">
-          <button class="gm-filter active" id="filter-all" onclick="setFilter('all')">All</button>
-          <button class="gm-filter" id="filter-student" onclick="setFilter('student')">Student</button>
-          <button class="gm-filter" id="filter-tandem" onclick="setFilter('tandem')">Tandem</button>
-          <button class="btn-add-rig" onclick="openAddRig()">+ Add Rig</button>
+        <!-- GEAR TAB -->
+        <div id="admin-tab-gear">
+          <div class="gm-toolbar">
+            <input class="gm-search" id="gm-search" type="text" placeholder="Search by name, serial, make…" oninput="renderGearList()">
+            <button class="gm-filter active" id="filter-all" onclick="setFilter('all')">All</button>
+            <button class="gm-filter" id="filter-student" onclick="setFilter('student')">Student</button>
+            <button class="gm-filter" id="filter-tandem" onclick="setFilter('tandem')">Tandem</button>
+            <button class="btn-add-rig" onclick="openAddRig()">+ Add Rig</button>
+          </div>
+          <div class="gm-count" id="gm-count"></div>
+          <div id="gm-list" style="margin-top:12px;"></div>
         </div>
-        <div class="gm-count" id="gm-count"></div>
-        <div id="gm-list" style="margin-top:12px;"></div>
+
+        <!-- EMAIL SETTINGS TAB -->
+        <div id="admin-tab-email" style="display:none;">
+
+          <!-- Google Sheet Link -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">📊 Google Sheet</div>
+            <a href="https://docs.google.com/spreadsheets/d/18xWrsryd3PUw_y02wrCJOPQ4ZBkFFPtZrCILRsrnSD8" target="_blank"
+               style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;text-decoration:none;">
+              🔗 Open SSXgear Sheet ↗
+            </a>
+          </div>
+
+          <!-- Email Settings -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">✉️ Invoice & Notification Email</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">All service request and invoice emails go to this address. Separate multiple with a comma.</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+              <div style="flex:1;min-width:200px;">
+                <input type="text" id="admin-dz-email" placeholder="Loading…"
+                  style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;min-height:44px;outline:none;transition:border-color 0.2s;"
+                  onfocus="this.style.borderColor='var(--sky)'" onblur="this.style.borderColor='var(--border)'">
+              </div>
+              <button onclick="saveDzEmail()"
+                style="padding:10px 18px;background:var(--sky-dim);border:1px solid rgba(56,189,248,0.3);color:var(--sky);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;min-height:44px;white-space:nowrap;">
+                💾 Save
+              </button>
+            </div>
+            <div id="admin-email-status" style="font-size:12px;margin-top:8px;display:none;"></div>
+          </div>
+        </div>
+
       </div>
-
     </div>
   </div>
 </div>
