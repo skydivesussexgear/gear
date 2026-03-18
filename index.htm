@@ -1982,6 +1982,88 @@ function adminLogin() {
     err.style.display = 'block';
   }
 }
+document.addEventListener('DOMContentLoaded', function() {
+  const params  = new URLSearchParams(window.location.search);
+  const sn      = params.get('sn');
+  const prefill = params.get('prefill');
+  const email   = params.get('email');
+
+  if (prefill === '1') {
+    showScreen('screen-funjumper');
+    buildFjServices();
+
+    const retBody   = document.getElementById('returning-body');
+    const retResult = document.getElementById('returning-result');
+    const retChev   = document.getElementById('returning-chevron');
+    if (retBody && retResult) {
+      retBody.classList.add('open');
+      if (retChev) retChev.textContent = '▴';
+      retResult.textContent = '⏳ Loading your rig info…';
+      retResult.style.display = 'block';
+    }
+
+    if (sn) setFjVal('fj-con-sn', sn);
+
+    const fetchParams = new URLSearchParams({ action: 'customerLookup' });
+    if (sn)    fetchParams.append('sn', sn.trim().toLowerCase());
+    if (email) fetchParams.append('email', email.trim().toLowerCase());
+
+    fetch(SCRIPT_URL + '?' + fetchParams.toString(), { method: 'GET', redirect: 'follow', mode: 'cors' })
+      .then(r => r.json())
+      .then(data => {
+        const rig = data.rig;
+        if (rig) {
+          if (rig.customer_name)  setFjVal('fj-name',       rig.customer_name);
+          if (rig.customer_email) setFjVal('fj-email',      rig.customer_email);
+          if (rig.customer_phone) setFjVal('fj-phone',      rig.customer_phone);
+          if (rig.rig_make)       setFjVal('fj-con-make',   rig.rig_make);
+          if (rig.con_model)      setFjVal('fj-con-model',  rig.con_model);
+          if (rig.rig_sn || sn)   setFjVal('fj-con-sn',    rig.rig_sn || sn);
+          if (rig.rig_dom)        setFjVal('fj-con-dom',    rig.rig_dom);
+          if (rig.main_make)      setFjVal('fj-main-make',  rig.main_make);
+          if (rig.main_model)     setFjVal('fj-main-model', rig.main_model);
+          if (rig.main_size)      setFjVal('fj-main-size',  rig.main_size);
+          if (rig.main_sn)        setFjVal('fj-main-sn',    rig.main_sn);
+          if (rig.res_make)       setFjVal('fj-res-make',   rig.res_make);
+          if (rig.res_model)      setFjVal('fj-res-model',  rig.res_model);
+          if (rig.res_size)       setFjVal('fj-res-size',   rig.res_size);
+          if (rig.res_sn)         setFjVal('fj-res-sn',     rig.res_sn);
+          if (rig.res_pack_date)  setFjVal('fj-res-pack',   rig.res_pack_date);
+          if (rig.res_repack_due) setFjVal('fj-res-due',    rig.res_repack_due);
+          if (rig.aad_make)       setFjVal('fj-aad-make',   rig.aad_make);
+          if (rig.aad_sn)         setFjVal('fj-aad-sn',     rig.aad_sn);
+          if (rig.aad_dom)        setFjVal('fj-aad-dom',    rig.aad_dom);
+
+          ['fj-sub-container','fj-sub-main','fj-sub-reserve','fj-sub-aad'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && !el.classList.contains('open')) el.classList.add('open');
+          });
+
+          if (retResult) retResult.textContent = '✓ Rig info loaded from your service record. Just select the services you need and submit.';
+        } else {
+          if (retResult) retResult.textContent = '✓ Serial number pre-filled. Please complete any missing fields.';
+          const sub = document.getElementById('fj-sub-container');
+          if (sub) sub.classList.add('open');
+        }
+      })
+      .catch(err => {
+        console.warn('prefill lookup failed:', err);
+        if (retResult) retResult.textContent = '⚠ Could not load rig data. Serial number pre-filled — please complete remaining fields.';
+        const sub = document.getElementById('fj-sub-container');
+        if (sub) sub.classList.add('open');
+      });
+    return;
+  }
+
+  // Normal flow
+  loadGearFromSheet().then(() => {
+    if (sn) {
+      document.getElementById('serial-input').value = sn;
+      lookupSerial();
+    }
+  });
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   const inp = document.getElementById('admin-pw-input');
   if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
