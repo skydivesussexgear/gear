@@ -1982,6 +1982,11 @@ function adminLogin() {
     err.style.display = 'block';
   }
 }
+function setFjVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && val) el.value = val;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const params  = new URLSearchParams(window.location.search);
   const sn      = params.get('sn');
