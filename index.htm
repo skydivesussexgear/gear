@@ -1110,6 +1110,45 @@ body {
 }
 .damage-opt.selected-no  { border-color: var(--green); color: var(--green); background: var(--green-dim); }
 .damage-opt.selected-yes { border-color: var(--red);   color: var(--red);   background: var(--red-dim); }
+/* ── RUSH SELECTOR ── */
+.rush-section {
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: 16px; margin-bottom: 16px; overflow: hidden; padding: 18px 20px 20px;
+}
+.rush-title {
+  font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 800;
+  letter-spacing: 0.3px; margin-bottom: 4px;
+}
+.rush-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+.rush-options { display: flex; flex-direction: column; gap: 8px; }
+.rush-opt {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-radius: 10px; cursor: pointer;
+  background: var(--surface2); border: 1px solid var(--border);
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none; -webkit-tap-highlight-color: transparent; min-height: 56px;
+}
+.rush-opt:hover { border-color: rgba(56,189,248,0.3); }
+.rush-opt.selected { background: var(--sky-dim); border-color: rgba(56,189,248,0.5); }
+.rush-radio {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-strong);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.rush-opt.selected .rush-radio { border-color: var(--sky); background: var(--sky); }
+.rush-radio::after { content:''; width:7px; height:7px; border-radius:50%; background:#080c12; display:none; }
+.rush-opt.selected .rush-radio::after { display:block; }
+.rush-icon { font-size: 20px; flex-shrink: 0; }
+.rush-label-wrap { flex: 1; }
+.rush-label { font-size: 14px; font-weight: 600; }
+.rush-label-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.rush-opt.selected .rush-label-sub { color: var(--sky); opacity: 0.8; }
+.rush-price {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;
+  color: var(--text-dim); white-space: nowrap; flex-shrink: 0;
+}
+.rush-opt.selected .rush-price { color: var(--sky); }
+
 /* ── PWA BANNER ── */
 .pwa-banner {
   position: fixed; bottom: 0; left: 0; right: 0;
@@ -1398,6 +1437,41 @@ body {
       </div>
     </div>
 
+    <!-- Rush Service Selector -->
+    <div class="rush-section">
+      <div class="rush-title">⚡ Turnaround</div>
+      <div class="rush-sub">Do you need rush service on this order?</div>
+      <div class="rush-options" id="fj-rush-options">
+        <label class="rush-opt selected" onclick="selectRush(this,'Standard Turnaround','fj-rush-options')">
+          <div class="rush-radio"></div>
+          <div class="rush-icon">📋</div>
+          <div class="rush-label-wrap">
+            <div class="rush-label">Standard Turnaround</div>
+            <div class="rush-label-sub">Approx. 1–2 weeks — no additional charge</div>
+          </div>
+          <div class="rush-price">$0</div>
+        </label>
+        <label class="rush-opt" onclick="selectRush(this,'2–5 Day Rush +$40','fj-rush-options')">
+          <div class="rush-radio"></div>
+          <div class="rush-icon">📅</div>
+          <div class="rush-label-wrap">
+            <div class="rush-label">2–5 Day Rush</div>
+            <div class="rush-label-sub">Subject to availability — contact us to confirm</div>
+          </div>
+          <div class="rush-price">+$40</div>
+        </label>
+        <label class="rush-opt" onclick="selectRush(this,'Same / Next Day Rush +$65','fj-rush-options')">
+          <div class="rush-radio"></div>
+          <div class="rush-icon">⚡</div>
+          <div class="rush-label-wrap">
+            <div class="rush-label">Same Day / Next Day</div>
+            <div class="rush-label-sub">Subject to availability — contact us to confirm</div>
+          </div>
+          <div class="rush-price">+$65</div>
+        </label>
+      </div>
+    </div>
+
     <!-- Submit -->
     <div style="padding: 0 0 4px;">
       <div class="form-error" id="fj-form-error"></div>
@@ -1581,9 +1655,10 @@ function resetFjForm() {
   const errEl = document.getElementById('fj-form-error');
   if (errEl) errEl.style.display = 'none';
 
-  // Reset rush selector to default if exists
-  const rush = document.getElementById('fj-rush');
-  if (rush) rush.value = rush.options[0]?.value || '';
+  // Reset rush selector to Standard
+  selectedRush.fj = 'Standard Turnaround';
+  const rushOpts = document.querySelectorAll('#fj-rush-options .rush-opt');
+  rushOpts.forEach((o, i) => o.classList.toggle('selected', i === 0));
 
   // Clear services checkboxes and reset set
   fjSelectedServices.clear();
@@ -1932,6 +2007,7 @@ async function submitFunJumper() {
     extra_notes:      gv('fj-extra-notes'),
     known_damage:     fjDamage,
     damage_desc:      fjDamage === 'yes' ? gv('fj-damage-desc') : '',
+    rush:             selectedRush.fj || 'Standard Turnaround',
     status:           'PENDING'
   };
 
@@ -1985,6 +2061,15 @@ function adminLogin() {
 function setFjVal(id, val) {
   const el = document.getElementById(id);
   if (el && val) el.value = val;
+}
+
+let selectedRush = { fj: 'Standard Turnaround' };
+
+function selectRush(el, value, groupId) {
+  const container = document.getElementById(groupId);
+  container.querySelectorAll('.rush-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedRush.fj = value;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
