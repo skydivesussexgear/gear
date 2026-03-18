@@ -71,7 +71,15 @@ body {
   background: var(--sky-dim); border: 1px solid rgba(56,189,248,0.3); color: var(--sky);
   border-radius: 8px; padding: 8px 12px; font-family: 'Barlow', sans-serif;
   font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: none;
-  white-space: nowrap; transition: background 0.2s;
+  white-space: nowrap; transition: background 0.2s; flex-shrink: 0;
+}
+.btn-back .btn-back-label { display: inline; }
+@media (max-width: 480px) {
+  .btn-back { padding: 7px 10px; font-size: 11px; }
+  .btn-back .btn-back-label { display: none; }
+}
+@media (max-width: 380px) {
+  .header-text { display: none; }
 }
 .btn-back:hover { background: rgba(56,189,248,0.2); }
 
@@ -228,7 +236,7 @@ body {
         <p>Gear Service</p>
       </div>
     </div>
-    <a href="index.htm" class="btn-back">✚ Request Service</a>
+    <a href="index.htm" class="btn-back">✚ <span class="btn-back-label">Request Service</span></a>
   </div>
 </div>
 
