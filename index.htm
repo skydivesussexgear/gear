@@ -2085,14 +2085,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const retBody   = document.getElementById('returning-body');
     const retResult = document.getElementById('returning-result');
     const retChev   = document.getElementById('returning-chevron');
-    if (retBody && retResult) {
-      retBody.classList.add('open');
-      if (retChev) retChev.textContent = '▴';
+    if (retBody) retBody.classList.add('open');
+    if (retChev) retChev.textContent = '▴';
+
+    // Fill S/N immediately
+    if (sn) setFjVal('fj-con-sn', sn);
+
+    // Check sessionStorage cache first — instant if cached
+    const cacheKey = 'rigCache_' + (sn || '') + '_' + (email || '');
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        fillPrefillFields(JSON.parse(cached), retResult);
+        return;
+      } catch(e) { sessionStorage.removeItem(cacheKey); }
+    }
+
+    // Show loading state
+    if (retResult) {
       retResult.textContent = '⏳ Loading your rig info…';
       retResult.style.display = 'block';
     }
-
-    if (sn) setFjVal('fj-con-sn', sn);
 
     const fetchParams = new URLSearchParams({ action: 'customerLookup' });
     if (sn)    fetchParams.append('sn', sn.trim().toLowerCase());
@@ -2102,39 +2115,8 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(r => r.json())
       .then(data => {
         const rig = data.rig;
-        if (rig) {
-          if (rig.customer_name)  setFjVal('fj-name',       rig.customer_name);
-          if (rig.customer_email) setFjVal('fj-email',      rig.customer_email);
-          if (rig.customer_phone) setFjVal('fj-phone',      rig.customer_phone);
-          if (rig.rig_make)       setFjVal('fj-con-make',   rig.rig_make);
-          if (rig.con_model)      setFjVal('fj-con-model',  rig.con_model);
-          if (rig.rig_sn || sn)   setFjVal('fj-con-sn',    rig.rig_sn || sn);
-          if (rig.rig_dom)        setFjVal('fj-con-dom',    rig.rig_dom);
-          if (rig.main_make)      setFjVal('fj-main-make',  rig.main_make);
-          if (rig.main_model)     setFjVal('fj-main-model', rig.main_model);
-          if (rig.main_size)      setFjVal('fj-main-size',  rig.main_size);
-          if (rig.main_sn)        setFjVal('fj-main-sn',    rig.main_sn);
-          if (rig.res_make)       setFjVal('fj-res-make',   rig.res_make);
-          if (rig.res_model)      setFjVal('fj-res-model',  rig.res_model);
-          if (rig.res_size)       setFjVal('fj-res-size',   rig.res_size);
-          if (rig.res_sn)         setFjVal('fj-res-sn',     rig.res_sn);
-          if (rig.res_pack_date)  setFjVal('fj-res-pack',   rig.res_pack_date);
-          if (rig.res_repack_due) setFjVal('fj-res-due',    rig.res_repack_due);
-          if (rig.aad_make)       setFjVal('fj-aad-make',   rig.aad_make);
-          if (rig.aad_sn)         setFjVal('fj-aad-sn',     rig.aad_sn);
-          if (rig.aad_dom)        setFjVal('fj-aad-dom',    rig.aad_dom);
-
-          ['fj-sub-container','fj-sub-main','fj-sub-reserve','fj-sub-aad'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el && !el.classList.contains('open')) el.classList.add('open');
-          });
-
-          if (retResult) retResult.textContent = '✓ Rig info loaded from your service record. Just select the services you need and submit.';
-        } else {
-          if (retResult) retResult.textContent = '✓ Serial number pre-filled. Please complete any missing fields.';
-          const sub = document.getElementById('fj-sub-container');
-          if (sub) sub.classList.add('open');
-        }
+        if (rig) sessionStorage.setItem(cacheKey, JSON.stringify(rig));
+        fillPrefillFields(rig, retResult);
       })
       .catch(err => {
         console.warn('prefill lookup failed:', err);
@@ -2153,6 +2135,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+
+function fillPrefillFields(rig, retResult) {
+  if (rig) {
+    if (rig.customer_name)  setFjVal('fj-name',       rig.customer_name);
+    if (rig.customer_email) setFjVal('fj-email',      rig.customer_email);
+    if (rig.customer_phone) setFjVal('fj-phone',      rig.customer_phone);
+    if (rig.rig_make)       setFjVal('fj-con-make',   rig.rig_make);
+    if (rig.con_model)      setFjVal('fj-con-model',  rig.con_model);
+    if (rig.rig_sn)         setFjVal('fj-con-sn',     rig.rig_sn);
+    if (rig.rig_dom)        setFjVal('fj-con-dom',    rig.rig_dom);
+    if (rig.main_make)      setFjVal('fj-main-make',  rig.main_make);
+    if (rig.main_model)     setFjVal('fj-main-model', rig.main_model);
+    if (rig.main_size)      setFjVal('fj-main-size',  rig.main_size);
+    if (rig.main_sn)        setFjVal('fj-main-sn',    rig.main_sn);
+    if (rig.res_make)       setFjVal('fj-res-make',   rig.res_make);
+    if (rig.res_model)      setFjVal('fj-res-model',  rig.res_model);
+    if (rig.res_size)       setFjVal('fj-res-size',   rig.res_size);
+    if (rig.res_sn)         setFjVal('fj-res-sn',     rig.res_sn);
+    if (rig.res_pack_date)  setFjVal('fj-res-pack',   rig.res_pack_date);
+    if (rig.res_repack_due) setFjVal('fj-res-due',    rig.res_repack_due);
+    if (rig.aad_make)       setFjVal('fj-aad-make',   rig.aad_make);
+    if (rig.aad_sn)         setFjVal('fj-aad-sn',     rig.aad_sn);
+    if (rig.aad_dom)        setFjVal('fj-aad-dom',    rig.aad_dom);
+    ['fj-sub-container','fj-sub-main','fj-sub-reserve','fj-sub-aad'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.classList.contains('open')) el.classList.add('open');
+    });
+    if (retResult) retResult.textContent = '✓ Rig info loaded. Just select the services you need and submit.';
+  } else {
+    if (retResult) retResult.textContent = '✓ Serial number pre-filled. Please complete any missing fields.';
+    const sub = document.getElementById('fj-sub-container');
+    if (sub) sub.classList.add('open');
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const inp = document.getElementById('admin-pw-input');
