@@ -2798,17 +2798,26 @@ async function createRig() {
         <!-- EMAIL SETTINGS TAB -->
         <div id="admin-tab-email" style="display:none;">
 
-          <!-- SUPER ADMIN LOCK SCREEN -->
+          <!-- Google Sheet Link — always visible -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">📊 Google Sheet</div>
+            <a href="https://docs.google.com/spreadsheets/d/18xWrsryd3PUw_y02wrCJOPQ4ZBkFFPtZrCILRsrnSD8" target="_blank"
+               style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;text-decoration:none;">
+              🔗 Open SSXgear Sheet ↗
+            </a>
+          </div>
+
+          <!-- LOCK SCREEN -->
           <div id="super-admin-lock" style="text-align:center;padding:20px 0;">
             <div style="font-size:32px;margin-bottom:10px;">🔐</div>
-            <div style="font-family:'Barlow',sans-serif;font-size:16px;font-weight:800;color:var(--yellow);margin-bottom:6px;">Super Admin Required</div>
-            <div style="font-size:12px;color:var(--text-dim);margin-bottom:20px;">These settings require additional authorization.</div>
+            <div style="font-family:'Barlow',sans-serif;font-size:16px;font-weight:800;color:var(--yellow);margin-bottom:6px;">Email Settings</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:20px;">Enter password to manage invoice email address.</div>
             <div style="max-width:280px;margin:0 auto;">
-              <input type="password" id="super-admin-pw" placeholder="Enter super admin code"
+              <input type="password" id="super-admin-pw" placeholder="Enter password"
                 style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:16px;padding:11px 14px;min-height:44px;outline:none;margin-bottom:10px;text-align:center;letter-spacing:4px;"
                 onfocus="this.style.borderColor='var(--yellow)'" onblur="this.style.borderColor='var(--border)'"
                 onkeydown="if(event.key==='Enter')superAdminLogin()">
-              <div id="super-admin-err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none;">Incorrect code. Please try again.</div>
+              <div id="super-admin-err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none;">Incorrect password. Please try again.</div>
               <button onclick="superAdminLogin()"
                 style="width:100%;padding:12px;background:var(--yellow-dim);border:1px solid rgba(245,158,11,0.4);color:var(--yellow);font-family:'Barlow',sans-serif;font-size:14px;font-weight:800;border-radius:8px;cursor:pointer;margin-bottom:14px;">
                 Unlock ▶
@@ -2816,25 +2825,15 @@ async function createRig() {
               <div>
                 <a href="#" onclick="sendForgotPassword(event)"
                   style="font-size:12px;color:var(--text-muted);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.15);padding-bottom:1px;">
-                  Forgot code? Send reset email
+                  Forgot password? Send reset email
                 </a>
                 <div id="forgot-pw-status" style="font-size:11px;margin-top:8px;display:none;"></div>
               </div>
             </div>
           </div>
 
-          <!-- SETTINGS CONTENT (hidden until super admin unlocked) -->
+          <!-- SETTINGS CONTENT (hidden until unlocked) -->
           <div id="super-admin-content" style="display:none;">
-
-            <!-- Google Sheet Link -->
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;">
-              <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">📊 Google Sheet</div>
-              <a href="https://docs.google.com/spreadsheets/d/18xWrsryd3PUw_y02wrCJOPQ4ZBkFFPtZrCILRsrnSD8" target="_blank"
-                 style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:var(--green);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;text-decoration:none;">
-                🔗 Open SSXgear Sheet ↗
-              </a>
-            </div>
-
             <!-- Email Settings -->
             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
               <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">✉️ Invoice & Notification Email</div>
@@ -2852,7 +2851,6 @@ async function createRig() {
               </div>
               <div id="admin-email-status" style="font-size:12px;margin-top:8px;display:none;"></div>
             </div>
-
             <!-- Lock again -->
             <div style="text-align:right;margin-top:12px;">
               <button onclick="lockSuperAdmin()"
