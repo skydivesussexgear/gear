@@ -2039,33 +2039,35 @@ let adminUnlocked = false;
 let gearFilter = 'all';
 
 function switchAdminTab(tab) {
-  ['gear','qr','email'].forEach(t => {
-    document.getElementById('admin-tab-' + t).style.display = t === tab ? 'block' : 'none';
+  ['gear','parts','qr','email'].forEach(t => {
+    const el = document.getElementById('admin-tab-' + t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
   });
   const styles = {
-    gear:  { bg:'var(--yellow-dim)', color:'var(--yellow)',   border:'1px solid rgba(245,158,11,0.3)' },
-    qr:    { bg:'var(--sky-dim)',    color:'var(--sky)',      border:'1px solid rgba(56,189,248,0.3)' },
-    email: { bg:'var(--green-dim)',  color:'var(--green)',    border:'1px solid rgba(74,222,128,0.3)' },
+    gear:  { bg:'var(--yellow-dim)',           color:'var(--yellow)', border:'1px solid rgba(245,158,11,0.3)' },
+    parts: { bg:'rgba(74,222,128,0.12)',        color:'var(--green)',  border:'1px solid rgba(74,222,128,0.3)' },
+    qr:    { bg:'var(--sky-dim)',               color:'var(--sky)',    border:'1px solid rgba(56,189,248,0.3)' },
+    email: { bg:'rgba(74,222,128,0.12)',        color:'var(--green)',  border:'1px solid rgba(74,222,128,0.3)' },
   };
-  ['gear','qr','email'].forEach(t => {
+  ['gear','parts','qr','email'].forEach(t => {
     const btn = document.getElementById('admin-tab-btn-' + t);
     if (!btn) return;
     if (t === tab) {
-      btn.style.background  = styles[t].bg;
-      btn.style.color       = styles[t].color;
-      btn.style.border      = styles[t].border;
+      btn.style.background = styles[t].bg;
+      btn.style.color      = styles[t].color;
+      btn.style.border     = styles[t].border;
     } else {
-      btn.style.background  = 'transparent';
-      btn.style.color       = 'var(--text-muted)';
-      btn.style.border      = 'none';
+      btn.style.background = 'transparent';
+      btn.style.color      = 'var(--text-muted)';
+      btn.style.border     = 'none';
     }
   });
   if (tab === 'email') {
-    // Reset lock screen whenever switching to email tab
     lockSuperAdmin();
     document.getElementById('super-admin-pw').value = '';
     document.getElementById('super-admin-err').style.display = 'none';
   }
+  if (tab === 'parts' && partsData.length === 0) loadParts();
 }
 
 // ── QR SUB TABS ───────────────────────────────────────────────
@@ -2178,6 +2180,188 @@ function resetQR() {
   document.getElementById('qr-email').value     = '';
   document.getElementById('qr-container').value = '';
   document.getElementById('qr-name').focus();
+}
+
+// ── SPARE PARTS INVENTORY ────────────────────────────────────
+let partsData = [];
+
+async function loadParts() {
+  const listEl = document.getElementById('parts-list');
+  const errEl  = document.getElementById('parts-error');
+  if (errEl) errEl.style.display = 'none';
+  if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">Loading…</div>';
+  try {
+    const res  = await fetch(SCRIPT_URL + '?action=getParts', { method:'GET', redirect:'follow', mode:'cors' });
+    const data = JSON.parse(await res.text());
+    partsData  = data.parts || [];
+    updatePartsCategoryFilter();
+    renderParts();
+  } catch(e) {
+    if (errEl) { errEl.textContent = 'Failed to load parts: ' + e.message; errEl.style.display = 'block'; }
+    if (listEl) listEl.innerHTML = '';
+  }
+}
+
+function updatePartsCategoryFilter() {
+  const sel = document.getElementById('parts-cat-filter');
+  if (!sel) return;
+  const cats = [...new Set(partsData.map(p => p.category).filter(Boolean))].sort();
+  const current = sel.value;
+  sel.innerHTML = '<option value="all">All Categories</option>';
+  cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+  if (cats.includes(current)) sel.value = current;
+}
+
+function renderParts() {
+  const listEl = document.getElementById('parts-list');
+  const statsEl = document.getElementById('parts-stats');
+  const q   = (document.getElementById('parts-search')?.value || '').toLowerCase();
+  const cat = document.getElementById('parts-cat-filter')?.value || 'all';
+
+  const filtered = partsData.filter(p => {
+    if (cat !== 'all' && p.category !== cat) return false;
+    if (!q) return true;
+    return [p.name, p.category, p.notes].some(v => v && v.toLowerCase().includes(q));
+  });
+
+  const low  = filtered.filter(p => p.low_alert > 0 && p.qty <= p.low_alert).length;
+  const zero = filtered.filter(p => p.qty === 0).length;
+  if (statsEl) statsEl.innerHTML = filtered.length + ' part' + (filtered.length !== 1 ? 's' : '') +
+    (zero  ? ' · <span style="color:var(--red);">⚠ ' + zero + ' out of stock</span>' : '') +
+    (low   ? ' · <span style="color:var(--yellow);">⚠ ' + low + ' low</span>' : '');
+
+  if (!listEl) return;
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted);">No parts found.</div>';
+    return;
+  }
+
+  listEl.innerHTML = '';
+  filtered.forEach((p, fi) => {
+    const realIdx = partsData.indexOf(p);
+    const isOut  = p.qty === 0;
+    const isLow  = p.low_alert > 0 && p.qty <= p.low_alert && !isOut;
+    const stockColor = isOut ? 'var(--red)' : isLow ? 'var(--yellow)' : 'var(--green)';
+    const stockBg    = isOut ? 'var(--red-dim)' : isLow ? 'var(--yellow-dim)' : 'var(--green-dim)';
+    const stockBorder = isOut ? 'rgba(239,68,68,0.3)' : isLow ? 'rgba(245,158,11,0.3)' : 'rgba(74,222,128,0.3)';
+    const statusLabel = isOut ? 'OUT OF STOCK' : isLow ? 'LOW STOCK' : 'IN STOCK';
+
+    const card = document.createElement('div');
+    card.style.cssText = 'background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;';
+    card.innerHTML = `
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+            <div style="font-weight:700;font-size:14px;">${p.name}</div>
+            ${p.category ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text-muted);border:1px solid var(--border);">${p.category}</span>` : ''}
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${stockBg};color:${stockColor};border:1px solid ${stockBorder};">${statusLabel}</span>
+          </div>
+          ${p.notes ? `<div style="font-size:12px;color:var(--text-muted);">${p.notes}</div>` : ''}
+          ${p.low_alert > 0 ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Alert when ≤ ${p.low_alert} ${p.unit}</div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <!-- QTY CONTROLS -->
+          <button onclick="adjustQty(${realIdx},-1)" style="width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--red-dim);color:var(--red);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">−</button>
+          <div style="text-align:center;min-width:52px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:${stockColor};" id="qty-${realIdx}">${p.qty}</div>
+            <div style="font-size:10px;color:var(--text-muted);">${p.unit}</div>
+          </div>
+          <button onclick="adjustQty(${realIdx},1)" style="width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--green-dim);color:var(--green);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+        <button onclick="openEditPart(${realIdx})" style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">✏ Edit</button>
+        <button onclick="confirmDeletePart(${realIdx})" style="padding:6px 12px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;">✕ Delete</button>
+      </div>
+      <!-- EDIT FORM (hidden) -->
+      <div id="edit-part-${realIdx}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div class="a-field" style="margin:0;"><label>Part Name</label><input type="text" id="ep-name-${realIdx}" value="${p.name.replace(/"/g,'&quot;')}"></div>
+          <div class="a-field" style="margin:0;"><label>Category</label><input type="text" id="ep-cat-${realIdx}" value="${p.category.replace(/"/g,'&quot;')}"></div>
+          <div class="a-field" style="margin:0;"><label>Quantity</label><input type="number" id="ep-qty-${realIdx}" value="${p.qty}" min="0"></div>
+          <div class="a-field" style="margin:0;"><label>Unit</label><input type="text" id="ep-unit-${realIdx}" value="${p.unit}"></div>
+          <div class="a-field" style="margin:0;"><label>Low Stock Alert</label><input type="number" id="ep-low-${realIdx}" value="${p.low_alert}" min="0"></div>
+          <div class="a-field" style="margin:0;"><label>Notes</label><input type="text" id="ep-notes-${realIdx}" value="${p.notes.replace(/"/g,'&quot;')}"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="saveEditPart(${realIdx})" style="flex:1;padding:9px;background:var(--sky-dim);border:1px solid rgba(56,189,248,0.3);color:var(--sky);border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;">💾 Save</button>
+          <button onclick="closeEditPart(${realIdx})" style="padding:9px 14px;background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:7px;font-size:12px;cursor:pointer;">Cancel</button>
+        </div>
+      </div>`;
+    listEl.appendChild(card);
+  });
+}
+
+async function adjustQty(idx, delta) {
+  const part = partsData[idx];
+  if (!part) return;
+  const newQty = Math.max(0, part.qty + delta);
+  part.qty = newQty;
+  const el = document.getElementById('qty-' + idx);
+  if (el) el.textContent = newQty;
+  renderParts();
+  try {
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ action:'updatePartQty', row: part._row, delta }) });
+  } catch(e) { console.warn('updatePartQty failed:', e); }
+}
+
+function openAddPart()  { document.getElementById('add-part-form').style.display = 'block'; }
+function closeAddPart() { document.getElementById('add-part-form').style.display = 'none'; }
+
+async function submitAddPart() {
+  const name = document.getElementById('np-name').value.trim();
+  if (!name) { alert('Please enter a part name.'); return; }
+  const newPart = {
+    name, category: document.getElementById('np-cat').value.trim(),
+    qty:       Number(document.getElementById('np-qty').value)  || 0,
+    unit:      document.getElementById('np-unit').value.trim()  || 'ea',
+    low_alert: Number(document.getElementById('np-low').value)  || 0,
+    notes:     document.getElementById('np-notes').value.trim(),
+  };
+  try {
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ action:'addPart', ...newPart }) });
+    closeAddPart();
+    ['np-name','np-cat','np-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('np-qty').value = '0';
+    document.getElementById('np-low').value = '0';
+    document.getElementById('np-unit').value = 'ea';
+    await loadParts();
+  } catch(e) { alert('Error adding part.'); }
+}
+
+function openEditPart(idx)  { document.getElementById('edit-part-' + idx).style.display = 'block'; }
+function closeEditPart(idx) { document.getElementById('edit-part-' + idx).style.display = 'none'; }
+
+async function saveEditPart(idx) {
+  const part = partsData[idx];
+  const updated = {
+    name:      document.getElementById('ep-name-' + idx).value.trim(),
+    category:  document.getElementById('ep-cat-' + idx).value.trim(),
+    qty:       Number(document.getElementById('ep-qty-' + idx).value)  || 0,
+    unit:      document.getElementById('ep-unit-' + idx).value.trim()  || 'ea',
+    low_alert: Number(document.getElementById('ep-low-' + idx).value)  || 0,
+    notes:     document.getElementById('ep-notes-' + idx).value.trim(),
+    row:       part._row,
+  };
+  try {
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ action:'savePart', ...updated }) });
+    Object.assign(part, updated);
+    renderParts();
+  } catch(e) { alert('Error saving part.'); }
+}
+
+async function confirmDeletePart(idx) {
+  const part = partsData[idx];
+  if (!confirm('Delete "' + part.name + '"? This cannot be undone.')) return;
+  try {
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ action:'deletePart', row: part._row }) });
+    partsData.splice(idx, 1);
+    renderParts();
+  } catch(e) { alert('Error deleting part.'); }
 }
 
 // ── SUPER ADMIN ───────────────────────────────────────────────
@@ -2664,6 +2848,10 @@ async function createRig() {
             style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);-webkit-tap-highlight-color:transparent;">
             🔧 Gear Manager
           </div>
+          <div id="admin-tab-btn-parts" onclick="switchAdminTab('parts')"
+            style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
+            📦 Parts
+          </div>
           <div id="admin-tab-btn-qr" onclick="switchAdminTab('qr')"
             style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
             📲 QR Codes
@@ -2685,6 +2873,60 @@ async function createRig() {
           </div>
           <div class="gm-count" id="gm-count"></div>
           <div id="gm-list" style="margin-top:12px;"></div>
+        </div>
+
+        <!-- PARTS INVENTORY TAB -->
+        <div id="admin-tab-parts" style="display:none;">
+
+          <!-- Header row -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-family:'Barlow',sans-serif;font-size:16px;font-weight:800;margin-bottom:2px;">📦 Spare Parts Inventory</div>
+              <div style="font-size:12px;color:var(--text-dim);">Track supplies and stock levels</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="loadParts()" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">↻ Refresh</button>
+              <button onclick="openAddPart()" style="padding:8px 14px;background:var(--green-dim);border:1px solid rgba(74,222,128,0.3);color:var(--green);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">+ Add Part</button>
+            </div>
+          </div>
+
+          <!-- Search + filter -->
+          <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <input type="text" id="parts-search" placeholder="Search parts…" oninput="renderParts()"
+              style="flex:1;min-width:160px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:9px 12px;min-height:40px;outline:none;">
+            <select id="parts-cat-filter" onchange="renderParts()"
+              style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;padding:9px 10px;min-height:40px;outline:none;cursor:pointer;">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+
+          <!-- Stats row -->
+          <div id="parts-stats" style="font-size:12px;color:var(--text-muted);margin-bottom:10px;"></div>
+          <div class="error-msg" id="parts-error"></div>
+          <div id="parts-list"><div style="text-align:center;padding:30px;color:var(--text-muted);">Click Refresh to load inventory</div></div>
+
+          <!-- ADD PART FORM -->
+          <div id="add-part-form" style="display:none;background:var(--surface2);border:1px solid rgba(74,222,128,0.3);border-radius:12px;padding:16px;margin-top:14px;">
+            <div style="font-size:13px;font-weight:800;color:var(--green);margin-bottom:12px;">+ Add New Part</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+              <div class="a-field" style="margin:0;"><label>Part Name *</label><input type="text" id="np-name" placeholder="e.g. Reserve Closing Loop"></div>
+              <div class="a-field" style="margin:0;"><label>Category</label><input type="text" id="np-cat" placeholder="e.g. Loops, AAD, Hardware"></div>
+              <div class="a-field" style="margin:0;"><label>Quantity</label><input type="number" id="np-qty" placeholder="0" min="0" value="0"></div>
+              <div class="a-field" style="margin:0;"><label>Unit</label><input type="text" id="np-unit" placeholder="ea, ft, pack…" value="ea"></div>
+              <div class="a-field" style="margin:0;"><label>Low Stock Alert</label><input type="number" id="np-low" placeholder="e.g. 5" min="0" value="0"></div>
+              <div class="a-field" style="margin:0;"><label>Notes</label><input type="text" id="np-notes" placeholder="Optional notes"></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="submitAddPart()"
+                style="flex:1;padding:11px;background:var(--green-dim);border:1px solid rgba(74,222,128,0.3);color:var(--green);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">
+                ✓ Add Part
+              </button>
+              <button onclick="closeAddPart()"
+                style="padding:11px 16px;background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:8px;font-size:13px;cursor:pointer;">
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- QR CODE GENERATOR TAB -->
