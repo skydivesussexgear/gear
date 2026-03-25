@@ -1151,13 +1151,42 @@ body {
 
 /* ── PRINT (QR card only) ── */
 @media print {
-  body > *:not(.admin-overlay) { display: none !important; }
-  .admin-overlay { position: static !important; background: white !important; display: block !important; }
-  .admin-panel { box-shadow: none !important; max-height: none !important; overflow: visible !important; }
-  .admin-header, .admin-login-card, .gm-toolbar, .gm-count, #gm-list,
-  .admin-tab-bar, #admin-tab-gear, #admin-tab-email, #qr-url-box,
-  .admin-tab-bar *, button:not(.qr-print-only), #qr-result > div:last-child { display: none !important; }
-  #qr-print-card { box-shadow: none !important; display: inline-block !important; }
+  @page { size: 3in 2in; margin: 0; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body > *                          { display: none !important; }
+  .admin-overlay                    { position: static !important; background: white !important; display: block !important; }
+  .admin-panel                      { box-shadow: none !important; max-height: none !important; overflow: visible !important; border: none !important; border-radius: 0 !important; }
+  .admin-header, .admin-body > *:not(#gear-manager),
+  .admin-login-card, #admin-tab-gear, #admin-tab-parts,
+  #admin-tab-email, #admin-tab-qr > *:not(#qr-sub-dz) { display: none !important; }
+  #admin-tab-qr, #qr-sub-dz        { display: block !important; }
+  #qr-sub-fj, .admin-tab-bar,
+  #qr-sub-btn-fj, #qr-sub-btn-dz,
+  #dz-qr-result > div:not(#dz-qr-print-card),
+  .info-toast                       { display: none !important; }
+  #dz-qr-result                     { display: block !important; }
+  #dz-qr-print-card {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important;
+    width: 3in !important;
+    height: 2in !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 6px 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    background: #f2ede4 !important;
+  }
+  #dz-qr-canvas { margin: 3px 0 !important; }
+  #dz-qr-print-card canvas,
+  #dz-qr-print-card img {
+    width: 108px !important;
+    height: 108px !important;
+  }
 }
 
 .pwa-banner {
@@ -2099,30 +2128,66 @@ function generateDZQR() {
   if (dzQrInstance) { try { dzQrInstance.clear(); } catch(e) {} }
   dzQrInstance = new QRCode(qrEl, {
     text: url,
-    width: 200,
-    height: 200,
+    width: 160,
+    height: 160,
     colorDark: '#1c1c1e',
     colorLight: '#f2ede4',
     correctLevel: QRCode.CorrectLevel.H
   });
   setTimeout(() => {
     const img = qrEl.querySelector('img, canvas');
-    if (img) { img.style.borderRadius = '8px'; img.style.border = '3px solid #1c1c1e'; }
+    if (img) { img.style.borderRadius = '6px'; img.style.border = '3px solid #1c1c1e'; }
   }, 100);
   document.getElementById('dz-qr-result').style.display = 'block';
 }
 
 // ── PRINT SPECIFIC CARD ───────────────────────────────────────
-function printCard(cardId) {
+function printCard(cardId, labelSize) {
   const card = document.getElementById(cardId);
   if (!card) return;
-  const w = window.open('', '_blank', 'width=400,height=500');
-  w.document.write('<html><head><title>SSXgear QR Card</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;font-family:sans-serif;} @media print{body{margin:0;}}</style></head><body>');
+
+  const is3x2 = labelSize === '3x2';
+  const pageCSS = is3x2
+    ? `@page { size: 3in 2in; margin: 0; } body { margin: 0; width: 3in; height: 2in; overflow: hidden; }`
+    : `@page { size: auto; margin: 6mm; } body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #fff; }`;
+
+  const cardCSS = is3x2 ? `
+    #${cardId} {
+      width: 3in !important;
+      height: 2in !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      padding: 10px 12px 8px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-sizing: border-box !important;
+      margin: 0 !important;
+    }
+    #${cardId} * { box-sizing: border-box; }
+    #dz-qr-canvas canvas, #dz-qr-canvas img,
+    #qr-canvas canvas, #qr-canvas img {
+      width: 110px !important;
+      height: 110px !important;
+    }
+  ` : '';
+
+  const w = window.open('', '_blank', 'width=400,height=350');
+  w.document.write(`<html><head><title>SSXgear Label</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+      * { box-sizing: border-box; }
+      body { background: #fff; font-family: sans-serif; }
+      ${pageCSS}
+      ${cardCSS}
+    </style>
+  </head><body>`);
   w.document.write(card.outerHTML);
   w.document.write('</body></html>');
   w.document.close();
   w.focus();
-  setTimeout(() => { w.print(); w.close(); }, 400);
+  setTimeout(() => { w.print(); w.close(); }, 600);
 }
 
 // ── QR CODE GENERATOR ────────────────────────────────────────
@@ -3024,16 +3089,12 @@ async function createRig() {
 
             <!-- DZ QR Result -->
             <div id="dz-qr-result" style="display:none;text-align:center;">
-              <div id="dz-qr-print-card" style="background:#f2ede4;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;min-width:240px;">
-                <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
-                <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
-                <div id="dz-qr-canvas" style="display:flex;justify-content:center;margin-bottom:14px;"></div>
-                <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;color:#2a1e10;margin-bottom:4px;">DZ Tandem &amp; Student Gear</div>
-                <div style="font-size:11px;color:#8a7a60;margin-bottom:12px;">Scan to request gear service</div>
-                <div style="font-size:10px;color:#a08060;border-top:1px solid rgba(138,106,62,0.15);padding-top:10px;">
-                  Enter rig S/N or rig number<br>to look up gear &amp; request service<br>
-                  <strong style="color:#5a4a30;">ssxgear.com</strong>
-                </div>
+              <div id="dz-qr-print-card" style="background:#f2ede4;border-radius:10px;padding:16px 20px 14px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;width:216px;">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
+                <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:2px 0 10px;">Gear Service</div>
+                <div id="dz-qr-canvas" style="display:flex;justify-content:center;margin-bottom:10px;"></div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:#2a1e10;margin-bottom:2px;">DZ Tandem &amp; Student Gear</div>
+                <div style="font-size:9px;color:#8a7a60;">Scan to request gear service · <strong style="color:#5a4a30;">ssxgear.com</strong></div>
               </div>
               <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
               <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;">https://ssxgear.com/index.htm?screen=dz</div>
