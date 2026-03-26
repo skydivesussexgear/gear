@@ -2527,6 +2527,59 @@ async function downloadCard(cardId, filename) {
   link.click();
 }
 
+async function downloadLabelCard(cardId, filename) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+
+  const qrCanvases = card.querySelectorAll('canvas');
+  qrCanvases.forEach(cv => {
+    const tmp = document.createElement('canvas');
+    tmp.width = cv.width; tmp.height = cv.height;
+    const ctx2 = tmp.getContext('2d');
+    ctx2.fillStyle = '#ffffff';
+    ctx2.fillRect(0, 0, tmp.width, tmp.height);
+    ctx2.drawImage(cv, 0, 0);
+    cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+    cv.getContext('2d').drawImage(tmp, 0, 0);
+  });
+
+  const DPI = 300;
+  const W = Math.round(1.5 * DPI);  // 450px
+  const H = Math.round(2.5 * DPI);  // 750px
+
+  let cardCanvas;
+  try {
+    cardCanvas = await html2canvas(card, {
+      backgroundColor: '#ffffff',
+      scale: 4,
+      useCORS: true,
+      logging: false,
+    });
+  } catch(e) {
+    alert('Download failed.');
+    return;
+  }
+
+  const page = document.createElement('canvas');
+  page.width  = W;
+  page.height = H;
+  const ctx = page.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  const cw = cardCanvas.width;
+  const ch = cardCanvas.height;
+  const scale = Math.min((W * 0.95) / cw, (H * 0.95) / ch);
+  const dw = Math.round(cw * scale);
+  const dh = Math.round(ch * scale);
+  ctx.drawImage(cardCanvas, Math.round((W - dw) / 2), Math.round((H - dh) / 2), dw, dh);
+
+  const link = document.createElement('a');
+  link.download = (filename || cardId) + '_1.5x2.5.png';
+  link.href = page.toDataURL('image/png');
+  link.click();
+}
+
 // ── PACKING MAT QR ───────────────────────────────────────────
 let packingQRInstance = null;
 
@@ -3214,19 +3267,23 @@ async function createRig() {
 
             <!-- DZ QR Result -->
             <div id="dz-qr-result" style="display:none;text-align:center;">
-              <div id="dz-qr-print-card" style="background:#ffffff;border-radius:10px;padding:16px 28px 14px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;min-width:280px;">
-                <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:#1c1c1e;line-height:1;white-space:nowrap;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
-                <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:2px 0 10px;">Gear Service</div>
-                <div id="dz-qr-canvas" style="display:flex;justify-content:center;margin-bottom:10px;"></div>
-                <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:#2a1e10;margin-bottom:2px;">DZ Tandem &amp; Student Gear</div>
-                <div style="font-size:9px;color:#8a7a60;">Scan to request gear service</div>
+              <div id="dz-qr-print-card" style="background:#ffffff;border-radius:10px;padding:12px 10px 10px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;width:224px;">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:#1c1c1e;line-height:1;white-space:nowrap;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
+                <div style="font-size:7px;letter-spacing:2.5px;text-transform:uppercase;color:#8a7a60;margin:2px 0 8px;">Gear Service</div>
+                <div id="dz-qr-canvas" style="display:flex;justify-content:center;margin-bottom:8px;"></div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:0.5px;color:#2a1e10;margin-bottom:2px;">DZ Tandem &amp; Student Gear</div>
+                <div style="font-size:7px;color:#8a7a60;">Scan to request gear service</div>
               </div>
               <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
               <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;">https://ssxgear.com/index.htm?screen=dz</div>
-              <div style="margin-bottom:12px;">
+              <div style="display:flex;gap:8px;margin-bottom:12px;">
                 <button onclick="downloadCard('dz-qr-print-card','SSX-DZ-QR')"
-                  style="width:100%;padding:11px;background:var(--green-dim);border:1px solid rgba(74,222,128,0.3);color:var(--green);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
-                  ⬇ Download 8.5×11"
+                  style="flex:1;padding:11px;background:var(--green-dim);border:1px solid rgba(74,222,128,0.3);color:var(--green);font-family:'Barlow',sans-serif;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  ⬇ 8.5×11"
+                </button>
+                <button onclick="downloadLabelCard('dz-qr-print-card','SSX-DZ-QR-label')"
+                  style="flex:1;padding:11px;background:var(--sky-dim);border:1px solid rgba(56,189,248,0.3);color:var(--sky);font-family:'Barlow',sans-serif;font-size:12px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  ⬇ 1.5×2.5" Label
                 </button>
               </div>
               <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text-dim);text-align:left;line-height:1.6;">
