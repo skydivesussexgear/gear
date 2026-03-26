@@ -3021,47 +3021,6 @@ async function createRig() {
           <div id="gm-list" style="margin-top:12px;"></div>
         </div>
 
-        <!-- PACKING MAT QR TAB -->
-        <div id="admin-tab-report" style="display:none;">
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
-            <div style="font-family:'Barlow',sans-serif;font-size:15px;font-weight:800;margin-bottom:4px;">🛬 Packing Mat — Gear Issue QR</div>
-            <div style="font-size:12px;color:var(--text-dim);margin-bottom:16px;">Print and laminate this QR code. Attach it to the packing mat. Staff scan it to report gear damage or issues — with photos and notes — sent directly to your email.</div>
-
-            <button onclick="generatePackingQR()"
-              style="width:100%;padding:12px;background:linear-gradient(135deg,#e8191a,#c01010);color:#fff;font-family:'Barlow',sans-serif;font-size:14px;font-weight:800;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 16px rgba(232,25,26,0.3);">
-              ⚡ Generate Packing Mat QR Code
-            </button>
-          </div>
-
-          <div id="packing-qr-result" style="display:none;text-align:center;">
-            <div id="packing-qr-card" style="background:#f2ede4;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;min-width:240px;">
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
-              <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
-              <div id="packing-qr-canvas" style="display:flex;justify-content:center;margin-bottom:14px;"></div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:#2a1e10;margin-bottom:4px;">⚠ Spot a Gear Issue?</div>
-              <div style="font-size:11px;color:#8a7a60;margin-bottom:12px;">Scan to report damage or problems</div>
-              <div style="font-size:10px;color:#a08060;border-top:1px solid rgba(138,106,62,0.15);padding-top:10px;">
-                Take a photo · Describe the issue · Submit
-              </div>
-            </div>
-
-            <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;">https://ssxgear.com/report.html</div>
-
-            <div style="display:flex;gap:10px;margin-bottom:12px;">
-              <button onclick="printCard('packing-qr-card')"
-                style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
-                🖨 Print Card
-              </button>
-            </div>
-
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text-dim);text-align:left;line-height:1.6;">
-              <strong style="color:var(--text);">📌 How to use:</strong><br>
-              Print and laminate. Attach to packing mat, gear wall, or manifest desk. Reports go to your configured report email (set in Email Settings).
-            </div>
-          </div>
-        </div>
-
         <!-- PARTS INVENTORY TAB -->
         <div id="admin-tab-parts" style="display:none;">
 
@@ -3211,10 +3170,6 @@ async function createRig() {
               <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
               <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;">https://ssxgear.com/index.htm?screen=dz</div>
               <div style="display:flex;gap:10px;margin-bottom:12px;">
-                <button onclick="printCard('dz-qr-print-card')"
-                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
-                  🖨 Print Full Size
-                </button>
                 <button onclick="printBusinessCard('dz-qr-print-card')"
                   style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--sky);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
                   💳 Print 2×3.5"
