@@ -1212,6 +1212,7 @@ body {
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -2469,6 +2470,26 @@ function printBusinessCard(cardId) {
   win.document.close();
 }
 
+async function downloadCard(cardId, filename) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  try {
+    const canvas = await html2canvas(card, {
+      backgroundColor: '#f2ede4',
+      scale: 3,
+      useCORS: true,
+      logging: false,
+    });
+    const link = document.createElement('a');
+    link.download = (filename || cardId) + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch(e) {
+    alert('Download failed. Try using Print instead.');
+    console.warn('downloadCard error:', e);
+  }
+}
+
 // ── PACKING MAT QR ───────────────────────────────────────────
 let packingQRInstance = null;
 
@@ -3134,7 +3155,7 @@ async function createRig() {
               </div>
               <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
               <div id="qr-url-box" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;"></div>
-              <div style="display:flex;gap:10px;margin-bottom:12px;">
+              <div style="display:flex;gap:8px;margin-bottom:12px;">
                 <button onclick="printCard('qr-print-card')"
                   style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
                   🖨 Print Full Size
@@ -3142,6 +3163,10 @@ async function createRig() {
                 <button onclick="printBusinessCard('qr-print-card')"
                   style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--sky);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
                   💳 Print 2×3.5"
+                </button>
+                <button onclick="downloadCard('qr-print-card','SSX-FJ-QR')"
+                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--green);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  ⬇ Download
                 </button>
               </div>
             </div>
@@ -3169,10 +3194,14 @@ async function createRig() {
               </div>
               <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
               <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;">https://ssxgear.com/index.htm?screen=dz</div>
-              <div style="display:flex;gap:10px;margin-bottom:12px;">
+              <div style="display:flex;gap:8px;margin-bottom:12px;">
                 <button onclick="printBusinessCard('dz-qr-print-card')"
                   style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--sky);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
                   💳 Print 2×3.5"
+                </button>
+                <button onclick="downloadCard('dz-qr-print-card','SSX-DZ-QR')"
+                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--green);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  ⬇ Download
                 </button>
               </div>
               <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text-dim);text-align:left;line-height:1.6;">
@@ -3212,6 +3241,10 @@ async function createRig() {
                 <button onclick="printBusinessCard('packing-qr-card')"
                   style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--sky);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
                   💳 Print 2×3.5"
+                </button>
+                <button onclick="downloadCard('packing-qr-card','SSX-PackingMat-QR')"
+                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--green);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  ⬇ Download
                 </button>
               </div>
             </div>
