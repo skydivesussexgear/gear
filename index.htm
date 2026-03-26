@@ -1179,7 +1179,7 @@ body {
     align-items: center !important;
     justify-content: center !important;
     gap: 2px !important;
-    background: #f2ede4 !important;
+    background: #ffffff !important;
   }
   #dz-qr-canvas { margin: 3px 0 !important; }
   #dz-qr-print-card canvas,
@@ -2459,7 +2459,7 @@ function printBusinessCard(cardId) {
 <style>
   @page { size: 3.5in 2in; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { width: 3.5in; height: 2in; display: flex; align-items: center; justify-content: center; background: #f2ede4; overflow: hidden; }
+  body { width: 3.5in; height: 2in; display: flex; align-items: center; justify-content: center; background: #ffffff; overflow: hidden; }
   ${cardId === 'packing-qr-card' || cardId === 'dz-qr-print-card' ? `
   #${cardId} { transform: scale(0.52); transform-origin: center center; box-shadow: none !important; border-radius: 0 !important; padding: 10px !important; }
   ` : `
@@ -3178,7 +3178,7 @@ async function createRig() {
 
             <!-- FJ QR Result -->
             <div id="qr-result" style="display:none;text-align:center;">
-              <div id="qr-print-card" style="background:#f2ede4;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;">
+              <div id="qr-print-card" style="background:#ffffff;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;">
                 <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
                 <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
                 <div id="qr-canvas" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
@@ -3222,7 +3222,7 @@ async function createRig() {
 
             <!-- DZ QR Result -->
             <div id="dz-qr-result" style="display:none;text-align:center;">
-              <div id="dz-qr-print-card" style="background:#f2ede4;border-radius:10px;padding:16px 20px 14px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;width:216px;">
+              <div id="dz-qr-print-card" style="background:#ffffff;border-radius:10px;padding:16px 20px 14px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;width:216px;">
                 <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
                 <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:2px 0 10px;">Gear Service</div>
                 <div id="dz-qr-canvas" style="display:flex;justify-content:center;margin-bottom:10px;"></div>
@@ -3260,7 +3260,7 @@ async function createRig() {
             </div>
 
             <div id="packing-qr-result" style="display:none;text-align:center;">
-              <div id="packing-qr-card" style="background:#f2ede4;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;min-width:240px;">
+              <div id="packing-qr-card" style="background:#ffffff;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;min-width:240px;">
                 <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
                 <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
                 <div id="packing-qr-canvas" style="display:flex;justify-content:center;margin-bottom:14px;"></div>
