@@ -2068,7 +2068,7 @@ let adminUnlocked = false;
 let gearFilter = 'all';
 
 function switchAdminTab(tab) {
-  ['gear','report','parts','qr','email'].forEach(t => {
+  ['gear','parts','qr','email'].forEach(t => {
     const el = document.getElementById('admin-tab-' + t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
@@ -2079,7 +2079,7 @@ function switchAdminTab(tab) {
     qr:     { bg:'var(--sky-dim)',            color:'var(--sky)',    border:'1px solid rgba(56,189,248,0.3)' },
     email:  { bg:'rgba(74,222,128,0.12)',     color:'var(--green)',  border:'1px solid rgba(74,222,128,0.3)' },
   };
-  ['gear','report','parts','qr','email'].forEach(t => {
+  ['gear','parts','qr','email'].forEach(t => {
     const btn = document.getElementById('admin-tab-btn-' + t);
     if (!btn) return;
     if (t === tab) {
@@ -2102,20 +2102,25 @@ function switchAdminTab(tab) {
 
 // ── QR SUB TABS ───────────────────────────────────────────────
 function switchQRSub(sub) {
-  document.getElementById('qr-sub-fj').style.display = sub === 'fj' ? 'block' : 'none';
-  document.getElementById('qr-sub-dz').style.display = sub === 'dz' ? 'block' : 'none';
-  const fjBtn = document.getElementById('qr-sub-btn-fj');
-  const dzBtn = document.getElementById('qr-sub-btn-dz');
-  if (sub === 'fj') {
-    fjBtn.style.background = 'var(--sky-dim)'; fjBtn.style.color = 'var(--sky)'; fjBtn.style.border = '1px solid rgba(56,189,248,0.3)';
-    dzBtn.style.background = 'transparent';    dzBtn.style.color = 'var(--text-muted)'; dzBtn.style.border = 'none';
-  } else {
-    dzBtn.style.background = 'rgba(232,25,26,0.12)'; dzBtn.style.color = '#f87171'; dzBtn.style.border = '1px solid rgba(232,25,26,0.3)';
-    fjBtn.style.background = 'transparent';           fjBtn.style.color = 'var(--text-muted)'; fjBtn.style.border = 'none';
-    // Auto-generate DZ QR on first view
-    if (!document.getElementById('dz-qr-result').style.display || document.getElementById('dz-qr-result').style.display === 'none') {
-      generateDZQR();
-    }
+  ['fj','dz','packing'].forEach(t => {
+    const el = document.getElementById('qr-sub-' + t);
+    if (el) el.style.display = t === sub ? 'block' : 'none';
+    const btn = document.getElementById('qr-sub-btn-' + t);
+    if (!btn) return;
+    const isActive = t === sub;
+    const colors = {
+      fj:      { bg:'var(--sky-dim)',             color:'var(--sky)',   border:'1px solid rgba(56,189,248,0.3)' },
+      dz:      { bg:'rgba(232,25,26,0.12)',        color:'var(--red)',   border:'1px solid rgba(232,25,26,0.3)' },
+      packing: { bg:'rgba(245,158,11,0.12)',       color:'var(--yellow)',border:'1px solid rgba(245,158,11,0.3)' },
+    };
+    btn.style.background = isActive ? colors[t].bg  : 'transparent';
+    btn.style.color      = isActive ? colors[t].color : 'var(--text-muted)';
+    btn.style.border     = isActive ? colors[t].border : 'none';
+  });
+  // Auto-generate DZ QR on first view
+  if (sub === 'dz' && document.getElementById('dz-qr-result') &&
+      (!document.getElementById('dz-qr-result').style.display || document.getElementById('dz-qr-result').style.display === 'none')) {
+    generateDZQR();
   }
 }
 
@@ -2442,6 +2447,26 @@ async function confirmDeletePart(idx) {
     partsData.splice(idx, 1);
     renderParts();
   } catch(e) { alert('Error deleting part.'); }
+}
+
+function printBusinessCard(cardId) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const html = card.outerHTML;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Print QR Card</title>
+<style>
+  @page { size: 3.5in 2in; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 3.5in; height: 2in; display: flex; align-items: center; justify-content: center; background: #f2ede4; overflow: hidden; }
+  ${cardId === 'packing-qr-card' || cardId === 'dz-qr-print-card' ? `
+  #${cardId} { transform: scale(0.52); transform-origin: center center; box-shadow: none !important; border-radius: 0 !important; padding: 10px !important; }
+  ` : `
+  #${cardId} { transform: scale(0.48); transform-origin: center center; box-shadow: none !important; border-radius: 0 !important; padding: 10px !important; }
+  `}
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600&family=DM+Mono&display=swap');
+</style></head><body>${html}<script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
+  win.document.close();
 }
 
 // ── PACKING MAT QR ───────────────────────────────────────────
@@ -2969,10 +2994,6 @@ async function createRig() {
             style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);-webkit-tap-highlight-color:transparent;">
             🔧 Gear Manager
           </div>
-          <div id="admin-tab-btn-report" onclick="switchAdminTab('report')"
-            style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
-            🛬 Packing Mat
-          </div>
           <div id="admin-tab-btn-parts" onclick="switchAdminTab('parts')"
             style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
             📦 Parts
@@ -3108,6 +3129,10 @@ async function createRig() {
               style="flex:1;padding:7px 6px;text-align:center;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;color:var(--text-muted);transition:all 0.15s;-webkit-tap-highlight-color:transparent;">
               🏫 DZ Gear
             </div>
+            <div id="qr-sub-btn-packing" onclick="switchQRSub('packing')"
+              style="flex:1;padding:7px 6px;text-align:center;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;color:var(--text-muted);transition:all 0.15s;-webkit-tap-highlight-color:transparent;">
+              🛬 Packing Mat
+            </div>
           </div>
 
           <!-- ── FUN JUMPER QR ── -->
@@ -3153,11 +3178,11 @@ async function createRig() {
               <div style="display:flex;gap:10px;margin-bottom:12px;">
                 <button onclick="printCard('qr-print-card')"
                   style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
-                  🖨 Print Card
+                  🖨 Print Full Size
                 </button>
-                <button onclick="resetQR()"
-                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
-                  + New Customer
+                <button onclick="printBusinessCard('qr-print-card')"
+                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--sky);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  💳 Print 2×3.5"
                 </button>
               </div>
             </div>
@@ -3188,12 +3213,51 @@ async function createRig() {
               <div style="display:flex;gap:10px;margin-bottom:12px;">
                 <button onclick="printCard('dz-qr-print-card')"
                   style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
-                  🖨 Print Card
+                  🖨 Print Full Size
+                </button>
+                <button onclick="printBusinessCard('dz-qr-print-card')"
+                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--sky);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  💳 Print 2×3.5"
                 </button>
               </div>
               <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text-dim);text-align:left;line-height:1.6;">
                 <strong style="color:var(--text);">📌 How to use:</strong><br>
                 Print and laminate this card. Attach to the packing area, gear wall, or manifest desk. DZ staff scan it with any phone camera → enter rig S/N or rig number → request service instantly.
+              </div>
+            </div>
+          </div>
+
+          <!-- ── PACKING MAT QR ── -->
+          <div id="qr-sub-packing" style="display:none;">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
+              <div style="font-size:13px;font-weight:800;margin-bottom:3px;">🛬 Packing Mat — Gear Issue QR</div>
+              <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">Staff scan to report damage or problems with gear — includes photo upload and notes sent directly to the rigging team.</div>
+              <button onclick="generatePackingQR()"
+                style="width:100%;padding:12px;background:linear-gradient(135deg,#e8191a,#c01010);color:#fff;font-family:'Barlow',sans-serif;font-size:14px;font-weight:800;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 16px rgba(232,25,26,0.3);">
+                ⚡ Generate Packing Mat QR Code
+              </button>
+            </div>
+
+            <div id="packing-qr-result" style="display:none;text-align:center;">
+              <div id="packing-qr-card" style="background:#f2ede4;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;min-width:240px;">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
+                <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
+                <div id="packing-qr-canvas" style="display:flex;justify-content:center;margin-bottom:14px;"></div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:#2a1e10;margin-bottom:4px;">⚠ Spot a Gear Issue?</div>
+                <div style="font-size:11px;color:#8a7a60;margin-bottom:12px;">Scan to report damage or problems</div>
+                <div style="font-size:10px;color:#a08060;border-top:1px solid rgba(138,106,62,0.15);padding-top:10px;">
+                  Take a photo · Describe the issue · Submit
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <button onclick="printCard('packing-qr-card')"
+                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  🖨 Print Full Size
+                </button>
+                <button onclick="printBusinessCard('packing-qr-card')"
+                  style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--sky);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                  💳 Print 2×3.5"
+                </button>
               </div>
             </div>
           </div>
