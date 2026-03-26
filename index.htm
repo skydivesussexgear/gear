@@ -2068,17 +2068,18 @@ let adminUnlocked = false;
 let gearFilter = 'all';
 
 function switchAdminTab(tab) {
-  ['gear','parts','qr','email'].forEach(t => {
+  ['gear','report','parts','qr','email'].forEach(t => {
     const el = document.getElementById('admin-tab-' + t);
     if (el) el.style.display = t === tab ? 'block' : 'none';
   });
   const styles = {
-    gear:  { bg:'var(--yellow-dim)',           color:'var(--yellow)', border:'1px solid rgba(245,158,11,0.3)' },
-    parts: { bg:'rgba(74,222,128,0.12)',        color:'var(--green)',  border:'1px solid rgba(74,222,128,0.3)' },
-    qr:    { bg:'var(--sky-dim)',               color:'var(--sky)',    border:'1px solid rgba(56,189,248,0.3)' },
-    email: { bg:'rgba(74,222,128,0.12)',        color:'var(--green)',  border:'1px solid rgba(74,222,128,0.3)' },
+    gear:   { bg:'var(--yellow-dim)',         color:'var(--yellow)', border:'1px solid rgba(245,158,11,0.3)' },
+    report: { bg:'rgba(248,113,113,0.12)',    color:'var(--red)',    border:'1px solid rgba(248,113,113,0.3)' },
+    parts:  { bg:'rgba(74,222,128,0.12)',     color:'var(--green)',  border:'1px solid rgba(74,222,128,0.3)' },
+    qr:     { bg:'var(--sky-dim)',            color:'var(--sky)',    border:'1px solid rgba(56,189,248,0.3)' },
+    email:  { bg:'rgba(74,222,128,0.12)',     color:'var(--green)',  border:'1px solid rgba(74,222,128,0.3)' },
   };
-  ['gear','parts','qr','email'].forEach(t => {
+  ['gear','report','parts','qr','email'].forEach(t => {
     const btn = document.getElementById('admin-tab-btn-' + t);
     if (!btn) return;
     if (t === tab) {
@@ -2443,6 +2444,27 @@ async function confirmDeletePart(idx) {
   } catch(e) { alert('Error deleting part.'); }
 }
 
+// ── PACKING MAT QR ───────────────────────────────────────────
+let packingQRInstance = null;
+
+function generatePackingQR() {
+  const url = 'https://ssxgear.com/report.html';
+  const qrEl = document.getElementById('packing-qr-canvas');
+  qrEl.innerHTML = '';
+  if (packingQRInstance) { try { packingQRInstance.clear(); } catch(e) {} }
+  packingQRInstance = new QRCode(qrEl, {
+    text: url, width: 200, height: 200,
+    colorDark: '#1c1c1e', colorLight: '#f2ede4',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+  setTimeout(() => {
+    const img = qrEl.querySelector('img, canvas');
+    if (img) { img.style.borderRadius = '8px'; img.style.border = '3px solid #1c1c1e'; }
+  }, 100);
+  document.getElementById('packing-qr-result').style.display = 'block';
+  document.getElementById('packing-qr-result').scrollIntoView({ behavior:'smooth' });
+}
+
 // ── SUPER ADMIN ───────────────────────────────────────────────
 const SUPER_ADMIN_CODE = '2280';
 const FORGOT_PW_EMAIL  = 'skydivesussexgear@gmail.com';
@@ -2499,7 +2521,27 @@ async function loadDzEmail() {
     const data = JSON.parse(await res.text());
     const inp = document.getElementById('admin-dz-email');
     if (inp) inp.value = data.dz_email || '';
+    const rInp = document.getElementById('admin-report-email');
+    if (rInp) rInp.value = data.report_email || 'skydivesussexgear@gmail.com';
   } catch(e) { console.warn('loadDzEmail failed:', e); }
+}
+
+async function saveReportEmail() {
+  const inp    = document.getElementById('admin-report-email');
+  const status = document.getElementById('admin-report-email-status');
+  const email  = (inp ? inp.value : '').trim();
+  if (!email) { status.textContent = 'Please enter an email.'; status.style.color = 'var(--red)'; status.style.display = 'block'; return; }
+  status.textContent = 'Saving…'; status.style.color = 'var(--text-muted)'; status.style.display = 'block';
+  try {
+    await fetch(SCRIPT_URL, {
+      method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify({ action:'saveSettings', key:'report_email', value: email })
+    });
+    status.textContent = '✓ Report email saved!'; status.style.color = 'var(--green)';
+    setTimeout(() => { status.style.display = 'none'; }, 3000);
+  } catch(e) {
+    status.textContent = 'Error saving.'; status.style.color = 'var(--red)';
+  }
 }
 
 async function saveDzEmail() {
@@ -2927,6 +2969,10 @@ async function createRig() {
             style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);-webkit-tap-highlight-color:transparent;">
             🔧 Gear Manager
           </div>
+          <div id="admin-tab-btn-report" onclick="switchAdminTab('report')"
+            style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
+            🛬 Packing Mat
+          </div>
           <div id="admin-tab-btn-parts" onclick="switchAdminTab('parts')"
             style="flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;min-height:38px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);-webkit-tap-highlight-color:transparent;">
             📦 Parts
@@ -2952,6 +2998,48 @@ async function createRig() {
           </div>
           <div class="gm-count" id="gm-count"></div>
           <div id="gm-list" style="margin-top:12px;"></div>
+        </div>
+
+        <!-- PACKING MAT QR TAB -->
+        <div id="admin-tab-report" style="display:none;">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
+            <div style="font-family:'Barlow',sans-serif;font-size:15px;font-weight:800;margin-bottom:4px;">🛬 Packing Mat — Gear Issue QR</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:16px;">Print and laminate this QR code. Attach it to the packing mat. Staff scan it to report gear damage or issues — with photos and notes — sent directly to your email.</div>
+
+            <button onclick="generatePackingQR()"
+              style="width:100%;padding:12px;background:linear-gradient(135deg,#e8191a,#c01010);color:#fff;font-family:'Barlow',sans-serif;font-size:14px;font-weight:800;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 16px rgba(232,25,26,0.3);">
+              ⚡ Generate Packing Mat QR Code
+            </button>
+          </div>
+
+          <div id="packing-qr-result" style="display:none;text-align:center;">
+            <div id="packing-qr-card" style="background:#f2ede4;border-radius:14px;padding:28px 24px 22px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;min-width:240px;">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
+              <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
+              <div id="packing-qr-canvas" style="display:flex;justify-content:center;margin-bottom:14px;"></div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:#2a1e10;margin-bottom:4px;">⚠ Spot a Gear Issue?</div>
+              <div style="font-size:11px;color:#8a7a60;margin-bottom:12px;">Scan to report damage or problems</div>
+              <div style="font-size:10px;color:#a08060;border-top:1px solid rgba(138,106,62,0.15);padding-top:10px;">
+                Take a photo · Describe the issue · Submit<br>
+                <strong style="color:#5a4a30;">ssxgear.com/report.html</strong>
+              </div>
+            </div>
+
+            <div style="font-size:11px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;text-align:left;">QR links to:</div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sky);word-break:break-all;margin-bottom:14px;text-align:left;">https://ssxgear.com/report.html</div>
+
+            <div style="display:flex;gap:10px;margin-bottom:12px;">
+              <button onclick="printCard('packing-qr-card')"
+                style="flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
+                🖨 Print Card
+              </button>
+            </div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--text-dim);text-align:left;line-height:1.6;">
+              <strong style="color:var(--text);">📌 How to use:</strong><br>
+              Print and laminate. Attach to packing mat, gear wall, or manifest desk. Reports go to your configured report email (set in Email Settings).
+            </div>
+          </div>
         </div>
 
         <!-- PARTS INVENTORY TAB -->
@@ -3168,8 +3256,23 @@ async function createRig() {
               </div>
               <div id="admin-email-status" style="font-size:12px;margin-top:8px;display:none;"></div>
             </div>
-            <!-- Lock again -->
-            <div style="text-align:right;margin-top:12px;">
+            <!-- Report Email -->
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-top:14px;">
+              <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">🛬 Packing Mat Report Email</div>
+              <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">Gear issue reports from the packing mat QR code are sent here. Defaults to <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:11px;">skydivesussexgear@gmail.com</code></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+                <div style="flex:1;min-width:200px;">
+                  <input type="text" id="admin-report-email" placeholder="Loading…"
+                    style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;padding:10px 14px;min-height:44px;outline:none;transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='var(--sky)'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+                <button onclick="saveReportEmail()"
+                  style="padding:10px 18px;background:var(--sky-dim);border:1px solid rgba(56,189,248,0.3);color:var(--sky);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;min-height:44px;white-space:nowrap;">
+                  💾 Save
+                </button>
+              </div>
+              <div id="admin-report-email-status" style="font-size:12px;margin-top:8px;display:none;"></div>
+            </div>
               <button onclick="lockSuperAdmin()"
                 style="background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;">
                 🔒 Lock Settings
