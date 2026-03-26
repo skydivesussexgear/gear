@@ -2473,21 +2473,51 @@ function printBusinessCard(cardId) {
 async function downloadCard(cardId, filename) {
   const card = document.getElementById(cardId);
   if (!card) return;
+
+  // Build a full 8.5x11 page with the card centered
+  const DPI = 150;
+  const W = Math.round(8.5 * DPI);   // 1275px
+  const H = Math.round(11  * DPI);   // 1650px
+
+  // Render the card at high res first
+  let cardCanvas;
   try {
-    const canvas = await html2canvas(card, {
+    cardCanvas = await html2canvas(card, {
       backgroundColor: '#f2ede4',
-      scale: 3,
+      scale: 4,
       useCORS: true,
       logging: false,
     });
-    const link = document.createElement('a');
-    link.download = (filename || cardId) + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
   } catch(e) {
     alert('Download failed. Try using Print instead.');
     console.warn('downloadCard error:', e);
+    return;
   }
+
+  // Composite onto white 8.5x11 canvas
+  const page = document.createElement('canvas');
+  page.width  = W;
+  page.height = H;
+  const ctx = page.getContext('2d');
+
+  // White background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // Center the card image
+  const cw = cardCanvas.width;
+  const ch = cardCanvas.height;
+  const scale = Math.min((W * 0.85) / cw, (H * 0.85) / ch);
+  const dw = Math.round(cw * scale);
+  const dh = Math.round(ch * scale);
+  const dx = Math.round((W - dw) / 2);
+  const dy = Math.round((H - dh) / 2);
+  ctx.drawImage(cardCanvas, dx, dy, dw, dh);
+
+  const link = document.createElement('a');
+  link.download = (filename || cardId) + '_8x11.png';
+  link.href = page.toDataURL('image/png');
+  link.click();
 }
 
 // ── PACKING MAT QR ───────────────────────────────────────────
