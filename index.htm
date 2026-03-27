@@ -2529,10 +2529,14 @@ function printBusinessCard(cardId) {
 }
 
 async function downloadCard(cardId, filename) {
+  // Special high-quality canvas draw for the walk-in flyer
+  if (cardId === 'walkin-qr-card') {
+    downloadWalkInFlyer(filename);
+    return;
+  }
+
   const card = document.getElementById(cardId);
   if (!card) return;
-
-  // Force white background on any canvas/img inside (QR code)
   const qrCanvases = card.querySelectorAll('canvas');
   qrCanvases.forEach(cv => {
     const tmp = document.createElement('canvas');
@@ -2544,43 +2548,157 @@ async function downloadCard(cardId, filename) {
     cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
     cv.getContext('2d').drawImage(tmp, 0, 0);
   });
-
   const DPI = 150;
   const W = Math.round(8.5 * DPI);
   const H = Math.round(11  * DPI);
-
   let cardCanvas;
   try {
-    cardCanvas = await html2canvas(card, {
-      backgroundColor: '#ffffff',
-      scale: 4,
-      useCORS: true,
-      logging: false,
-    });
+    cardCanvas = await html2canvas(card, { backgroundColor:'#ffffff', scale:4, useCORS:true, logging:false });
   } catch(e) {
     alert('Download failed. Try using Print instead.');
-    console.warn('downloadCard error:', e);
     return;
   }
-
   const page = document.createElement('canvas');
-  page.width  = W;
-  page.height = H;
+  page.width = W; page.height = H;
   const ctx = page.getContext('2d');
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, W, H);
-
-  const cw = cardCanvas.width;
-  const ch = cardCanvas.height;
+  const cw = cardCanvas.width, ch = cardCanvas.height;
   const scale = Math.min((W * 0.85) / cw, (H * 0.85) / ch);
-  const dw = Math.round(cw * scale);
-  const dh = Math.round(ch * scale);
-  const dx = Math.round((W - dw) / 2);
-  const dy = Math.round((H - dh) / 2);
-  ctx.drawImage(cardCanvas, dx, dy, dw, dh);
-
+  const dw = Math.round(cw * scale), dh = Math.round(ch * scale);
+  ctx.drawImage(cardCanvas, Math.round((W-dw)/2), Math.round((H-dh)/2), dw, dh);
   const link = document.createElement('a');
   link.download = (filename || cardId) + '_8x11.png';
+  link.href = page.toDataURL('image/png');
+  link.click();
+}
+
+function downloadWalkInFlyer(filename) {
+  // Get the QR code canvas/img from the DOM
+  const qrEl = document.getElementById('walkin-qr-canvas');
+  if (!qrEl) return;
+  const qrSource = qrEl.querySelector('canvas') || qrEl.querySelector('img');
+  if (!qrSource) { alert('Please generate the QR code first.'); return; }
+
+  const DPI  = 150;
+  const W    = Math.round(8.5 * DPI);   // 1275
+  const H    = Math.round(11  * DPI);   // 1650
+  const cx   = W / 2;
+
+  const page = document.createElement('canvas');
+  page.width = W; page.height = H;
+  const ctx  = page.getContext('2d');
+
+  // White background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  let y = 90;
+
+  // ── SKYDIVE SUSSEX ──────────────────────────────────────
+  ctx.font = 'bold 72px Arial Black, Arial, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+
+  // Measure to split "SKYDIVE " and "SUSSEX"
+  const word1 = 'SKYDIVE ';
+  const word2 = 'SUSSEX';
+  const w1 = ctx.measureText(word1).width;
+  const w2 = ctx.measureText(word2).width;
+  const totalW = w1 + w2;
+  const startX = cx - totalW / 2;
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillText(word1, startX, y);
+  ctx.fillStyle = '#8a1a1a';
+  ctx.fillText(word2, startX + w1, y);
+
+  // GEAR SERVICE
+  y += 82;
+  ctx.font = '22px Arial, sans-serif';
+  ctx.fillStyle = '#888888';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '6px';
+  ctx.fillText('G E A R   S E R V I C E', cx, y);
+
+  // Red divider
+  y += 44;
+  ctx.fillStyle = '#c01010';
+  ctx.fillRect(cx - 300, y, 600, 5);
+
+  // Parachute Rigging Services
+  y += 52;
+  ctx.font = 'bold 44px Arial, sans-serif';
+  ctx.fillStyle = '#c01010';
+  ctx.textAlign = 'center';
+  ctx.fillText('Parachute Rigging Services', cx, y);
+
+  // Subtext
+  y += 68;
+  ctx.font = '28px Arial, sans-serif';
+  ctx.fillStyle = '#333333';
+  ctx.fillText('Need a reserve repack or maintenance done?', cx, y);
+
+  y += 50;
+  ctx.font = 'bold 28px Arial, sans-serif';
+  ctx.fillStyle = '#111111';
+  ctx.fillText('Scan the QR code below to schedule work.', cx, y);
+
+  // ── QR CODE ─────────────────────────────────────────────
+  const qrSize = 480;
+  const qrX    = cx - qrSize / 2;
+  y += 70;
+
+  // White background behind QR
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(qrX - 4, y - 4, qrSize + 8, qrSize + 8);
+
+  if (qrSource.tagName === 'CANVAS') {
+    ctx.drawImage(qrSource, qrX, y, qrSize, qrSize);
+  } else {
+    // img — draw via temp canvas
+    const tmp = document.createElement('canvas');
+    tmp.width = qrSize; tmp.height = qrSize;
+    const t2  = tmp.getContext('2d');
+    t2.fillStyle = '#ffffff';
+    t2.fillRect(0, 0, qrSize, qrSize);
+    t2.drawImage(qrSource, 0, 0, qrSize, qrSize);
+    ctx.drawImage(tmp, qrX, y);
+  }
+  y += qrSize + 28;
+
+  // Request Service
+  ctx.font = 'bold 38px Arial, sans-serif';
+  ctx.fillStyle = '#1a1a1a';
+  ctx.textAlign = 'center';
+  ctx.fillText('Request Service', cx, y);
+
+  y += 48;
+  ctx.font = '24px Arial, sans-serif';
+  ctx.fillStyle = '#888888';
+  ctx.fillText('Scan to submit a rigging request', cx, y);
+
+  // Footer divider
+  y += 70;
+  ctx.strokeStyle = '#e0e0e0';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx - 280, y);
+  ctx.lineTo(cx + 280, y);
+  ctx.stroke();
+
+  y += 36;
+  ctx.font = '22px Arial, sans-serif';
+  ctx.fillStyle = '#888888';
+  ctx.fillText('Quick  •  Easy  •  No Paperwork', cx, y);
+
+  y += 36;
+  ctx.fillText('Reserve Repack  •  Inspections  •  Repairs', cx, y);
+
+  // Download
+  const link = document.createElement('a');
+  link.download = (filename || 'SSX-NewRequest-QR') + '_8x11.png';
   link.href = page.toDataURL('image/png');
   link.click();
 }
