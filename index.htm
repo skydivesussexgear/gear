@@ -2848,6 +2848,13 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // Walk-In QR scan — go straight to Fun Jumper form
+  if (screen === 'funjumper') {
+    showScreen('screen-funjumper');
+    buildFjServices();
+    return;
+  }
+
   if (prefill === '1') {
     showScreen('screen-funjumper');
     buildFjServices();
