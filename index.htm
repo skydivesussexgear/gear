@@ -1275,7 +1275,29 @@ body {
   <div class="screen" id="screen-funjumper">
     <button class="fj-back" onclick="showScreen('screen-landing')">← Back</button>
 
-    <!-- Section 1: Customer Info -->
+    <!-- RETURNING CUSTOMER LOOKUP -->
+    <div class="fj-section" style="margin-bottom:20px;background:var(--surface2);border:1px solid var(--border);">
+      <div class="fj-section-header" style="cursor:default;">
+        <div class="fj-section-num" style="background:var(--yellow-dim);color:var(--yellow);border-color:rgba(245,158,11,0.3);">↺</div>
+        <div>
+          <div class="fj-section-title">Returning Customer?</div>
+          <div class="fj-section-sub">Enter your container serial number and we'll pull up your rig info automatically.</div>
+        </div>
+      </div>
+      <div class="fj-body" style="padding-top:0;">
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <input class="fj-input" id="ret-sn-input" type="text" placeholder="Container serial # (e.g. JO-12345)" autocomplete="off"
+              onkeydown="if(event.key==='Enter')loadReturningCustomer()">
+          </div>
+          <button onclick="loadReturningCustomer()" id="ret-load-btn"
+            style="padding:12px 20px;background:var(--yellow-dim);border:1px solid rgba(245,158,11,0.4);color:var(--yellow);font-family:'Barlow',sans-serif;font-size:14px;font-weight:800;border-radius:8px;cursor:pointer;min-height:48px;white-space:nowrap;">
+            Load My Rig ▶
+          </button>
+        </div>
+        <div id="ret-status" style="font-size:12px;margin-top:10px;display:none;"></div>
+      </div>
+    </div>
     <div class="fj-section">
       <div class="fj-section-header">
         <div class="fj-section-num">1</div>
@@ -2064,6 +2086,42 @@ async function submitFunJumper() {
 }
 
 
+// ── RETURNING CUSTOMER LOOKUP (FJ form top) ───────────────────
+async function loadReturningCustomer() {
+  const sn    = (document.getElementById('ret-sn-input').value || '').trim();
+  const status = document.getElementById('ret-status');
+  const btn    = document.getElementById('ret-load-btn');
+  if (!sn) {
+    status.textContent = 'Please enter a container serial number.';
+    status.style.color = 'var(--red)';
+    status.style.display = 'block';
+    return;
+  }
+  status.textContent = 'Looking up your rig…';
+  status.style.color = 'var(--text-muted)';
+  status.style.display = 'block';
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+  try {
+    const res  = await fetch(SCRIPT_URL + '?action=customerLookup&sn=' + encodeURIComponent(sn), { method:'GET', redirect:'follow', mode:'cors' });
+    const data = JSON.parse(await res.text());
+    if (data && data.rig_sn) {
+      fillPrefillFields(data, data);
+      status.textContent = '✓ Rig found! Your info has been filled in below.';
+      status.style.color = 'var(--green)';
+      document.getElementById('ret-sn-input').value = '';
+    } else {
+      status.textContent = 'No records found for that serial number. Please fill in your info manually.';
+      status.style.color = 'var(--yellow)';
+    }
+  } catch(e) {
+    status.textContent = 'Lookup failed. Please fill in your info manually.';
+    status.style.color = 'var(--red)';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Load My Rig ▶';
+}
+
 // ── ADMIN ──
 let adminUnlocked = false;
 let gearFilter = 'all';
@@ -2582,7 +2640,6 @@ async function downloadLabelCard(cardId, filename) {
 
 // ── WALK-IN QR GENERATORS ─────────────────────────────────────
 let walkInQRInstance = null;
-let returnQRInstance = null;
 
 function generateWalkInQR() {
   const url = 'https://ssxgear.com/index.htm?screen=funjumper';
@@ -2600,38 +2657,6 @@ function generateWalkInQR() {
   }, 100);
   document.getElementById('walkin-qr-result').style.display = 'block';
   document.getElementById('walkin-qr-result').scrollIntoView({ behavior: 'smooth' });
-}
-
-function generateReturnQR() {
-  const sn    = (document.getElementById('return-sn').value    || '').trim().toUpperCase();
-  const email = (document.getElementById('return-email').value || '').trim();
-
-  let url = 'https://ssxgear.com/customer.html';
-  const params = [];
-  if (sn)    params.push('sn='    + encodeURIComponent(sn));
-  if (email) params.push('email=' + encodeURIComponent(email));
-  if (params.length) url += '?' + params.join('&');
-
-  // Update subtitle on card
-  const subEl = document.getElementById('return-qr-sub');
-  if (subEl) {
-    subEl.textContent = sn ? 'S/N: ' + sn : email ? email : 'Enter S/N or email to look up';
-  }
-
-  const qrEl = document.getElementById('return-qr-canvas');
-  qrEl.innerHTML = '';
-  if (returnQRInstance) { try { returnQRInstance.clear(); } catch(e) {} }
-  returnQRInstance = new QRCode(qrEl, {
-    text: url, width: 200, height: 200,
-    colorDark: '#1c1c1e', colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
-  });
-  setTimeout(() => {
-    const img = qrEl.querySelector('img, canvas');
-    if (img) { img.style.borderRadius = '6px'; img.style.border = '2px solid #1c1c1e'; }
-  }, 100);
-  document.getElementById('return-qr-result').style.display = 'block';
-  document.getElementById('return-qr-result').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ── PACKING MAT QR ───────────────────────────────────────────
@@ -3317,11 +3342,11 @@ async function createRig() {
 
             <!-- New Request QR -->
             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
-              <div style="font-size:13px;font-weight:800;margin-bottom:3px;">🆕 New Fun Jumper Request</div>
-              <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">Opens the Fun Jumper service request form directly — no lookup needed. Great for first-time customers or a kiosk-style QR at your desk.</div>
+              <div style="font-size:13px;font-weight:800;margin-bottom:3px;">🪂 Fun Jumper Service Request</div>
+              <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">Opens the Fun Jumper service request form directly. Returning customers can enter their S/N at the top to auto-fill their rig info.</div>
               <button onclick="generateWalkInQR()"
                 style="width:100%;padding:12px;background:linear-gradient(135deg,var(--sky),#7dd3f8);color:#080c12;font-family:'Barlow',sans-serif;font-size:14px;font-weight:800;border:none;border-radius:8px;cursor:pointer;">
-                ⚡ Generate New Request QR
+                ⚡ Generate QR Code
               </button>
             </div>
             <div id="walkin-qr-result" style="display:none;text-align:center;">
@@ -3334,42 +3359,6 @@ async function createRig() {
               </div>
               <div style="margin-bottom:12px;">
                 <button onclick="downloadCard('walkin-qr-card','SSX-NewRequest-QR')"
-                  style="width:100%;padding:11px;background:var(--green-dim);border:1px solid rgba(74,222,128,0.3);color:var(--green);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
-                  ⬇ Download 8.5×11"
-                </button>
-              </div>
-            </div>
-
-            <!-- Return Customer QR -->
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;margin-top:8px;">
-              <div style="font-size:13px;font-weight:800;margin-bottom:3px;">🔄 Returning Customer Lookup</div>
-              <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">Opens the customer lookup page — they enter their S/N or email to pull up their rig and pre-fill a new request.</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-                <div class="a-field" style="margin:0;">
-                  <label>Container S/N <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-muted)">(optional pre-fill)</span></label>
-                  <input type="text" id="return-sn" placeholder="e.g. JO-12345">
-                </div>
-                <div class="a-field" style="margin:0;">
-                  <label>Customer Email <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text-muted)">(optional pre-fill)</span></label>
-                  <input type="text" id="return-email" placeholder="e.g. jane@email.com">
-                </div>
-              </div>
-              <button onclick="generateReturnQR()"
-                style="width:100%;padding:12px;background:linear-gradient(135deg,var(--yellow),#fde68a);color:#1c1400;font-family:'Barlow',sans-serif;font-size:14px;font-weight:800;border:none;border-radius:8px;cursor:pointer;">
-                ⚡ Generate Return Customer QR
-              </button>
-            </div>
-            <div id="return-qr-result" style="display:none;text-align:center;">
-              <div id="return-qr-card" style="background:#ffffff;border-radius:14px;padding:22px 20px 18px;display:inline-block;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);margin-bottom:16px;min-width:260px;">
-                <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#1c1c1e;line-height:1;white-space:nowrap;">SKYDIVE <span style="color:#8a3e3e;">SUSSEX</span></div>
-                <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8a7a60;margin:3px 0 14px;">Gear Service</div>
-                <div id="return-qr-canvas" style="display:flex;justify-content:center;margin-bottom:12px;"></div>
-                <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:#2a1e10;margin-bottom:4px;">🔄 Returning Customer</div>
-                <div id="return-qr-sub" style="font-size:11px;color:#8a7a60;margin-bottom:4px;"></div>
-                <div style="font-size:10px;color:#a08060;margin-top:8px;border-top:1px solid rgba(0,0,0,0.08);padding-top:8px;">Scan to look up your rig &amp; request service</div>
-              </div>
-              <div style="margin-bottom:12px;">
-                <button onclick="downloadCard('return-qr-card','SSX-ReturnCustomer-QR')"
                   style="width:100%;padding:11px;background:var(--green-dim);border:1px solid rgba(74,222,128,0.3);color:var(--green);font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;border-radius:8px;cursor:pointer;">
                   ⬇ Download 8.5×11"
                 </button>
