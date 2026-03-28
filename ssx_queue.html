@@ -387,17 +387,14 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZtzIAUZ8NvFaPCSAmW
 const SERVICE_GROUPS = [
   { group: '🔁 Repacks & Inspections', items: [
     {name:"Reserve Inspection & Repack (Sport)",price:"$115"},
-    {name:"Reserve Inspection & Repack (Tandem)",price:"$150"},
     {name:"Assembly, Inspection & Pack Reserve (Sport)",price:"$140"},
-    {name:"Assembly, Inspection & Repack Reserve (Tandem)",price:"$175"},
     {name:"Assembly, Inspection & Pack Main",price:"$75"},
     {name:"Inspect Main or Reserve",price:"$25"},
-    {name:"Inspect Harness / Container",price:"$20"},
+    {name:"Inspect Container",price:"$20"},
     {name:"Inspect & Pack Pilot's Emergency Rig",price:"$120"},
   ]},
   { group: '📦 Packing', items: [
     {name:"Pack Main Sport",price:"$15"},
-    {name:"Pack Main Tandem",price:"$20"},
   ]},
   { group: '🔧 Hardware & Parts', items: [
     {name:"Reserve Safety Stow Replacement",price:"$12"},
@@ -413,7 +410,6 @@ const SERVICE_GROUPS = [
     {name:"Replace Steering Lines Toggles to Cascades",price:"$65"},
     {name:"Full Line Set",price:"Varies"},
     {name:"Re-line Sport",price:"$130"},
-    {name:"Re-line Tandem",price:"$175"},
   ]},
   { group: '⚡ AAD', items: [
     {name:"Install AAD",price:"$10"},
@@ -1100,21 +1096,17 @@ let allCompletedOrders = [];
 
 const SVC_PRICES = {
   'Reserve Inspection & Repack (Sport)': 115,
-  'Reserve Inspection & Repack (Tandem)': 150,
   'Inspect Main or Reserve': 25,
   'Inspect Harness / Container': 20,
   "Inspect & Pack Pilot's Emergency Rig": 120,
   'Pack Main Sport': 15,
-  'Pack Main Tandem': 20,
   'Install AAD': 10,
   'Reserve Safety Stow Replacement': 12,
   'Replace Lower Steering Lines': 40,
   'Replace Steering Lines Toggles to Cascades': 65,
   'Re-line Sport': 130,
-  'Re-line Tandem': 175,
   'Slinks': 35,
   'Assembly, Inspection & Pack Reserve (Sport)': 140,
-  'Assembly, Inspection & Repack Reserve (Tandem)': 175,
   'Assembly, Inspection & Pack Main': 75,
   'Disassemble Main or Reserve': 10,
   'Install Slider Bumpers': 25,
