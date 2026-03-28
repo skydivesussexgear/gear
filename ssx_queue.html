@@ -147,6 +147,17 @@
   .add-svc-panel{display:none;margin-top:8px;}
   .add-svc-panel.open{display:block;}
 
+
+  .varies-price-input{width:72px;background:var(--bg);border:1px solid rgba(59,130,246,0.4);border-radius:5px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 6px;text-align:right;min-height:28px;}
+  .varies-price-input:focus{outline:none;border-color:var(--blue);}
+  .charge-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;}
+  .charge-field label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;}
+  .charge-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;padding:8px 10px;min-height:40px;}
+  .charge-field input:focus{outline:none;border-color:var(--blue);}
+  .svc-notes-field{margin-top:6px;grid-column:1/-1;}
+  .svc-notes-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;min-height:44px;resize:vertical;}
+  .svc-notes-input:focus{outline:none;border-color:var(--blue);}
+
   /* CUSTOMER HISTORY TAB */
   .history-search-wrap{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
   .history-search-wrap input{flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 14px;min-height:48px;}
@@ -402,7 +413,6 @@ const SERVICES = [
   {name:"Wash Rig",price:"$65"},
   {name:"Sewing",price:"$85/hr"},
   {name:"Canopy Patch",price:"Varies"},
-  {name:"Monthly Maintenance",price:"—"},
 ];
 
 let pendingOrders = [];
@@ -676,9 +686,20 @@ function renderQueue(){
               <label>Rigger Symbol *</label>
               <input type="text" id="rigger-symbol-${realIdx}" placeholder="e.g. T.R. or ✦" value="${order._rigger_symbol || ''}">
             </div>
-            <div class="complete-field">
-              <label>Completion Notes (optional)</label>
-              <textarea id="comp-notes-${realIdx}" placeholder="Any final notes..."></textarea>
+            <div class="complete-field" style="grid-column:1/-1;">
+              <label>Internal Notes (optional)</label>
+              <textarea id="comp-notes-${realIdx}" placeholder="Any final notes, observations, or changes to service..."></textarea>
+            </div>
+          </div>
+          <!-- EXTRA CHARGE / DISCOUNT -->
+          <div class="charge-row">
+            <div class="charge-field">
+              <label>➕ Extra Charge ($)</label>
+              <input type="number" id="extra-charge-${realIdx}" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="charge-field">
+              <label>➖ Discount ($)</label>
+              <input type="number" id="discount-${realIdx}" placeholder="0.00" min="0" step="0.01">
             </div>
           </div>
           <div class="error-msg" id="comp-error-${realIdx}" style="margin-top:8px;"></div>
@@ -700,12 +721,18 @@ function renderQueue(){
     if (svcGrid) {
       SERVICES.forEach(svc => {
         const checked = svcs.includes(svc.name);
+        const isVaries = svc.price === 'Varies' || svc.price.includes('/hr');
         const label = document.createElement('label');
         label.className = 'svc-item' + (checked ? ' checked' : '');
         label.innerHTML = '<input type="checkbox" value="' + svc.name + '"' + (checked ? ' checked' : '') + '>' +
           '<div class="svc-check"></div>' +
-          '<span class="svc-label">' + svc.name + '<span class="svc-price">' + svc.price + '</span></span>';
-        label.addEventListener('click', function() { toggleSvc(this); });
+          '<span class="svc-label">' + svc.name +
+          '<span class="svc-price">' + svc.price + '</span></span>' +
+          (isVaries ? '<input type="number" class="varies-price-input" id="varies-' + realIdx + '-' + svc.name.replace(/\s+/g,'_') + '" placeholder="$0" min="0" step="0.01" onclick="event.stopPropagation()" title="Enter price">' : '');
+        label.addEventListener('click', function(e) {
+          if (e.target.classList.contains('varies-price-input')) return;
+          toggleSvc(this);
+        });
         svcGrid.appendChild(label);
       });
     }
@@ -917,6 +944,8 @@ async function doMarkComplete(idx){
   const rigger=document.getElementById('rigger-'+idx).value.trim();
   const symbol=document.getElementById('rigger-symbol-'+idx).value.trim();
   const compNotes=document.getElementById('comp-notes-'+idx).value.trim();
+  const extraCharge = parseFloat(document.getElementById('extra-charge-'+idx)?.value) || 0;
+  const discount    = parseFloat(document.getElementById('discount-'+idx)?.value)    || 0;
   const errEl=document.getElementById('comp-error-'+idx);
   errEl.style.display='none';
   if(!rigger){ errEl.textContent='Please enter the rigger name.'; errEl.style.display='block'; return; }
@@ -927,13 +956,42 @@ async function doMarkComplete(idx){
     ? [...svcGrid.querySelectorAll('input[type="checkbox"]:checked')].map(c=>c.value).join(' | ')
     : order.services;
 
+  // Collect manual price overrides for Varies/hr services
+  const priceOverrides = {};
+  if (svcGrid) {
+    svcGrid.querySelectorAll('.varies-price-input').forEach(inp => {
+      const val = parseFloat(inp.value);
+      if (val > 0) {
+        // Reverse the ID key back to service name
+        const key = inp.id.replace('varies-' + idx + '-', '').replace(/_/g, ' ');
+        // Find actual service name match
+        const svc = SERVICES.find(s => s.name.replace(/\s+/g,'_') === inp.id.replace('varies-' + idx + '-', ''));
+        if (svc) priceOverrides[svc.name] = val;
+      }
+    });
+  }
+
   const riggerFull = rigger + ' (' + symbol + ')';
 
-  // Complete the order (invoice sent server-side inside completeOrder)
+  // Build notes with extra charge/discount appended
+  let finalNotes = compNotes;
+  if (extraCharge > 0) finalNotes += (finalNotes ? '\n' : '') + 'Extra charge: +$' + extraCharge.toFixed(2);
+  if (discount > 0)    finalNotes += (finalNotes ? '\n' : '') + 'Discount applied: -$' + discount.toFixed(2);
+
   const btn = document.getElementById('complete-btn-'+idx);
   if (btn) btn.classList.add('submitting');
 
-  const payload={action:'completeOrder',work_order:order.work_order,rigger:riggerFull,services:updatedServices,completion_notes:compNotes,row:order._row};
+  const payload={
+    action:'completeOrder',
+    work_order:order.work_order,
+    rigger:riggerFull,
+    services:updatedServices,
+    completion_notes:finalNotes,
+    extra_charge: extraCharge || '',
+    discount: discount || '',
+    price_overrides: Object.keys(priceOverrides).length ? JSON.stringify(priceOverrides) : '',
+    row:order._row
+  };
   try {
     await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
     pendingOrders.splice(idx,1);
@@ -1139,14 +1197,21 @@ ${order.known_damage === 'yes' ? `
   setTimeout(() => { w.print(); }, 500);
 }
 
-function calcTotal(services) {
+function calcTotal(services, priceOverrides, extraCharge, discount) {
   let total = 0;
   let hasVaries = false;
   (services||'').split(' | ').filter(Boolean).forEach(s => {
+    // Check for manual price override first
+    if (priceOverrides && priceOverrides[s] !== undefined) {
+      total += parseFloat(priceOverrides[s]) || 0;
+      return;
+    }
     const p = SVC_PRICES[s];
     if (p > 0) total += p;
-    else if (p === undefined) hasVaries = true;
+    else hasVaries = true;
   });
+  if (extraCharge) total += parseFloat(extraCharge) || 0;
+  if (discount)    total -= parseFloat(discount)    || 0;
   return { total, hasVaries };
 }
 
