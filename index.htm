@@ -23,8 +23,8 @@
   --yellow: #fbbf24;
   --yellow-dim: rgba(251,191,36,0.1);
   --text: #f0f4ff;
-  --text-dim: #8896b0;
-  --text-muted: #4a5568;
+  --text-dim: #b8c5d6;
+  --text-muted: #7a8fa6;
   --radius: 12px;
 }
 
@@ -1345,7 +1345,7 @@ body {
         <!-- Harness & Container -->
         <div class="fj-subsection open" id="fj-sub-container">
           <div class="fj-sub-toggle" onclick="toggleFjSub('fj-sub-container')">
-            <span class="fj-sub-label">Harness &amp; Container <span style="color:var(--sky)">— serial # required</span></span>
+            <span class="fj-sub-label">Container <span style="color:var(--sky)">— serial # required</span></span>
             <span class="fj-sub-chevron">▾</span>
           </div>
           <div class="fj-sub-body">
@@ -1497,6 +1497,16 @@ body {
           <label class="fj-label">Describe the damage</label>
           <textarea class="fj-textarea" id="fj-damage-desc" placeholder="e.g. Soft reserve handle, slider grommet wear, frayed closing loop…"></textarea>
         </div>
+        <div class="fj-field" id="dmg-photo-wrap" style="display:none; margin-top:10px;">
+          <label class="fj-label">📷 Damage Photos <span style="color:var(--text-muted);font-weight:400;">(optional — up to 3)</span></label>
+          <input type="file" id="fj-damage-photos" accept="image/*" multiple style="display:none;">
+          <div onclick="document.getElementById('fj-damage-photos').click()"
+            style="border:2px dashed var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer;color:var(--text-dim);font-size:13px;transition:border-color 0.2s;"
+            onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">
+            📁 Tap to attach photos of the damage
+          </div>
+          <div id="dmg-photo-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+        </div>
       </div>
     </div>
 
@@ -1639,7 +1649,7 @@ const SERVICE_GROUPS = [
   ]},
   { label: 'Inspection', items: [
     { name: 'Inspect Main or Reserve',              price: '$25',   note: 'Visual and functional inspection of a single canopy.' },
-    { name: 'Inspect Harness / Container',          price: '$20',   note: 'Hardware, webbing, and container integrity check.' },
+    { name: 'Inspect Container',                    price: '$20',   note: 'Hardware, webbing, and container integrity check.' },
     { name: "Inspect & Pack Pilot's Emergency Rig", price: '$120',  note: 'Full inspection and repack of a pilot emergency parachute.' },
   ]},
   { label: 'Packing', items: [
@@ -1964,8 +1974,36 @@ function setDamage(val) {
   fjDamage = val;
   document.getElementById('dmg-no').className  = 'damage-opt' + (val === 'no'  ? ' selected-no'  : '');
   document.getElementById('dmg-yes').className = 'damage-opt' + (val === 'yes' ? ' selected-yes' : '');
-  document.getElementById('dmg-desc-wrap').style.display = val === 'yes' ? 'block' : 'none';
+  document.getElementById('dmg-desc-wrap').style.display  = val === 'yes' ? 'block' : 'none';
+  document.getElementById('dmg-photo-wrap').style.display = val === 'yes' ? 'block' : 'none';
 }
+
+// Photo preview for damage photos
+document.addEventListener('DOMContentLoaded', () => {
+  const photoInput = document.getElementById('fj-damage-photos');
+  if (!photoInput) return;
+  photoInput.addEventListener('change', () => {
+    const preview = document.getElementById('dmg-photo-preview');
+    preview.innerHTML = '';
+    const files = [...photoInput.files].slice(0, 3);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);';
+        preview.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+    if (files.length) {
+      const note = document.createElement('div');
+      note.style.cssText = 'font-size:11px;color:var(--text-dim);align-self:center;';
+      note.textContent = files.length + ' photo' + (files.length > 1 ? 's' : '') + ' attached';
+      preview.appendChild(note);
+    }
+  });
+});
 
 function buildFjServices() {
   const container = document.getElementById('fj-services-container');
@@ -1979,6 +2017,12 @@ function buildFjServices() {
     const list = document.createElement('div');
     list.className = 'svc-list';
     group.items.forEach(svc => {
+      const isVaries = svc.price === 'Varies' || svc.price.includes('/hr');
+      const safeKey  = svc.name.replace(/[^a-zA-Z0-9]/g, '_');
+
+      // Wrapper div so expand row sits below
+      const wrap = document.createElement('div');
+
       const label = document.createElement('label');
       label.className = 'svc-item';
       label.innerHTML = `
@@ -1989,16 +2033,37 @@ function buildFjServices() {
           </svg>
         </div>
         <span class="svc-label">${svc.name}${svc.note ? `<span class="svc-note">${svc.note}</span>` : ''}</span>
-        <span class="svc-price">${svc.price}</span>`;
+        <span class="svc-price">${svc.price}${isVaries ? ' <span style="font-size:10px;color:var(--yellow);">$ ▾</span>' : ''}</span>`;
+
+      // Varies expand row
+      let expandRow = null;
+      if (isVaries) {
+        expandRow = document.createElement('div');
+        expandRow.id = 'fj-varies-' + safeKey;
+        expandRow.style.cssText = 'display:none;grid-template-columns:130px 1fr;gap:8px;padding:8px 12px 10px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-top:none;border-radius:0 0 8px 8px;margin-top:-4px;';
+        expandRow.innerHTML =
+          '<div><label style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--yellow);display:block;margin-bottom:4px;">Price ($)</label>' +
+          '<input type="number" id="fj-vp-' + safeKey + '" placeholder="0.00" min="0" step="0.01" style="width:100%;background:var(--surface);border:1px solid rgba(245,158,11,0.4);border-radius:7px;color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:13px;padding:8px 10px;min-height:40px;" onclick="event.stopPropagation()"></div>' +
+          '<div><label style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);display:block;margin-bottom:4px;">Note (optional)</label>' +
+          '<input type="text" id="fj-vn-' + safeKey + '" placeholder="e.g. 2hrs, battery type, patch size…" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:13px;padding:8px 10px;min-height:40px;" onclick="event.stopPropagation()"></div>';
+      }
+
       label.addEventListener('click', function(e) {
+        if (e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') return;
         e.preventDefault();
-        const cb = this.querySelector('input');
+        const cb = this.querySelector('input[type="checkbox"]');
         cb.checked = !cb.checked;
         this.classList.toggle('checked', cb.checked);
         if (cb.checked) fjSelectedServices.add(svc.name);
         else fjSelectedServices.delete(svc.name);
+        if (expandRow) {
+          expandRow.style.display = cb.checked ? 'grid' : 'none';
+        }
       });
-      list.appendChild(label);
+
+      wrap.appendChild(label);
+      if (expandRow) wrap.appendChild(expandRow);
+      list.appendChild(wrap);
     });
     groupEl.appendChild(list);
     container.appendChild(groupEl);
@@ -2073,6 +2138,18 @@ async function submitFunJumper() {
     rush:             selectedRush.fj || 'Standard Turnaround',
     status:           'PENDING'
   };
+
+  // Collect varies price/note overrides and append to extra_notes
+  const variesLines = [];
+  SERVICE_GROUPS.flatMap(g => g.items).forEach(svc => {
+    if (svc.price !== 'Varies' && !svc.price.includes('/hr')) return;
+    if (!fjSelectedServices.has(svc.name)) return;
+    const safeKey = svc.name.replace(/[^a-zA-Z0-9]/g, '_');
+    const price = (document.getElementById('fj-vp-' + safeKey)?.value || '').trim();
+    const note  = (document.getElementById('fj-vn-' + safeKey)?.value || '').trim();
+    if (price || note) variesLines.push(svc.name + ': ' + [price ? '$'+price : '', note].filter(Boolean).join(' — '));
+  });
+  if (variesLines.length) payload.extra_notes = [payload.extra_notes, ...variesLines].filter(Boolean).join('\n');
 
   try {
     await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
