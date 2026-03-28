@@ -518,7 +518,14 @@ async function loadQueue(){
     const text = await res.text();
     let data;
     try{ data=JSON.parse(text); } catch(pe){ throw new Error('Bad JSON: '+text.substring(0,120)); }
-    pendingOrders = data.pending||[];
+    pendingOrders = (data.pending||[]).map(o => {
+      // Parse persisted activity log from sheet
+      if (o.activity_log) {
+        try { o._activity_log = JSON.parse(o.activity_log); }
+        catch(e) { o._activity_log = []; }
+      } else { o._activity_log = []; }
+      return o;
+    });
     updateDashboard();
     renderQueue();
   } catch(e){
@@ -661,17 +668,21 @@ function renderQueue(){
           <div class="info-block">
             <div class="svc-edit-grid" id="svc-grid-${realIdx}"></div>
           </div>
-        </div>
-
-        <!-- EXTRA CHARGE / DISCOUNT -->
-        <div class="charge-row" style="margin-top:10px;">
-          <div class="charge-field">
-            <label>➕ Extra Charge ($)</label>
-            <input type="number" id="extra-charge-${realIdx}" placeholder="0.00" min="0" step="0.01">
+          <!-- NOTES -->
+          <div style="margin-top:8px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px;">📝 Rigger Notes</div>
+            <textarea id="rigger-notes-${realIdx}" placeholder="Notes on this service order..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 12px;min-height:64px;resize:vertical;"></textarea>
           </div>
-          <div class="charge-field">
-            <label>➖ Discount ($)</label>
-            <input type="number" id="discount-${realIdx}" placeholder="0.00" min="0" step="0.01">
+          <!-- EXTRA CHARGE / DISCOUNT -->
+          <div class="charge-row" style="margin-top:8px;">
+            <div class="charge-field">
+              <label>➕ Extra Charge ($)</label>
+              <input type="number" id="extra-charge-${realIdx}" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="charge-field">
+              <label>➖ Discount ($)</label>
+              <input type="number" id="discount-${realIdx}" placeholder="0.00" min="0" step="0.01">
+            </div>
           </div>
         </div>
 
@@ -737,27 +748,54 @@ function renderQueue(){
     const svcGrid = document.getElementById('svc-grid-' + realIdx);
     if (svcGrid) {
       SERVICE_GROUPS.forEach(group => {
-        // Group header
         const hdr = document.createElement('div');
         hdr.style.cssText = 'grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);padding:8px 2px 4px;border-bottom:1px solid var(--border);margin-bottom:2px;';
         hdr.textContent = group.group;
         svcGrid.appendChild(hdr);
 
         group.items.forEach(svc => {
-          const checked = svcs.includes(svc.name);
+          const checked  = svcs.includes(svc.name);
           const isVaries = svc.price === 'Varies' || svc.price.includes('/hr');
+          const safeKey  = svc.name.replace(/[^a-zA-Z0-9]/g, '_');
+
+          // Wrapper — full width so the expand row can sit below
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'grid-column:1/-1;';
+
           const label = document.createElement('label');
           label.className = 'svc-item' + (checked ? ' checked' : '');
-          label.innerHTML = '<input type="checkbox" value="' + svc.name + '"' + (checked ? ' checked' : '') + '>' +
+          label.style.width = '100%';
+          label.innerHTML =
+            '<input type="checkbox" value="' + svc.name + '"' + (checked ? ' checked' : '') + '>' +
             '<div class="svc-check"></div>' +
-            '<span class="svc-label">' + svc.name +
+            '<span class="svc-label" style="flex:1;">' + svc.name +
             '<span class="svc-price">' + svc.price + '</span></span>' +
-            (isVaries ? '<input type="number" class="varies-price-input" id="varies-' + realIdx + '-' + svc.name.replace(/\s+/g,'_') + '" placeholder="$0" min="0" step="0.01" onclick="event.stopPropagation()" title="Enter price">' : '');
+            (isVaries ? '<span style="font-size:10px;color:var(--yellow);margin-left:6px;">$ ▾</span>' : '');
+
+          // Varies expand row — price + note
+          let expandRow = null;
+          if (isVaries) {
+            expandRow = document.createElement('div');
+            expandRow.id = 'varies-expand-' + realIdx + '-' + safeKey;
+            expandRow.style.cssText = 'display:' + (checked ? 'grid' : 'none') + ';grid-template-columns:120px 1fr;gap:6px;padding:6px 10px 8px;background:var(--surface2);border:1px solid rgba(245,158,11,0.2);border-top:none;border-radius:0 0 8px 8px;margin-top:-4px;';
+            expandRow.innerHTML =
+              '<div><label style="font-size:10px;font-weight:600;color:var(--yellow);display:block;margin-bottom:3px;">Price ($)</label>' +
+              '<input type="number" id="varies-price-' + realIdx + '-' + safeKey + '" placeholder="0.00" min="0" step="0.01" style="width:100%;background:var(--bg);border:1px solid rgba(245,158,11,0.4);border-radius:6px;color:var(--text);font-family:\'JetBrains Mono\',monospace;font-size:12px;padding:5px 8px;min-height:34px;" onclick="event.stopPropagation()"></div>' +
+              '<div><label style="font-size:10px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:3px;">Note (optional)</label>' +
+              '<input type="text" id="varies-note-' + realIdx + '-' + safeKey + '" placeholder="e.g. 2hrs, battery replaced…" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:12px;padding:5px 8px;min-height:34px;" onclick="event.stopPropagation()"></div>';
+          }
+
           label.addEventListener('click', function(e) {
-            if (e.target.classList.contains('varies-price-input')) return;
-            toggleSvc(this);
+            if (e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') return;
+            const cb = label.querySelector('input[type="checkbox"]');
+            cb.checked = !cb.checked;
+            label.classList.toggle('checked', cb.checked);
+            if (expandRow) expandRow.style.display = cb.checked ? 'grid' : 'none';
           });
-          svcGrid.appendChild(label);
+
+          wrap.appendChild(label);
+          if (expandRow) wrap.appendChild(expandRow);
+          svcGrid.appendChild(wrap);
         });
       });
     }
@@ -813,6 +851,24 @@ function closeSigninModal() {
   document.getElementById('signin-modal').classList.remove('open');
 }
 
+// ── ACTIVITY LOG HELPER ──────────────────────────────────────
+async function logActivity(order, name, symbol, action) {
+  if (!order._activity_log) order._activity_log = [];
+  order._activity_log.push({ name, symbol, action, timestamp: new Date().toLocaleDateString() });
+  // Persist to sheet
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors', headers: {'Content-Type':'text/plain'},
+      body: JSON.stringify({
+        action: 'updateStatus',
+        row: order._row,
+        status: order.status,
+        activity_log: JSON.stringify(order._activity_log),
+      })
+    });
+  } catch(e) { console.warn('logActivity save failed', e); }
+}
+
 async function confirmStartService() {
   const idx    = parseInt(document.getElementById('signin-order-idx').value);
   const name   = document.getElementById('signin-name').value.trim();
@@ -823,20 +879,10 @@ async function confirmStartService() {
   if (!symbol) { errEl.textContent = 'Please enter your rigger seal.'; errEl.style.display = 'block'; return; }
 
   const order = pendingOrders[idx];
-
-  // Store rigger info for pre-fill in complete section
   order._rigger_name   = name;
   order._rigger_symbol = symbol;
 
-  // Add activity log entry
-  if (!order._activity_log) order._activity_log = [];
-  order._activity_log.push({
-    name,
-    symbol,
-    action: 'Started Service',
-    timestamp: new Date().toLocaleDateString(),
-  });
-
+  await logActivity(order, name, symbol, 'Started Service');
   closeSigninModal();
   await changeStatus(idx, 'IN_PROGRESS');
   renderQueue();
@@ -855,7 +901,7 @@ function closeReaccessModal() {
   document.getElementById('reaccess-modal').classList.remove('open');
 }
 
-function confirmReaccess() {
+async function confirmReaccess() {
   const idx    = parseInt(document.getElementById('reaccess-order-idx').value);
   const name   = document.getElementById('reaccess-name').value.trim();
   const symbol = document.getElementById('reaccess-symbol').value.trim();
@@ -868,14 +914,7 @@ function confirmReaccess() {
   order._rigger_name   = name;
   order._rigger_symbol = symbol;
 
-  if (!order._activity_log) order._activity_log = [];
-  order._activity_log.push({
-    name,
-    symbol,
-    action: 'Accessed Service',
-    timestamp: new Date().toLocaleDateString(),
-  });
-
+  await logActivity(order, name, symbol, 'Accessed Service');
   closeReaccessModal();
 
   // Re-render just the activity log section
@@ -974,6 +1013,7 @@ async function doMarkComplete(idx){
   const compNotes=document.getElementById('comp-notes-'+idx).value.trim();
   const extraCharge = parseFloat(document.getElementById('extra-charge-'+idx)?.value) || 0;
   const discount    = parseFloat(document.getElementById('discount-'+idx)?.value)    || 0;
+  const riggerNotes = (document.getElementById('rigger-notes-'+idx)?.value || '').trim();
   const errEl=document.getElementById('comp-error-'+idx);
   errEl.style.display='none';
   if(!rigger){ errEl.textContent='Please enter the rigger name.'; errEl.style.display='block'; return; }
@@ -984,27 +1024,29 @@ async function doMarkComplete(idx){
     ? [...svcGrid.querySelectorAll('input[type="checkbox"]:checked')].map(c=>c.value).join(' | ')
     : order.services;
 
-  // Collect manual price overrides for Varies/hr services
+  // Collect manual price overrides and notes for Varies/hr services
   const priceOverrides = {};
+  const variesNotes = [];
   if (svcGrid) {
-    svcGrid.querySelectorAll('.varies-price-input').forEach(inp => {
-      const val = parseFloat(inp.value);
-      if (val > 0) {
-        // Reverse the ID key back to service name
-        const key = inp.id.replace('varies-' + idx + '-', '').replace(/_/g, ' ');
-        // Find actual service name match
-        const svc = SERVICES.find(s => s.name.replace(/\s+/g,'_') === inp.id.replace('varies-' + idx + '-', ''));
-        if (svc) priceOverrides[svc.name] = val;
-      }
+    SERVICES.forEach(svc => {
+      if (svc.price !== 'Varies' && !svc.price.includes('/hr')) return;
+      const safeKey = svc.name.replace(/[^a-zA-Z0-9]/g, '_');
+      const priceEl = document.getElementById('varies-price-' + idx + '-' + safeKey);
+      const noteEl  = document.getElementById('varies-note-'  + idx + '-' + safeKey);
+      const val = priceEl ? parseFloat(priceEl.value) : 0;
+      if (val > 0) priceOverrides[svc.name] = val;
+      const note = noteEl ? noteEl.value.trim() : '';
+      if (note) variesNotes.push(svc.name + ': ' + note);
     });
   }
 
   const riggerFull = rigger + ' (' + symbol + ')';
 
-  // Build notes with extra charge/discount appended
-  let finalNotes = compNotes;
-  if (extraCharge > 0) finalNotes += (finalNotes ? '\n' : '') + 'Extra charge: +$' + extraCharge.toFixed(2);
-  if (discount > 0)    finalNotes += (finalNotes ? '\n' : '') + 'Discount applied: -$' + discount.toFixed(2);
+  // Build notes: rigger notes + varies service notes + charge/discount
+  let finalNotes = riggerNotes;
+  if (variesNotes.length)  finalNotes += (finalNotes ? '\n' : '') + variesNotes.join('\n');
+  if (extraCharge > 0)     finalNotes += (finalNotes ? '\n' : '') + 'Extra charge: +$' + extraCharge.toFixed(2);
+  if (discount > 0)        finalNotes += (finalNotes ? '\n' : '') + 'Discount applied: -$' + discount.toFixed(2);
 
   const btn = document.getElementById('complete-btn-'+idx);
   if (btn) btn.classList.add('submitting');
