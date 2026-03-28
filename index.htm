@@ -2151,9 +2151,43 @@ async function submitFunJumper() {
   });
   if (variesLines.length) payload.extra_notes = [payload.extra_notes, ...variesLines].filter(Boolean).join('\n');
 
+  // Collect damage photos separately — sent after main order to avoid no-cors size limits
+  let damagePhotos = [];
+  if (fjDamage === 'yes') {
+    const photoInput = document.getElementById('fj-damage-photos');
+    if (photoInput && photoInput.files.length > 0) {
+      const files = [...photoInput.files].slice(0, 3);
+      const toBase64 = file => new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload  = e => res({ data: e.target.result, name: file.name, type: file.type });
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+      damagePhotos = await Promise.all(files.map(toBase64));
+    }
+  }
+
+  // Submit main order (no-cors, fast)
   try {
     await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
   } catch(e) { console.log(e); }
+
+  // Send damage photos separately via cors so large payloads go through
+  if (damagePhotos.length > 0) {
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          action:        'sendDamagePhotos',
+          work_order:    woNum,
+          customer_name: name,
+          rig_sn:        conSN,
+          damage_desc:   payload.damage_desc,
+          photos:        damagePhotos,
+        })
+      });
+    } catch(e) { console.warn('Photo send failed:', e); }
+  }
 
   document.getElementById('success-wo').textContent = 'Work Order #' + woNum;
   btn.disabled = false;
