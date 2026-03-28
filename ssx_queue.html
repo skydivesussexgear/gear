@@ -852,17 +852,18 @@ function closeSigninModal() {
 }
 
 // ── ACTIVITY LOG HELPER ──────────────────────────────────────
-async function logActivity(order, name, symbol, action) {
+async function logActivity(order, name, symbol, action, newStatus) {
   if (!order._activity_log) order._activity_log = [];
   order._activity_log.push({ name, symbol, action, timestamp: new Date().toLocaleDateString() });
-  // Persist to sheet
+  const saveStatus = newStatus || order.status;
+  // Single save: status + activity log together so neither overwrites the other
   try {
     await fetch(SCRIPT_URL, {
       method: 'POST', mode: 'no-cors', headers: {'Content-Type':'text/plain'},
       body: JSON.stringify({
         action: 'updateStatus',
         row: order._row,
-        status: order.status,
+        status: saveStatus,
         activity_log: JSON.stringify(order._activity_log),
       })
     });
@@ -882,9 +883,19 @@ async function confirmStartService() {
   order._rigger_name   = name;
   order._rigger_symbol = symbol;
 
-  await logActivity(order, name, symbol, 'Started Service');
+  // Log activity AND set status to IN_PROGRESS in one single sheet write
+  await logActivity(order, name, symbol, 'Started Service', 'IN_PROGRESS');
+  order.status = 'IN_PROGRESS';
+
   closeSigninModal();
-  await changeStatus(idx, 'IN_PROGRESS');
+  // Update UI only — no second fetch needed
+  const card = document.getElementById('order-' + idx);
+  if (card) {
+    card.className = 'order-card expanded status-IN_PROGRESS';
+    const badge = card.querySelector('.status-badge');
+    if (badge) { badge.className = 'status-badge sb-IN_PROGRESS'; badge.textContent = statusLabel('IN_PROGRESS'); }
+  }
+  updateDashboard();
   renderQueue();
 }
 
