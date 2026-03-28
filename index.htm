@@ -1706,6 +1706,22 @@ function resetFjForm() {
   const damageDesc = document.getElementById('fj-damage-desc');
   if (damageDesc) damageDesc.closest('.fj-sub')?.classList.remove('open');
 
+  // Reset damage toggles and hide photo/desc wraps
+  const dmgNo = document.getElementById('dmg-no');
+  const dmgYes = document.getElementById('dmg-yes');
+  if (dmgNo)  dmgNo.className  = 'damage-opt selected-no';
+  if (dmgYes) dmgYes.className = 'damage-opt';
+  const dmgDescWrap  = document.getElementById('dmg-desc-wrap');
+  const dmgPhotoWrap = document.getElementById('dmg-photo-wrap');
+  if (dmgDescWrap)  dmgDescWrap.style.display  = 'none';
+  if (dmgPhotoWrap) dmgPhotoWrap.style.display = 'none';
+
+  // Clear photo upload and preview
+  const photoInput = document.getElementById('fj-damage-photos');
+  if (photoInput) photoInput.value = '';
+  const photoPreview = document.getElementById('dmg-photo-preview');
+  if (photoPreview) photoPreview.innerHTML = '';
+
   // Collapse all subsections
   ['fj-sub-container','fj-sub-main','fj-sub-reserve','fj-sub-aad'].forEach(id => {
     const el = document.getElementById(id);
@@ -2001,6 +2017,25 @@ document.addEventListener('DOMContentLoaded', () => {
       preview.appendChild(note);
     }
   });
+});
+
+// Force full reset when browser restores page from bfcache (back/forward nav)
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted) {
+    // Page was restored from bfcache — reset form state completely
+    const photoInput = document.getElementById('fj-damage-photos');
+    if (photoInput) photoInput.value = '';
+    const preview = document.getElementById('dmg-photo-preview');
+    if (preview) preview.innerHTML = '';
+    const dmgDescWrap  = document.getElementById('dmg-desc-wrap');
+    const dmgPhotoWrap = document.getElementById('dmg-photo-wrap');
+    if (dmgDescWrap)  dmgDescWrap.style.display  = 'none';
+    if (dmgPhotoWrap) dmgPhotoWrap.style.display = 'none';
+    const dmgNo  = document.getElementById('dmg-no');
+    const dmgYes = document.getElementById('dmg-yes');
+    if (dmgNo)  dmgNo.className  = 'damage-opt selected-no';
+    if (dmgYes) dmgYes.className = 'damage-opt';
+  }
 });
 
 function buildFjServices() {
@@ -3183,7 +3218,8 @@ function renderGearList() {
   const q = (document.getElementById('gm-search').value || '').toLowerCase();
   const list = document.getElementById('gm-list');
   const filtered = GEAR_DATA.filter(g => {
-    if (gearFilter !== 'all' && g.type !== gearFilter) return false;
+    const type = (g.type || '').toLowerCase().trim();
+    if (gearFilter !== 'all' && type !== gearFilter) return false;
     if (!q) return true;
     return [g.rig_num, g.rig_make, g.rig_sn, g.main_make, g.res_make, g.aad_make]
       .some(v => v && String(v).toLowerCase().includes(q));
@@ -3303,7 +3339,7 @@ async function deleteRig(idx) {
     await fetch(SCRIPT_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'deleteGear', row: g._row })
+      body: JSON.stringify({ action: 'deleteGear', row: g._row, tab: g._tab })
     });
   } catch(e) { console.warn('deleteGear failed:', e); }
   GEAR_DATA.splice(idx, 1);
