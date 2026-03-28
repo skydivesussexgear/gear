@@ -122,6 +122,31 @@
   .complete-field textarea{resize:vertical;min-height:60px;font-size:15px;}
   .complete-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
 
+
+  /* GEAR TYPE TABS */
+  .gear-tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;}
+  .gear-tab{flex:1;padding:8px 6px;text-align:center;border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text-muted);transition:all 0.2s;-webkit-tap-highlight-color:transparent;}
+  .gear-tab.active-fj{background:var(--sky-dim);color:var(--sky);border:1px solid rgba(56,189,248,0.3);}
+  .gear-tab.active-dz{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,0.3);}
+  .gear-tab.active-all{background:var(--blue-dim);color:var(--accent);border:1px solid rgba(59,130,246,0.3);}
+
+  /* RIGGER SIGN-IN MODAL */
+  .signin-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px;}
+  .signin-modal.open{display:flex;}
+  .signin-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 20px;width:100%;max-width:400px;box-shadow:0 24px 60px rgba(0,0,0,0.6);}
+  .signin-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1.5px;color:var(--blue);margin-bottom:4px;}
+  .signin-sub{font-size:12px;color:var(--text-muted);margin-bottom:18px;}
+
+  /* SERVICES DISPLAY (view-only, not edit grid) */
+  .svc-list-view{list-style:none;}
+  .svc-list-view li{padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;}
+  .svc-list-view li:last-child{border-bottom:none;}
+
+  /* ADD SERVICES DROPDOWN */
+  .add-svc-toggle{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;margin-top:8px;width:100%;text-align:left;}
+  .add-svc-panel{display:none;margin-top:8px;}
+  .add-svc-panel.open{display:block;}
+
   /* CUSTOMER HISTORY TAB */
   .history-search-wrap{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
   .history-search-wrap input{flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:12px 14px;min-height:48px;}
@@ -258,6 +283,13 @@
           <button class="refresh-btn" onclick="loadQueue()">↻ Refresh</button>
         </div>
       </div>
+      <!-- GEAR TYPE TABS -->
+      <div class="gear-tabs">
+        <div class="gear-tab active-all" id="gt-all" onclick="setGearType('all')">🔀 All Gear</div>
+        <div class="gear-tab" id="gt-fj" onclick="setGearType('fj')">🪂 Fun Jumper</div>
+        <div class="gear-tab" id="gt-dz" onclick="setGearType('dz')">🏫 DZ Gear</div>
+      </div>
+
       <div id="queue-list"></div>
     </div>
 
@@ -376,6 +408,17 @@ const SERVICES = [
 let pendingOrders = [];
 let currentPassword = localStorage.getItem('ssxQueuePw') || '1234';
 let activeQueueFilter = 'ALL';
+let activeGearType = 'all';
+
+function setGearType(t) {
+  activeGearType = t;
+  ['all','fj','dz'].forEach(k => {
+    const el = document.getElementById('gt-' + k);
+    if (!el) return;
+    el.className = 'gear-tab' + (k === t ? ' active-' + k : '');
+  });
+  renderQueue();
+}
 
 // ── AUTH ──────────────────────────────────────────────────────
 function showScreen(id){
@@ -477,46 +520,68 @@ function updateDashboard(){
 // ── RENDER QUEUE ──────────────────────────────────────────────
 function renderQueue(){
   const listEl = document.getElementById('queue-list');
-  const filtered = activeQueueFilter==='ALL'
-    ? pendingOrders
-    : pendingOrders.filter(o=>(o.status||'PENDING').toUpperCase()===activeQueueFilter);
 
-  if(filtered.length===0){
-    listEl.innerHTML='<div class="queue-empty"><div class="icon">✅</div><p>'+(activeQueueFilter==='ALL'?'No active service requests. All clear!':'No orders with this status.')+'</p></div>';
+  let filtered = pendingOrders.filter(o => {
+    const status = (o.status || 'PENDING').toUpperCase();
+    if (activeQueueFilter !== 'ALL' && status !== activeQueueFilter) return false;
+    if (activeGearType === 'fj' && o.gear_type !== 'fun-jumper') return false;
+    if (activeGearType === 'dz' && o.gear_type === 'fun-jumper') return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="queue-empty"><div class="icon">✅</div><p>' + (activeQueueFilter === 'ALL' ? 'No active service requests.' : 'No orders with this status.') + '</p></div>';
     return;
   }
 
-  listEl.innerHTML='';
-  filtered.forEach((order,fi)=>{
+  listEl.innerHTML = '';
+  filtered.forEach((order, fi) => {
     const realIdx = pendingOrders.indexOf(order);
     const card = document.createElement('div');
-    const status = (order.status||'PENDING').toUpperCase();
-    card.className='order-card status-'+status;
-    card.id='order-'+realIdx;
+    const status = (order.status || 'PENDING').toUpperCase();
+    card.className = 'order-card status-' + status;
+    card.id = 'order-' + realIdx;
 
     const submittedDate = order.submitted_at ? new Date(order.submitted_at).toLocaleDateString() : 'Unknown';
-    const svcs = (order.services||'').split(' | ').filter(Boolean);
-    const isFJ = order.gear_type==='fun-jumper';
+    const svcs = (order.services || '').split(' | ').filter(Boolean);
+    const isFJ = order.gear_type === 'fun-jumper';
 
     const rigLine = isFJ
-      ? (order.customer_name||'Fun Jumper')
-      : ((order.rig_num?'RIG #'+order.rig_num+' — ':''+(order.rig_make||'')));
+      ? (order.customer_name || 'Fun Jumper')
+      : ((order.rig_num ? 'RIG #' + order.rig_num + ' — ' : '') + (order.rig_make || ''));
     const metaLine = isFJ
-      ? 'S/N: '+(order.rig_sn||'')+' · '+(order.rig_make||'')+' · 📞 '+(order.customer_phone||'')
-      : 'S/N: '+(order.rig_sn||'')+' · '+(order.gear_type==='tandem'?'Tandem':'Student');
+      ? 'S/N: ' + (order.rig_sn || '') + ' · ' + (order.rig_make || '') + ' · 📞 ' + (order.customer_phone || '')
+      : 'S/N: ' + (order.rig_sn || '') + ' · ' + (order.gear_type === 'tandem' ? 'Tandem' : 'Student');
 
-    const statusBadge = '<span class="status-badge sb-'+status+'">'+statusLabel(status)+'</span>';
-    const rushBadge = order.rush && order.rush!=='Standard Turnaround'
+    const statusBadge = '<span class="status-badge sb-' + status + '">' + statusLabel(status) + '</span>';
+    const rushBadge = order.rush && order.rush !== 'Standard Turnaround'
       ? '<span style="background:var(--red-dim);border:1px solid rgba(239,68,68,0.3);color:var(--red);font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;">⚡ RUSH</span>'
       : '';
+    const typeBadge = isFJ
+      ? '<span style="background:var(--sky-dim);border:1px solid rgba(56,189,248,0.3);color:var(--sky);font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;">🪂 FUN JUMPER</span>'
+      : '<span style="background:var(--red-dim);border:1px solid rgba(239,68,68,0.3);color:var(--red);font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;">🏫 DZ GEAR</span>';
 
-    card.innerHTML=`
+    const { total, hasVaries } = calcTotal(order.services);
+
+    // Build services display (view-only list)
+    const svcsHtml = svcs.length > 0
+      ? '<ul class="svc-list-view">' + svcs.map(s => {
+          const found = SERVICES.find(sv => sv.name === s);
+          return '<li><span>' + s + '</span><span style="color:var(--text-muted);font-size:12px;">' + (found ? found.price : '') + '</span></li>';
+        }).join('') + '</ul>'
+      : '<span style="color:var(--text-muted);font-size:13px;">No services selected</span>';
+
+    // PENDING: show sign-in button to start service
+    // IN_PROGRESS / GEAR_READY: show complete section
+    const isPending = status === 'PENDING';
+
+    card.innerHTML = `
       <div class="order-card-header" onclick="toggleOrder(${realIdx})">
         <div>
           <div class="order-wo">
-            ${order.work_order||'N/A'}
+            ${order.work_order || 'N/A'}
             ${statusBadge}
-            ${isFJ?'<span style="background:var(--sky-dim);border:1px solid rgba(56,189,248,0.3);color:var(--sky);font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;">FUN JUMPER</span>':''}
+            ${typeBadge}
             ${rushBadge}
           </div>
           <div class="order-rig">${rigLine}</div>
@@ -528,72 +593,85 @@ function renderQueue(){
         </div>
       </div>
       <div class="order-body">
-        <!-- STATUS SELECTOR -->
-        <div style="margin-bottom:14px;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Update Status</div>
-          <div class="status-row">
-            ${['PENDING','IN_PROGRESS','GEAR_READY'].map(s=>`
-              <button class="status-opt${status===s?' sel-'+s:''}" onclick="changeStatus(${realIdx},'${s}')" id="st-${realIdx}-${s}">
-                ${statusLabel(s)}
-              </button>`).join('')}
-          </div>
-        </div>
 
-        ${isFJ?`
+        ${isFJ ? `
         <div class="order-grid">
           <div class="info-block">
             <div class="info-title">Customer Info</div>
             <div class="info-content">
-              ${order.customer_name||''}<br>${order.customer_phone||''} · ${order.customer_email||''}
-              ${order.completion_date?'<br>Requested by: '+order.completion_date:''}
-              ${order.mailing_address?'<br>'+order.mailing_address:''}
-              ${order.rush&&order.rush!=='Standard'?'<br><strong>Rush: </strong>'+order.rush:''}
+              ${order.customer_name || ''}<br>${order.customer_phone || ''} · ${order.customer_email || ''}
+              ${order.completion_date ? '<br>Requested by: ' + order.completion_date : ''}
+              ${order.mailing_address ? '<br>' + order.mailing_address : ''}
+              ${order.rush && order.rush !== 'Standard' ? '<br><strong>Rush: </strong>' + order.rush : ''}
             </div>
           </div>
           <div class="info-block">
             <div class="info-title">Rig Info</div>
             <div class="info-content">
-              Container: ${order.rig_make||''} ${order.con_model||''} S/N: ${order.rig_sn||''}
-              ${order.main_make?'<br>Main: '+order.main_make+' '+(order.main_model||'')+' '+(order.main_size||'')+'sqft S/N: '+(order.main_sn||''):''}
-              ${order.res_make?'<br>Reserve: '+order.res_make+' '+(order.res_model||'')+' '+(order.res_size||'')+'sqft S/N: '+(order.res_sn||'')+(order.res_repack_due?' · Due: '+new Date(order.res_repack_due).toLocaleDateString():''):''}
-              ${order.aad_make?'<br>AAD: '+order.aad_make+' S/N: '+(order.aad_sn||''):''}
-              ${order.known_damage==='yes'?'<br>⚠ <strong>Known damage:</strong> '+(order.damage_desc||''):''}
+              Container: ${order.rig_make || ''} ${order.con_model || ''} S/N: ${order.rig_sn || ''}
+              ${order.main_make ? '<br>Main: ' + order.main_make + ' ' + (order.main_model || '') + ' ' + (order.main_size || '') + 'sqft S/N: ' + (order.main_sn || '') : ''}
+              ${order.res_make ? '<br>Reserve: ' + order.res_make + ' ' + (order.res_model || '') + ' ' + (order.res_size || '') + 'sqft S/N: ' + (order.res_sn || '') + (order.res_repack_due ? ' · Due: ' + new Date(order.res_repack_due).toLocaleDateString() : '') : ''}
+              ${order.aad_make ? '<br>AAD: ' + order.aad_make + ' S/N: ' + (order.aad_sn || '') : ''}
+              ${order.known_damage === 'yes' ? '<br>⚠ <strong>Known damage:</strong> ' + (order.damage_desc || '') : ''}
             </div>
           </div>
         </div>` : ''}
 
-        <div class="order-grid">
+        <!-- SERVICES REQUESTED (view only) -->
+        <div class="info-block" style="margin-bottom:10px;">
+          <div class="info-title">Services Requested (${svcs.length}) — Est. $${total.toFixed(2)}${hasVaries ? ' +varies' : ''}</div>
+          ${svcsHtml}
+        </div>
+
+        ${order.extra_notes ? `
+        <div class="info-block" style="margin-bottom:10px;">
+          <div class="info-title">Additional Notes</div>
+          <div class="info-content" style="font-size:13px;">${order.extra_notes}</div>
+        </div>` : ''}
+
+        <!-- ADD SERVICES DROPDOWN -->
+        <button class="add-svc-toggle" onclick="toggleAddSvc(this)">➕ Add / Edit Services ▾</button>
+        <div class="add-svc-panel">
           <div class="info-block">
-            <div class="info-title">Services Requested (${svcs.length})</div>
-            <div class="info-content">${svcs.length>0?svcs.map(s=>'• '+s).join('<br>'):'<span style="color:var(--text-muted)">None selected</span>'}</div>
-          </div>
-          <div class="info-block">
-            <div class="info-title">Additional Notes</div>
-            <div class="info-content">${order.extra_notes||'<span style="color:var(--text-muted)">No notes</span>'}</div>
+            <div class="svc-edit-grid" id="svc-grid-${realIdx}"></div>
           </div>
         </div>
 
-        <!-- EDIT SERVICES -->
-        <div class="info-block" style="margin-bottom:14px;">
-          <div class="info-title" style="margin-bottom:12px;">Edit Services — Check/Uncheck as Needed</div>
-          <div class="svc-edit-grid" id="svc-grid-${realIdx}"></div>
+        <!-- PENDING: Rigger must sign in to start -->
+        ${isPending ? `
+        <div style="background:var(--yellow-dim);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:14px;margin-top:12px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--yellow);margin-bottom:10px;">🔐 Rigger Sign-In Required to Start</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">Enter your name and seal to begin work. The order will automatically move to In Progress.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-sm" style="background:var(--blue);color:#fff;flex:1;" onclick="openSigninModal(${realIdx})">▶ Start This Service</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteOrder(${realIdx})">✕ Delete</button>
+            <button class="btn btn-sm" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);" onclick="printWorkOrder(${realIdx})">🖨 Print</button>
+          </div>
+        </div>` : `
+        <!-- IN PROGRESS / GEAR READY: Full complete section -->
+        <div style="margin-bottom:10px;margin-top:12px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Update Status</div>
+          <div class="status-row">
+            ${['IN_PROGRESS','GEAR_READY'].map(s => `
+              <button class="status-opt${status===s?' sel-'+s:''}" onclick="changeStatus(${realIdx},'${s}')" id="st-${realIdx}-${s}">
+                ${statusLabel(s)}
+              </button>`).join('')}
+          </div>
         </div>
-
-        <!-- COMPLETE SECTION -->
         <div class="complete-section">
           <div class="complete-title">✓ Mark as Completed</div>
           <div class="complete-row">
             <div class="complete-field">
               <label>Rigger Name *</label>
-              <input type="text" id="rigger-${realIdx}" placeholder="Your name">
+              <input type="text" id="rigger-${realIdx}" placeholder="Your name" value="${order._rigger_name || ''}">
             </div>
             <div class="complete-field">
               <label>Rigger Symbol *</label>
-              <input type="text" id="rigger-symbol-${realIdx}" placeholder="e.g. T.R. or ✦">
+              <input type="text" id="rigger-symbol-${realIdx}" placeholder="e.g. T.R. or ✦" value="${order._rigger_symbol || ''}">
             </div>
             <div class="complete-field">
               <label>Completion Notes (optional)</label>
-              <textarea id="comp-notes-${realIdx}" placeholder="Any final notes or changes to service..."></textarea>
+              <textarea id="comp-notes-${realIdx}" placeholder="Any final notes..."></textarea>
             </div>
           </div>
           <div class="error-msg" id="comp-error-${realIdx}" style="margin-top:8px;"></div>
@@ -602,27 +680,37 @@ function renderQueue(){
               <span class="btn-text">✓ Mark Complete & Log to Sheet</span>
               <span class="btn-spinner"><span class="spinner-ring"></span> Saving…</span>
             </button>
-            <button class="btn btn-danger btn-sm" onclick="deleteOrder(${realIdx})">✕ Delete Request</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteOrder(${realIdx})">✕ Delete</button>
+            <button class="btn btn-sm" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);" onclick="printWorkOrder(${realIdx})">🖨 Print</button>
           </div>
-        </div>
+        </div>`}
       </div>`;
 
     listEl.appendChild(card);
 
-    // Inject service checkboxes
-    const svcGrid = document.getElementById('svc-grid-'+realIdx);
-    SERVICES.forEach(svc=>{
-      const checked = svcs.includes(svc.name);
-      const label = document.createElement('label');
-      label.className='svc-item'+(checked?' checked':'');
-      label.innerHTML='<input type="checkbox" value="'+svc.name+'"'+(checked?' checked':'')+'>'+
-        '<div class="svc-check"></div>'+
-        '<span class="svc-label">'+svc.name+'<span class="svc-price">'+svc.price+'</span></span>';
-      label.addEventListener('click',function(){toggleSvc(this);});
-      svcGrid.appendChild(label);
-    });
+    // Inject service checkboxes into add/edit panel
+    const svcGrid = document.getElementById('svc-grid-' + realIdx);
+    if (svcGrid) {
+      SERVICES.forEach(svc => {
+        const checked = svcs.includes(svc.name);
+        const label = document.createElement('label');
+        label.className = 'svc-item' + (checked ? ' checked' : '');
+        label.innerHTML = '<input type="checkbox" value="' + svc.name + '"' + (checked ? ' checked' : '') + '>' +
+          '<div class="svc-check"></div>' +
+          '<span class="svc-label">' + svc.name + '<span class="svc-price">' + svc.price + '</span></span>';
+        label.addEventListener('click', function() { toggleSvc(this); });
+        svcGrid.appendChild(label);
+      });
+    }
   });
 }
+
+function toggleAddSvc(btn) {
+  const panel = btn.nextElementSibling;
+  panel.classList.toggle('open');
+  btn.textContent = panel.classList.contains('open') ? '➖ Hide Services ▴' : '➕ Add / Edit Services ▾';
+}
+
 
 function statusLabel(s){
   if(s==='IN_PROGRESS') return '🔧 In Progress';
@@ -638,6 +726,40 @@ function toggleSvc(label){
   const cb=label.querySelector('input');
   cb.checked=!cb.checked;
   label.classList.toggle('checked',cb.checked);
+}
+
+
+// ── RIGGER SIGN-IN (start service) ────────────────────────────
+function openSigninModal(idx) {
+  document.getElementById('signin-order-idx').value = idx;
+  document.getElementById('signin-name').value = '';
+  document.getElementById('signin-symbol').value = '';
+  document.getElementById('signin-error').style.display = 'none';
+  document.getElementById('signin-modal').classList.add('open');
+  setTimeout(() => document.getElementById('signin-name').focus(), 100);
+}
+
+function closeSigninModal() {
+  document.getElementById('signin-modal').classList.remove('open');
+}
+
+async function confirmStartService() {
+  const idx    = parseInt(document.getElementById('signin-order-idx').value);
+  const name   = document.getElementById('signin-name').value.trim();
+  const symbol = document.getElementById('signin-symbol').value.trim();
+  const errEl  = document.getElementById('signin-error');
+  errEl.style.display = 'none';
+  if (!name)   { errEl.textContent = 'Please enter your name.';        errEl.style.display = 'block'; return; }
+  if (!symbol) { errEl.textContent = 'Please enter your rigger seal.'; errEl.style.display = 'block'; return; }
+
+  const order = pendingOrders[idx];
+  // Store rigger info on the order for pre-fill in complete section
+  order._rigger_name   = name;
+  order._rigger_symbol = symbol;
+
+  closeSigninModal();
+  await changeStatus(idx, 'IN_PROGRESS');
+  renderQueue();
 }
 
 // ── CHANGE STATUS ─────────────────────────────────────────────
@@ -775,6 +897,157 @@ const SVC_PRICES = {
   '2–5 Day Rush +$40': 40,
   'Same / Next Day Rush +$65': 65,
 };
+
+function printWorkOrder(idx) {
+  const order = QUEUE_DATA[idx];
+  if (!order) return;
+  const isFJ = order.gear_type === 'fun-jumper';
+  const svcs = (order.services || '').split(' | ').filter(Boolean);
+  const { total, hasVaries } = calcTotal(order.services);
+  const date = order.submitted_at ? new Date(order.submitted_at).toLocaleDateString() : new Date().toLocaleDateString();
+  const rush = order.rush && order.rush !== 'Standard Turnaround' ? order.rush : null;
+
+  const html = `<!DOCTYPE html><html><head><title>Work Order ${order.work_order||''}</title>
+<style>
+  @page { size: 8.5in 11in; margin: 0.6in; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Arial', sans-serif; font-size: 13px; color: #111; background: #fff; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1a1a2e; padding-bottom: 12px; margin-bottom: 20px; }
+  .dz-name { font-size: 22px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #1a1a2e; }
+  .dz-sub { font-size: 11px; color: #555; letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
+  .wo-box { text-align: right; }
+  .wo-num { font-size: 28px; font-weight: 900; color: #1a1a2e; letter-spacing: 2px; }
+  .wo-date { font-size: 11px; color: #555; margin-top: 4px; }
+  ${rush ? '.rush-banner { background: #fee2e2; border: 2px solid #ef4444; border-radius: 6px; padding: 8px 14px; font-weight: 900; font-size: 14px; color: #b91c1c; text-align: center; margin-bottom: 16px; letter-spacing: 1px; }' : ''}
+  .section { margin-bottom: 18px; }
+  .section-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #555; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 10px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field { margin-bottom: 8px; }
+  .field label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #777; display: block; margin-bottom: 2px; }
+  .field .val { font-size: 13px; color: #111; font-weight: 500; }
+  .svc-list { list-style: none; }
+  .svc-list li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #eee; font-size: 13px; }
+  .svc-list li:last-child { border-bottom: none; }
+  .svc-price { font-weight: 700; color: #1a1a2e; }
+  .total-row { display: flex; justify-content: space-between; font-size: 15px; font-weight: 900; border-top: 2px solid #1a1a2e; padding-top: 8px; margin-top: 6px; }
+  .damage-warn { background: #fff7ed; border: 1px solid #f59e0b; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #92400e; margin-top: 10px; }
+  .signoff { margin-top: 28px; border-top: 2px solid #1a1a2e; padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+  .signoff-field { border-bottom: 1px solid #aaa; padding-bottom: 4px; min-height: 36px; }
+  .signoff-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #777; margin-top: 6px; }
+  .leave-with { background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 6px; padding: 10px 14px; text-align: center; font-size: 11px; color: #3730a3; font-weight: 600; letter-spacing: 0.5px; margin-top: 20px; }
+</style></head><body>
+
+<div class="header">
+  <div>
+    <div class="dz-name">Skydive Sussex</div>
+    <div class="dz-sub">Rigging Department — Service Request</div>
+  </div>
+  <div class="wo-box">
+    <div class="wo-num">${order.work_order || 'N/A'}</div>
+    <div class="wo-date">Submitted: ${date}</div>
+  </div>
+</div>
+
+${rush ? `<div class="rush-banner">⚡ RUSH — ${rush}</div>` : ''}
+
+<div class="grid2">
+  <div class="section">
+    <div class="section-title">${isFJ ? 'Customer Info' : 'DZ Gear Info'}</div>
+    ${isFJ ? `
+    <div class="field"><label>Name</label><div class="val">${order.customer_name || '—'}</div></div>
+    <div class="field"><label>Phone</label><div class="val">${order.customer_phone || '—'}</div></div>
+    <div class="field"><label>Email</label><div class="val">${order.customer_email || '—'}</div></div>
+    ${order.mailing_address ? `<div class="field"><label>Address</label><div class="val">${order.mailing_address}</div></div>` : ''}
+    ${order.completion_date ? `<div class="field"><label>Needed By</label><div class="val">${order.completion_date}</div></div>` : ''}
+    ` : `
+    <div class="field"><label>Rig #</label><div class="val">${order.rig_num || '—'}</div></div>
+    <div class="field"><label>Type</label><div class="val">${order.gear_type === 'tandem' ? 'Tandem' : 'Student'}</div></div>
+    `}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Gear / Container</div>
+    <div class="field"><label>Container</label><div class="val">${[order.rig_make, order.con_model].filter(Boolean).join(' ') || '—'}</div></div>
+    <div class="field"><label>Container S/N</label><div class="val">${order.rig_sn || '—'}</div></div>
+    ${order.main_make ? `<div class="field"><label>Main</label><div class="val">${order.main_make} ${order.main_model||''} ${order.main_size||''}sqft · S/N: ${order.main_sn||'—'}</div></div>` : ''}
+    ${order.res_make ? `<div class="field"><label>Reserve</label><div class="val">${order.res_make} ${order.res_model||''} ${order.res_size||''}sqft · S/N: ${order.res_sn||'—'}${order.res_repack_due ? ' · Due: '+new Date(order.res_repack_due).toLocaleDateString() : ''}</div></div>` : ''}
+    ${order.aad_make ? `<div class="field"><label>AAD</label><div class="val">${order.aad_make} · S/N: ${order.aad_sn||'—'}</div></div>` : ''}
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Services Requested</div>
+  <ul class="svc-list">
+    ${svcs.map(s => {
+      const found = (typeof SERVICES !== 'undefined' ? SERVICES : []).find(sv => sv.name === s);
+      return `<li><span>${s}</span><span class="svc-price">${found ? found.price : ''}</span></li>`;
+    }).join('') || '<li><span style="color:#999">No services selected</span></li>'}
+  </ul>
+  <div class="total-row">
+    <span>Estimated Total</span>
+    <span>$${total.toFixed(2)}${hasVaries ? ' + varies' : ''}</span>
+  </div>
+</div>
+
+${order.extra_notes ? `
+<div class="section">
+  <div class="section-title">Additional Notes</div>
+  <div style="font-size:13px;color:#333;line-height:1.6;">${order.extra_notes}</div>
+</div>` : ''}
+
+${order.known_damage === 'yes' ? `
+<div class="damage-warn">⚠ <strong>Known Damage:</strong> ${order.damage_desc || 'See notes'}</div>` : ''}
+
+<div class="signoff">
+  <div>
+    <div class="signoff-field"></div>
+    <div class="signoff-label">Rigger Name</div>
+  </div>
+  <div>
+    <div class="signoff-field"></div>
+    <div class="signoff-label">Rigger Seal / Symbol</div>
+  </div>
+  <div>
+    <div class="signoff-field"></div>
+    <div class="signoff-label">Date Completed</div>
+  </div>
+  <div>
+    <div class="signoff-field"></div>
+    <div class="signoff-label">Customer Signature / Pickup</div>
+  </div>
+</div>
+
+<div class="leave-with">📎 Print and leave this slip with the gear</div>
+
+
+<!-- RIGGER SIGN-IN MODAL -->
+<div class="signin-modal" id="signin-modal">
+  <div class="signin-box">
+    <div class="signin-title">🔧 Start Service</div>
+    <div class="signin-sub">Enter your name and seal to begin work. This will move the order to In Progress.</div>
+    <input type="hidden" id="signin-order-idx">
+    <div class="field">
+      <label>Rigger Name *</label>
+      <input type="text" id="signin-name" placeholder="Your full name" autocomplete="name">
+    </div>
+    <div class="field">
+      <label>Rigger Seal / Symbol *</label>
+      <input type="text" id="signin-symbol" placeholder="e.g. T.R. or ✦">
+    </div>
+    <div class="error-msg" id="signin-error"></div>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="confirmStartService()">▶ Start Service</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeSigninModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => { w.print(); }, 500);
+}
 
 function calcTotal(services) {
   let total = 0;
@@ -1002,6 +1275,28 @@ function changePassword(){
     <div class="modal-actions">
       <button class="btn-cancel-modal" onclick="closeSignoffModal()">← Go Back</button>
       <button class="btn-confirm" onclick="confirmAndComplete()">✓ I Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- RIGGER SIGN-IN MODAL -->
+<div class="signin-modal" id="signin-modal">
+  <div class="signin-box">
+    <div class="signin-title">🔧 Start Service</div>
+    <div class="signin-sub">Enter your name and seal to begin work. This will move the order to In Progress.</div>
+    <input type="hidden" id="signin-order-idx">
+    <div class="field">
+      <label>Rigger Name *</label>
+      <input type="text" id="signin-name" placeholder="Your full name" autocomplete="name">
+    </div>
+    <div class="field">
+      <label>Rigger Seal / Symbol *</label>
+      <input type="text" id="signin-symbol" placeholder="e.g. T.R. or ✦">
+    </div>
+    <div class="error-msg" id="signin-error"></div>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="confirmStartService()">▶ Start Service</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeSigninModal()">Cancel</button>
     </div>
   </div>
 </div>
