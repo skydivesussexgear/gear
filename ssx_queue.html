@@ -1128,7 +1128,7 @@ const SVC_PRICES = {
 };
 
 function printWorkOrder(idx) {
-  const order = QUEUE_DATA[idx];
+  const order = pendingOrders[idx];
   if (!order) return;
   const isFJ = order.gear_type === 'fun-jumper';
   const svcs = (order.services || '').split(' | ').filter(Boolean);
@@ -1248,28 +1248,6 @@ ${order.known_damage === 'yes' ? `
 
 <div class="leave-with">📎 Print and leave this slip with the gear</div>
 
-
-<!-- RIGGER SIGN-IN MODAL -->
-<div class="signin-modal" id="signin-modal">
-  <div class="signin-box">
-    <div class="signin-title">🔧 Start Service</div>
-    <div class="signin-sub">Enter your name and seal to begin work. This will move the order to In Progress.</div>
-    <input type="hidden" id="signin-order-idx">
-    <div class="field">
-      <label>Rigger Name *</label>
-      <input type="text" id="signin-name" placeholder="Your full name" autocomplete="name">
-    </div>
-    <div class="field">
-      <label>Rigger Seal / Symbol *</label>
-      <input type="text" id="signin-symbol" placeholder="e.g. T.R. or ✦">
-    </div>
-    <div class="error-msg" id="signin-error"></div>
-    <div style="display:flex;gap:10px;margin-top:4px;">
-      <button class="btn btn-primary" style="flex:1;" onclick="confirmStartService()">▶ Start Service</button>
-      <button class="btn btn-ghost btn-sm" onclick="closeSigninModal()">Cancel</button>
-    </div>
-  </div>
-</div>
 </body></html>`;
 
   const w = window.open('', '_blank');
