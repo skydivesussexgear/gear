@@ -782,7 +782,7 @@ async function confirmStartService() {
     name,
     symbol,
     action: 'Started Service',
-    timestamp: new Date().toLocaleString(),
+    timestamp: new Date().toLocaleDateString(),
   });
 
   closeSigninModal();
@@ -821,7 +821,7 @@ function confirmReaccess() {
     name,
     symbol,
     action: 'Accessed Service',
-    timestamp: new Date().toLocaleString(),
+    timestamp: new Date().toLocaleDateString(),
   });
 
   closeReaccessModal();
