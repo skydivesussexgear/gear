@@ -1733,10 +1733,8 @@ function resetFjForm() {
   const rushOpts = document.querySelectorAll('#fj-rush-options .rush-opt');
   rushOpts.forEach((o, i) => o.classList.toggle('selected', i === 0));
 
-  // Clear services checkboxes and reset set
+  // Clear services — container rebuilt by buildFjServices()
   fjSelectedServices.clear();
-  document.querySelectorAll('#fj-services-container input[type=checkbox]')
-    .forEach(cb => cb.checked = false);
 }
 
 function showScreen(id) {
@@ -2007,7 +2005,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function buildFjServices() {
   const container = document.getElementById('fj-services-container');
-  if (!container || container.children.length > 0) return; // already built
+  if (!container) return;
+  // Always rebuild so selections and expand rows are fresh
+  container.innerHTML = '';
   fjSelectedServices.clear();
 
   SERVICE_GROUPS.forEach(group => {
