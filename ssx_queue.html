@@ -384,36 +384,52 @@
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZtzIAUZ8NvFaPCSAmWP3Br3nDFsfXpkZ3sUqH39c5X7Biwd_2ViqkJXerWpgJ5PWVHw/exec';
 
-const SERVICES = [
-  {name:"Reserve Inspection & Repack (Sport)",price:"$115"},
-  {name:"Reserve Inspection & Repack (Tandem)",price:"$150"},
-  {name:"Inspect Main or Reserve",price:"$25"},
-  {name:"Inspect Harness / Container",price:"$20"},
-  {name:"Inspect & Pack Pilot's Emergency Rig",price:"$120"},
-  {name:"Pack Main Sport",price:"$15"},
-  {name:"Pack Main Tandem",price:"$20"},
-  {name:"AAD Batteries / Service",price:"Varies"},
-  {name:"Install AAD",price:"$10"},
-  {name:"Reserve Safety Stow Replacement",price:"$12"},
-  {name:"Replace Lower Steering Lines",price:"$40"},
-  {name:"Replace Steering Lines Toggles to Cascades",price:"$65"},
-  {name:"Full Line Set",price:"Varies"},
-  {name:"Re-line Sport",price:"$130"},
-  {name:"Re-line Tandem",price:"$175"},
-  {name:"Slinks",price:"$35"},
-  {name:"Assembly, Inspection & Pack Reserve (Sport)",price:"$140"},
-  {name:"Assembly, Inspection & Repack Reserve (Tandem)",price:"$175"},
-  {name:"Assembly, Inspection & Pack Main",price:"$75"},
-  {name:"Disassemble Main or Reserve",price:"$10"},
-  {name:"Install Slider Bumpers",price:"$25"},
-  {name:"Fabric Tensile Test",price:"$20"},
-  {name:"Kill Line Replacement",price:"$25"},
-  {name:"BOC Replacement",price:"$100"},
-  {name:"Tack Slinks / Links",price:"$5"},
-  {name:"Wash Rig",price:"$65"},
-  {name:"Sewing",price:"$85/hr"},
-  {name:"Canopy Patch",price:"Varies"},
+const SERVICE_GROUPS = [
+  { group: '🔁 Repacks & Inspections', items: [
+    {name:"Reserve Inspection & Repack (Sport)",price:"$115"},
+    {name:"Reserve Inspection & Repack (Tandem)",price:"$150"},
+    {name:"Assembly, Inspection & Pack Reserve (Sport)",price:"$140"},
+    {name:"Assembly, Inspection & Repack Reserve (Tandem)",price:"$175"},
+    {name:"Assembly, Inspection & Pack Main",price:"$75"},
+    {name:"Inspect Main or Reserve",price:"$25"},
+    {name:"Inspect Harness / Container",price:"$20"},
+    {name:"Inspect & Pack Pilot's Emergency Rig",price:"$120"},
+  ]},
+  { group: '📦 Packing', items: [
+    {name:"Pack Main Sport",price:"$15"},
+    {name:"Pack Main Tandem",price:"$20"},
+  ]},
+  { group: '🔧 Hardware & Parts', items: [
+    {name:"Reserve Safety Stow Replacement",price:"$12"},
+    {name:"Slinks",price:"$35"},
+    {name:"Tack Slinks / Links",price:"$5"},
+    {name:"Install Slider Bumpers",price:"$25"},
+    {name:"BOC Replacement",price:"$100"},
+    {name:"Kill Line Replacement",price:"$25"},
+    {name:"Disassemble Main or Reserve",price:"$10"},
+  ]},
+  { group: '📏 Lines', items: [
+    {name:"Replace Lower Steering Lines",price:"$40"},
+    {name:"Replace Steering Lines Toggles to Cascades",price:"$65"},
+    {name:"Full Line Set",price:"Varies"},
+    {name:"Re-line Sport",price:"$130"},
+    {name:"Re-line Tandem",price:"$175"},
+  ]},
+  { group: '⚡ AAD', items: [
+    {name:"Install AAD",price:"$10"},
+    {name:"AAD Batteries / Service",price:"Varies"},
+  ]},
+  { group: '🧵 Fabric & Repair', items: [
+    {name:"Canopy Patch",price:"Varies"},
+    {name:"Sewing",price:"$85/hr"},
+    {name:"Fabric Tensile Test",price:"$20"},
+  ]},
+  { group: '🧼 Cleaning', items: [
+    {name:"Wash Rig",price:"$65"},
+  ]},
 ];
+// Flat list for compatibility
+const SERVICES = SERVICE_GROUPS.flatMap(g => g.items);
 
 let pendingOrders = [];
 let currentPassword = localStorage.getItem('ssxQueuePw') || '1234';
@@ -647,12 +663,24 @@ function renderQueue(){
           </div>
         </div>
 
-        <!-- RIGGER ACTIVITY LOG -->
-        ${(order._activity_log && order._activity_log.length) ? `
-        <div class="info-block" style="margin-top:10px;">
+        <!-- EXTRA CHARGE / DISCOUNT -->
+        <div class="charge-row" style="margin-top:10px;">
+          <div class="charge-field">
+            <label>➕ Extra Charge ($)</label>
+            <input type="number" id="extra-charge-${realIdx}" placeholder="0.00" min="0" step="0.01">
+          </div>
+          <div class="charge-field">
+            <label>➖ Discount ($)</label>
+            <input type="number" id="discount-${realIdx}" placeholder="0.00" min="0" step="0.01">
+          </div>
+        </div>
+
+        <!-- RIGGER ACTIVITY LOG — always rendered so JS can update it -->
+        <div class="info-block" style="margin-top:10px;${(order._activity_log && order._activity_log.length) ? '' : 'display:none;'}" id="activity-log-wrap-${realIdx}">
           <div class="info-title">🔐 Rigger Activity Log</div>
           <div id="activity-log-${realIdx}">${buildActivityLog(order._activity_log)}</div>
-        </div>` : `<div id="activity-log-${realIdx}" style="display:none;"></div>`}
+        </div>
+        ${!(order._activity_log && order._activity_log.length) ? `<div id="activity-log-${realIdx}" style="display:none;"></div>` : ''}
 
         <!-- PENDING: Rigger must sign in to start -->
         ${isPending ? `
@@ -691,17 +719,6 @@ function renderQueue(){
               <textarea id="comp-notes-${realIdx}" placeholder="Any final notes, observations, or changes to service..."></textarea>
             </div>
           </div>
-          <!-- EXTRA CHARGE / DISCOUNT -->
-          <div class="charge-row">
-            <div class="charge-field">
-              <label>➕ Extra Charge ($)</label>
-              <input type="number" id="extra-charge-${realIdx}" placeholder="0.00" min="0" step="0.01">
-            </div>
-            <div class="charge-field">
-              <label>➖ Discount ($)</label>
-              <input type="number" id="discount-${realIdx}" placeholder="0.00" min="0" step="0.01">
-            </div>
-          </div>
           <div class="error-msg" id="comp-error-${realIdx}" style="margin-top:8px;"></div>
           <div class="complete-actions">
             <button class="btn btn-green btn-sm" id="complete-btn-${realIdx}" onclick="addRipple(event,this);markComplete(${realIdx})">
@@ -719,21 +736,29 @@ function renderQueue(){
     // Inject service checkboxes into add/edit panel
     const svcGrid = document.getElementById('svc-grid-' + realIdx);
     if (svcGrid) {
-      SERVICES.forEach(svc => {
-        const checked = svcs.includes(svc.name);
-        const isVaries = svc.price === 'Varies' || svc.price.includes('/hr');
-        const label = document.createElement('label');
-        label.className = 'svc-item' + (checked ? ' checked' : '');
-        label.innerHTML = '<input type="checkbox" value="' + svc.name + '"' + (checked ? ' checked' : '') + '>' +
-          '<div class="svc-check"></div>' +
-          '<span class="svc-label">' + svc.name +
-          '<span class="svc-price">' + svc.price + '</span></span>' +
-          (isVaries ? '<input type="number" class="varies-price-input" id="varies-' + realIdx + '-' + svc.name.replace(/\s+/g,'_') + '" placeholder="$0" min="0" step="0.01" onclick="event.stopPropagation()" title="Enter price">' : '');
-        label.addEventListener('click', function(e) {
-          if (e.target.classList.contains('varies-price-input')) return;
-          toggleSvc(this);
+      SERVICE_GROUPS.forEach(group => {
+        // Group header
+        const hdr = document.createElement('div');
+        hdr.style.cssText = 'grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);padding:8px 2px 4px;border-bottom:1px solid var(--border);margin-bottom:2px;';
+        hdr.textContent = group.group;
+        svcGrid.appendChild(hdr);
+
+        group.items.forEach(svc => {
+          const checked = svcs.includes(svc.name);
+          const isVaries = svc.price === 'Varies' || svc.price.includes('/hr');
+          const label = document.createElement('label');
+          label.className = 'svc-item' + (checked ? ' checked' : '');
+          label.innerHTML = '<input type="checkbox" value="' + svc.name + '"' + (checked ? ' checked' : '') + '>' +
+            '<div class="svc-check"></div>' +
+            '<span class="svc-label">' + svc.name +
+            '<span class="svc-price">' + svc.price + '</span></span>' +
+            (isVaries ? '<input type="number" class="varies-price-input" id="varies-' + realIdx + '-' + svc.name.replace(/\s+/g,'_') + '" placeholder="$0" min="0" step="0.01" onclick="event.stopPropagation()" title="Enter price">' : '');
+          label.addEventListener('click', function(e) {
+            if (e.target.classList.contains('varies-price-input')) return;
+            toggleSvc(this);
+          });
+          svcGrid.appendChild(label);
         });
-        svcGrid.appendChild(label);
       });
     }
   });
@@ -856,6 +881,9 @@ function confirmReaccess() {
   // Re-render just the activity log section
   const logEl = document.getElementById('activity-log-' + idx);
   if (logEl) logEl.innerHTML = buildActivityLog(order._activity_log);
+  // Show the wrapper if it was hidden
+  const wrapEl = document.getElementById('activity-log-wrap-' + idx);
+  if (wrapEl) wrapEl.style.display = 'block';
 
   // Pre-fill rigger fields
   const nameEl   = document.getElementById('rigger-' + idx);
