@@ -637,6 +637,13 @@ function renderQueue(){
           </div>
         </div>
 
+        <!-- RIGGER ACTIVITY LOG -->
+        ${(order._activity_log && order._activity_log.length) ? `
+        <div class="info-block" style="margin-top:10px;">
+          <div class="info-title">🔐 Rigger Activity Log</div>
+          <div id="activity-log-${realIdx}">${buildActivityLog(order._activity_log)}</div>
+        </div>` : `<div id="activity-log-${realIdx}" style="display:none;"></div>`}
+
         <!-- PENDING: Rigger must sign in to start -->
         ${isPending ? `
         <div style="background:var(--yellow-dim);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:14px;margin-top:12px;">
@@ -719,7 +726,18 @@ function statusLabel(s){
 }
 
 function toggleOrder(idx){
-  document.getElementById('order-'+idx).classList.toggle('expanded');
+  const card = document.getElementById('order-'+idx);
+  const isExpanding = !card.classList.contains('expanded');
+  card.classList.toggle('expanded');
+
+  // If expanding an IN_PROGRESS card, prompt for rigger re-access
+  if (isExpanding) {
+    const order = pendingOrders[idx];
+    const status = (order.status || 'PENDING').toUpperCase();
+    if (status === 'IN_PROGRESS') {
+      openReaccessModal(idx);
+    }
+  }
 }
 
 function toggleSvc(label){
@@ -753,13 +771,85 @@ async function confirmStartService() {
   if (!symbol) { errEl.textContent = 'Please enter your rigger seal.'; errEl.style.display = 'block'; return; }
 
   const order = pendingOrders[idx];
-  // Store rigger info on the order for pre-fill in complete section
+
+  // Store rigger info for pre-fill in complete section
   order._rigger_name   = name;
   order._rigger_symbol = symbol;
+
+  // Add activity log entry
+  if (!order._activity_log) order._activity_log = [];
+  order._activity_log.push({
+    name,
+    symbol,
+    action: 'Started Service',
+    timestamp: new Date().toLocaleString(),
+  });
 
   closeSigninModal();
   await changeStatus(idx, 'IN_PROGRESS');
   renderQueue();
+}
+
+function openReaccessModal(idx) {
+  document.getElementById('reaccess-order-idx').value = idx;
+  document.getElementById('reaccess-name').value = pendingOrders[idx]._rigger_name || '';
+  document.getElementById('reaccess-symbol').value = pendingOrders[idx]._rigger_symbol || '';
+  document.getElementById('reaccess-error').style.display = 'none';
+  document.getElementById('reaccess-modal').classList.add('open');
+  setTimeout(() => document.getElementById('reaccess-name').focus(), 100);
+}
+
+function closeReaccessModal() {
+  document.getElementById('reaccess-modal').classList.remove('open');
+}
+
+function confirmReaccess() {
+  const idx    = parseInt(document.getElementById('reaccess-order-idx').value);
+  const name   = document.getElementById('reaccess-name').value.trim();
+  const symbol = document.getElementById('reaccess-symbol').value.trim();
+  const errEl  = document.getElementById('reaccess-error');
+  errEl.style.display = 'none';
+  if (!name)   { errEl.textContent = 'Please enter your name.';        errEl.style.display = 'block'; return; }
+  if (!symbol) { errEl.textContent = 'Please enter your rigger seal.'; errEl.style.display = 'block'; return; }
+
+  const order = pendingOrders[idx];
+  order._rigger_name   = name;
+  order._rigger_symbol = symbol;
+
+  if (!order._activity_log) order._activity_log = [];
+  order._activity_log.push({
+    name,
+    symbol,
+    action: 'Accessed Service',
+    timestamp: new Date().toLocaleString(),
+  });
+
+  closeReaccessModal();
+
+  // Re-render just the activity log section
+  const logEl = document.getElementById('activity-log-' + idx);
+  if (logEl) logEl.innerHTML = buildActivityLog(order._activity_log);
+
+  // Pre-fill rigger fields
+  const nameEl   = document.getElementById('rigger-' + idx);
+  const symbolEl = document.getElementById('rigger-symbol-' + idx);
+  if (nameEl)   nameEl.value   = name;
+  if (symbolEl) symbolEl.value = symbol;
+}
+
+function buildActivityLog(log) {
+  if (!log || !log.length) return '';
+  return log.map(e =>
+    `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;gap:8px;">
+      <div>
+        <span style="font-weight:700;color:var(--text);">${e.name}</span>
+        <span style="color:var(--text-muted);margin:0 6px;">·</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);">${e.symbol}</span>
+        <span style="background:var(--blue-dim);color:var(--accent);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;">${e.action}</span>
+      </div>
+      <div style="color:var(--text-muted);white-space:nowrap;font-size:11px;">${e.timestamp}</div>
+    </div>`
+  ).join('');
 }
 
 // ── CHANGE STATUS ─────────────────────────────────────────────
@@ -1297,6 +1387,28 @@ function changePassword(){
     <div style="display:flex;gap:10px;margin-top:4px;">
       <button class="btn btn-primary" style="flex:1;" onclick="confirmStartService()">▶ Start Service</button>
       <button class="btn btn-ghost btn-sm" onclick="closeSigninModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- RIGGER RE-ACCESS MODAL -->
+<div class="signin-modal" id="reaccess-modal">
+  <div class="signin-box">
+    <div class="signin-title">🔍 Accessing Service</div>
+    <div class="signin-sub">Enter your name and seal — this will be logged as a touchpoint on this order.</div>
+    <input type="hidden" id="reaccess-order-idx">
+    <div class="field">
+      <label>Rigger Name *</label>
+      <input type="text" id="reaccess-name" placeholder="Your full name" autocomplete="name">
+    </div>
+    <div class="field">
+      <label>Rigger Seal / Symbol *</label>
+      <input type="text" id="reaccess-symbol" placeholder="e.g. T.R. or ✦">
+    </div>
+    <div class="error-msg" id="reaccess-error"></div>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="confirmReaccess()">✓ Log & Continue</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeReaccessModal()">Skip</button>
     </div>
   </div>
 </div>
